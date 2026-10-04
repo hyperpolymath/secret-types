@@ -1,127 +1,68 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// SPDX-FileCopyrightText: 2024-2026 Jonathan D.A. Jewell (hyperpolymath)
-= {{PROJECT_NAME}}
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+= Secret Types
 :toc:
 :toc-placement: preamble
 
 // ── Licensing ───────────────────────────────────────────────────────────────
 image:https://img.shields.io/badge/Code-MPL--2.0-blue.svg?logo=mozilla[Code licence: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
 image:https://img.shields.io/badge/Docs-CC--BY--SA--4.0-blue.svg?logo=creativecommons[Docs licence: CC-BY-SA-4.0,link="https://creativecommons.org/licenses/by-sa/4.0/"]
-image:https://img.shields.io/badge/Provenance-Quantum--Safe-blueviolet[Quantum-Safe Provenance,link="docs/legal/EXHIBIT-B-QUANTUM-SAFE.txt"]
 
-// ── Standard & quality gates ────────────────────────────────────────────────
+// ── Status ──────────────────────────────────────────────────────────────────
+image:https://img.shields.io/badge/Stage-specification--only-orange[Specification only: no code, no proofs]
 image:https://img.shields.io/badge/RSR-Rhodium_Standard-9C27B0[Rhodium Standard Repository,link="https://github.com/hyperpolymath/rhodium-standard-repositories"]
-image:https://www.bestpractices.dev/projects/{{OPENSSF_BP_ID}}/badge[OpenSSF Best Practices,link="https://www.bestpractices.dev/projects/{{OPENSSF_BP_ID}}"]
-image:https://api.scorecard.dev/projects/github.com/{{OWNER}}/{{REPO}}/badge[OpenSSF Scorecard,link="https://scorecard.dev/viewer/?uri=github.com/{{OWNER}}/{{REPO}}"]
-image:https://sonarcloud.io/api/project_badges/measure?project={{OWNER}}_{{REPO}}&metric=alert_status[SonarQube Quality Gate,link="https://sonarcloud.io/summary/new_code?id={{OWNER}}_{{REPO}}"]
-image:https://archive.softwareheritage.org/badge/origin/https://{{FORGE}}/{{OWNER}}/{{REPO}}/[Archived in Software Heritage,link="https://archive.softwareheritage.org/browse/origin/?origin_url=https://{{FORGE}}/{{OWNER}}/{{REPO}}"]
 
-// ── Provenance & ecosystem ──────────────────────────────────────────────────
-image:https://img.shields.io/badge/Idris-Inside-5E5086?logo=idris&logoColor=white[Idris Inside,link="https://github.com/hyperpolymath/proven"]
-image:https://img.shields.io/badge/Zig-Zero--overhead-F7A41D?logo=zig&logoColor=black[Zig Zero-overhead FFI,link="https://github.com/hyperpolymath/typed-wasm"]
-image:https://api.thegreenwebfoundation.org/greencheckimage/{{FORGE}}[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url={{FORGE}}"]
-
-{{PROJECT_DESCRIPTION}}
-
-[IMPORTANT]
-====
-*This file is a template.* You are reading `README.adoc` from the *RSR template repo*
-(or a freshly-cloned copy of it). Run `just repo-init` to replace every `{{PLACEHOLDER}}`
-token with your project's details, then delete this admonition. Until you do, the
-`{{...}}` markers below are intentional placeholders, not content.
-====
+Confidentiality labels that constrain value flow, with declassification only at
+explicit audited points: a standalone information-flow typing project.
 
 == What this is
 
-A new repository scaffolded from the *Rhodium Standard Repository (RSR)* template:
-a batteries-included starting point that ships with CI/CD, machine-readable project
-metadata, an AI-agent gatekeeper protocol, a formally-typed ABI/FFI seam
-(Idris2 + Zig), container and reproducible-build scaffolding, and governance
-infrastructure — all wired and passing the RSR validators on day one.
+*Question.* Which value flows does a confidentiality label permit, and what may
+a lower observer learn from an output? A value type `Secret ℓ A` classifies a
+value at a label `ℓ`; the first model uses a two-level `Public ⊑ Secret` label
+order over a pure, total calculus, and the target property is
+termination-insensitive noninterference between secret inputs and public
+observations.
 
-Replace this section with a description of *your* project once initialised.
+*Boundary.* A label is not cryptography and not an epistemic standpoint. A
+`Secret ℓ A` does not make a value unreadable, authenticate a principal, enforce
+runtime access control, or hide timing, storage or network side channels. The
+baseline declassifies nothing: an ordinary `Secret`-to-`Public` flow is outside
+the discipline, and any release requires a separate policy and theorem. As of
+2026-10-04 *no consumer and no frontier item is selected* for this project.
 
-== Quick start
+The canonical statement is link:docs/secret-types.adoc[docs/secret-types.adoc].
+It records the owner decisions (D153, D154, and the 2026-10-04 confirmation of
+this standalone home), the first model, and the explicit non-claims.
 
-[source,bash]
-----
-# 1. Create a repo from this template (or clone it), then from the repo root:
-just repo-init                # interactive bootstrap: fills every {{PLACEHOLDER}}
+== Status
 
-# 2. See the available tasks:
-just                     # lists all phases (build, test, validate, audit, ...)
+* *Specification only.* There is no `Secret` type, no information-flow
+  calculus, no declassification rule, no noninterference theorem and no
+  cross-repository import in this project.
+* *Minted 2026-10-04 in scope, not yet in scaffolding.* The scope statement and
+  this README are real project content. The RSR template placeholder sweep
+  (`just repo-init`) has not been run across the tree yet, so other files still
+  carry `{{TOKEN}}` template text; that sweep is tracked in
+  link:https://github.com/hyperpolymath/secret-types/issues/2[issue #2].
+* *No progress grade claimed.* A documentation link is not a mechanised
+  dependency; an integration may only be claimed once a real import builds in
+  CI.
 
-# 3. Check the repo still satisfies the RSR shape:
-just validate            # structure + metadata checks
-----
+== Where things belong
 
-`just repo-init` prompts for the project name, owner, author, licence contact, and the
-other values listed in `.machine_readable/ai/PLACEHOLDERS.adoc`, substitutes them
-across the tree, validates the result, and (if available) runs the `k9-svc` checks.
-
-== AI-Assisted Installation
-
-If you are an AI agent installing this project, read
-link:docs/AI_INSTALLATION_GUIDE.adoc[the AI installation guide] first — it gives
-the orientation order, the full prompt sequence, and the privacy notice.
-
-The one trap worth stating up front: **do not set `RSR_NON_INTERACTIVE=1`**. It
-stubs the shell builtin `read`, which also disables the loops that perform token
-substitution — the run never terminates and substitutes nothing. Pipe answers to
-stdin instead.
-
-== What you get
-
-* *Machine-readable metadata* (`.machine_readable/descriptiles/`) — `STATE`, `META`,
-  `ECOSYSTEM`, `PLAYBOOK`, `AGENTIC`, `NEUROSYM`, `CLADE`, and `anchors/ANCHOR`,
-  in deed, so tools and agents can read the project's state and boundaries.
-* *AI gatekeeper protocol* — `rsr-template-repo_chora.deed` (the repo deed) is the
-  universal entry point that tells an AI agent how to work in this repo before it
-  touches anything; it carries the AI allocation policy and the ply directory tree.
-* *Typed ABI/FFI seam* — `src/interface/Abi/` (Idris2 type + layout proofs) over
-  `src/interface/ffi/` (Zig implementation), with generated C headers.
-* *CI/CD* — GitHub Actions for quality, security (CodeQL, Scorecard, secret
-  scanning), multi-forge mirroring, and RSR anti-pattern enforcement.
-* *Supply-chain & reproducibility* — container layering (stapeln), Guix shells,
-  SBOM, and signing hooks.
-* *Governance* — `GOVERNANCE.adoc`, `MAINTAINERS.adoc`, `.github/` community health
-  files, and a release `AUDIT.adoc` gate.
-
-== Repository map
-
-The authoritative map is generated, so it cannot drift from the tree:
-link:docs/architecture/REPOSITORY-MAP.adoc[docs/architecture/REPOSITORY-MAP.adoc]
-(regenerate with `just repo-map`; CI fails if it is stale).
-
-The short version:
-
-[cols="1,3"]
-|===
-| Path | What lives there
-
-| `README.adoc`, `CLAUDE.md` | Start here - humans and AI agents respectively.
-| `src/`, `tests/`           | The code and its tests.
-| `docs/`                    | Human documentation, including the full map above.
-| `.machine_readable/`        | Manifests, contractiles and policies that tools read.
-| `build/`, `Justfile`       | Every task runs through `just`; phases live in `build/just/`.
-| `ci/`, `.github/`          | CI configuration; GitHub reads `.github/` and no other path.
-|===
-
-== Where to go next
-
-* link:docs/architecture/REPOSITORY-MAP.adoc[The repository map] — generated; what every directory is for.
-* link:docs/EXPLAINME.adoc[EXPLAINME] — the engineering deep-dive: how the pieces actually work.
-* link:docs/AFFIRMATION.adoc[AFFIRMATION] — the dated, signed honesty snapshot of the repo's true state.
-* link:docs/AUDIT.adoc[AUDIT] — the release audit gate.
-* link:docs/AI_INSTALLATION_GUIDE.adoc[AI installation guide] — for agents instantiating this template.
-* link:.machine_readable/ai/PLACEHOLDERS.adoc[PLACEHOLDERS] — the full placeholder reference.
+* This repository owns the confidentiality-label definitions, the typing and
+  observation semantics, and its own proof evidence.
+* link:https://github.com/hyperpolymath/nextgen-typing/blob/main/docs/TYPE-CONNECTIONS.adoc[TYPE-CONNECTIONS]
+  is the shared family map; this family's row is proposed in
+  link:https://github.com/hyperpolymath/nextgen-typing/issues/118[nextgen-typing#118].
+* Neighbours and their limits (`epistemic-types`, `systemet`/`anytype`,
+  `echo-types`, `tropical-types`) are covered in the canonical spec. None is a
+  dependency.
 
 == Licence
 
 Code, configuration and scripts are link:LICENSE[Mozilla Public License 2.0]
 (`MPL-2.0`); prose documentation is `CC-BY-SA-4.0`. Both texts live in
 `LICENSES/`, and per-file `SPDX-License-Identifier` headers are authoritative.
-The GitHub-detected licence is MPL-2.0 (the root `LICENSE`). Long-term
-attribution uses Quantum-Safe Provenance — see
-link:docs/legal/EXHIBIT-B-QUANTUM-SAFE.txt[the Quantum-Safe Provenance exhibit].

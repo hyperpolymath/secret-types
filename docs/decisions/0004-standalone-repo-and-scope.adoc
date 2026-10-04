@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Architecture Decision Record: 0004-standalone-repo-and-scope
+
+== 4. Secret Types is a standalone information-flow project, scoped by docs/secret-types.adoc
+
+Date: 2026-10-04
+
+=== Status
+
+Accepted (owner confirmation 2026-10-04, relayed to the coordinating session;
+recorded publicly in link:https://github.com/hyperpolymath/secret-types/issues/2[secret-types#2])
+
+=== Context
+
+The secret-types question began inside `epistemic-types` (`docs/secret-types.adoc`,
+landed for `epistemic-types`#32) with an explicit early gate:
+
+* "Do not create a new repository from issue #32 alone, and do not add a `Secret`
+  module under `EpistemicTypes`."
+* Placement options were (a) a grade instance inside SystemET/Anytype, or
+  (b) a standalone IFC calculus repository — the split to be made *before*
+  growing an API or runtime prototype.
+
+Two owner rulings followed on 2026-09-30:
+
+* *D153:* a secret type = a value whose flow is constrained by a confidentiality
+  label with explicit declassification, registered in the type-family map on
+  that boundary.
+* *D154:* reuse an existing lattice (two-point first, then general), prove
+  noninterference, and allow declassification only at explicit audited points.
+
+valence-shell's direction doc (`docs/THEORY-FEED.adoc`) then carried the
+placement as an owner call — "mint it with a scope statement ... Alternatively,
+fold it into epistemic-types#32" — and graded secret-types' fit for the
+RMO key-provisioning and disclosure story (`#92`) as an inference from the
+repository name.
+
+=== Decision
+
+1. The standalone `secret-types` repository is the home of the work (owner
+   confirmation 2026-10-04). The "fold into `epistemic-types`#32" alternative is
+   superseded.
+2. `docs/secret-types.adoc` in this repository is the canonical scope statement:
+   the two-level `Public ⊑ Secret` baseline, the low-observer model, the
+   noninterference target, and the explicit non-claims.
+3. No consumer and no frontier item is selected. In particular, the possible
+   RMO key-provisioning / disclosure use is *not* adopted as a claim; the
+   nearest frontier item by name (`valence-shell`#92) is not selected as a
+   consumer of this project.
+4. Progress claims stay graded: this decision creates no mechanised dependency.
+   The TYPE-CONNECTIONS row is a documentation link at most, and an integration
+   may only be claimed after a real import builds in CI.
+
+=== Consequences
+
+* This repository needs the scope statement reviewed like any other proposal;
+  the review checklist is in `docs/secret-types.adoc`. The model is not yet
+  accepted item by item, and there is no code.
+* The RSR template placeholder sweep (`just repo-init`) still has to run across
+  the tree; until it does, the repository is minted in scope but not in
+  scaffolding. Tracked in `secret-types#2`.
+* Cross-links that still describe the old alternatives need updating:
+  `epistemic-types`#32 (the specification issue), `nextgen-typing`#118 /
+  `TYPE-CONNECTIONS` (the family row), and valence-shell `docs/THEORY-FEED.adoc`
+  (the "mint vs fold" sentence and the RMO inference cell).
+* The SystemET/Anytype grade-instance option remains a neighbour comparison for
+  any future grade-based realisation; it is not selected and no mapping is
+  claimed.
