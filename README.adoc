@@ -60,6 +60,12 @@ this standalone home), the first model, and the explicit non-claims.
 * Neighbours and their limits (`epistemic-types`, `systemet`/`anytype`,
   `echo-types`, `tropical-types`) are covered in the canonical spec. None is a
   dependency.
+* The origin record stays with `epistemic-types`: its
+  link:https://github.com/hyperpolymath/epistemic-types/blob/main/docs/secret-types.adoc[boundary/history note]
+  and link:https://github.com/hyperpolymath/epistemic-types/issues/32[issue #32]
+  remain open there, untransferred. link:docs/epistemic-types-transition-review.adoc[The transition review]
+  records the verified cross-references and the prepared, unposted tracking
+  updates.
 
 == Licence
 

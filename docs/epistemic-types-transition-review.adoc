@@ -1,0 +1,417 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Epistemic Types transition review: verified cross-references
+:toc: macro
+:toclevels: 3
+:icons: font
+:revdate: 2026-10-05
+
+[abstract]
+Review of the 2026-10-04 Secret Types transition as it stands in
+`hyperpolymath/epistemic-types`. It verifies the cross-references in both
+directions, records what work has moved to this repository, what remains owned
+by `epistemic-types`, and where follow-up work belongs. It changes no issue
+state anywhere: no issue was closed, reopened, transferred, re-owned, relabelled
+or commented on, because this session's GitHub token has no issue-write access
+(verified below). The exact proposed tracking updates are prepared in
+<<prepared_updates>> and are **unposted**.
+
+toc::[]
+
+== What this review is, and is not
+
+This is a *verification and cross-reference record*, prepared on the session
+branch `arena/01a10aad-secret-types`. It is not a decision, not a transfer, and
+not a claim that the Secret Types specification has passed review.
+
+* It does not move, delete or rewrite any work in `epistemic-types`.
+* It does not transfer issue ownership, close issue #32, or duplicate the
+  decision record that #32 started.
+* It does not adopt the model: the canonical scope statement in this repository
+  states that its review checklist has not been completed item by item, and
+  ADR-0004 states the model is not yet accepted item by item. That review is
+  still outstanding, so the corresponding tracking stays open.
+
+Everything below was checked on 2026-10-05 against the public repositories, the
+two git trees, and the GitHub API. The commands are listed in
+<<how_to_re-verify>>.
+
+[[evidence_checked]]
+== Evidence checked
+
+[cols="1,2,3",options="header"]
+|===
+| Repository | Artefact and revision | What it evidences
+
+| `secret-types`
+| PR #4, merged 2026-10-04T09:07:42Z, commit `906e110ff7ba23b51409f53a028d1c9e8b9c6a2b`; files `docs/secret-types.adoc` (new, 317 lines), `README.adoc`, `docs/decisions/0004-standalone-repo-and-scope.adoc`
+| The source change of the transition: this repository is minted in scope as the standalone home, with the canonical scope statement, the first model, and ADR-0004 (owner confirmation 2026-10-04, superseding the "fold into `epistemic-types`#32" alternative).
+
+| `secret-types`
+| `docs/secret-types.adoc` "Provenance and status": ported 2026-10-04 from `epistemic-types` `docs/secret-types.adoc`, blob `583017cfd5fa`, landed via PR #33 for #32 on 2026-09-27
+| Verified exact: blob `583017cfd5fab189ca17128d01c7eddb494d8476` is `epistemic-types` `docs/secret-types.adoc` at commit `d97ecaa` (PR #33, merged 2026-09-27T08:14:42Z).
+
+| `secret-types`
+| ADR-0004 "Consequences": cross-links that still describe the old alternatives need updating (`epistemic-types`#32, `nextgen-typing`#118 / `TYPE-CONNECTIONS`, valence-shell `docs/THEORY-FEED.adoc`)
+| This review is the follow-up to that consequence list; it records the verified state rather than rewriting the linked work.
+
+| `secret-types`
+| Issues: #2 open (only open issue); PRs #1, #3, #4, #5 merged; no transferred issue present
+| No replacement specification issue exists here, and no issue transfer has landed in this repository.
+
+| `epistemic-types`
+| PR #31, merged 2026-09-27T05:25:17Z, commit `c71cc257eec450fde46be85bb8f548ef9974090f`, "Closes #29"; `docs/secret-types.adoc` blob `cf0a152e46c6`
+| Landed the preserved note inside `epistemic-types`; closed #29.
+
+| `epistemic-types`
+| PR #33, merged 2026-09-27T08:14:42Z, commit `d97ecaab042ce3b793e151dbead43f9ffb9b88d7`, "docs(security): specify secret-type model boundary (#32)"; blob `583017cfd5fa`
+| The revision this repository ported; it referenced #32 but did not close it.
+
+| `epistemic-types`
+| PR #37, merged 2026-10-04T07:57:54Z, commit `eb810d4ee77086383dcf5ac74b8e5676c5b38c1b`; `docs/secret-types.adoc` blob `01dd2c24bd7d`
+| The mirror side of the transition: the "Boundary and history — 2026-10-04" section, the superseded placement section, and updates to README, `docs/README.adoc`, CHANGELOG, `STATE.a2ml`, `META.a2ml` (ADR-007) and `0-AI-MANIFEST.a2ml`.
+
+| `epistemic-types`
+| Issue #32: OPEN, labels design / priority:p1 / scope:repo / security / feeds:valence-shell; one comment, the D154 ruling (2026-09-30T14:15Z); timeline has no transfer event
+| The origin decision record is open and explicitly supported by the owner ruling; nothing here has been transferred or re-owned.
+
+| `epistemic-types`
+| Issue #29: CLOSED as COMPLETED, 2026-09-27T05:58:28Z
+| Historical work, resolved by landing the note; no restoration of the retired pre-#22 `AUDIT.adoc` (current `AUDIT.adoc` is the #22 rewrite `ad14e35`; the older text stays in history at `a0153f4`).
+
+| `hyperpolymath/standards`
+| issue #787, comment 5912989503 (decision harvest, 2026-09-30T14:10Z): D153 on `secret-types#2`, D154 on `epistemic-types#32`
+| The ruling context: D153 defines a secret type and requires type-family-map registration; D154 fixes lattice reuse (two-point first), noninterference, and declassification only at explicit audited points.
+
+| neighbours
+| `nextgen-typing#118` open with "secret-types pending" in the title; `valence-shell#210` open (D127 umbrella); `valence-shell#92` open and blocked on its own dependencies
+| The family-map row is still pending, and no consumer or frontier item has been selected for this project.
+|===
+
+== Cross-reference verification
+
+[cols="2,2,1",options="header"]
+|===
+| Claim in one repository | Verified state, 2026-10-05 | Verdict
+
+| This repository: "Ported and adopted 2026-10-04 from `epistemic-types` `docs/secret-types.adoc` (blob `583017cfd5fa`, landed via PR #33 for #32 on 2026-09-27, CC-BY-SA-4.0)."
+| Blob matches `d97ecaa` exactly; PR #33 merged 2026-09-27T08:14:42Z. The port is a point-in-time snapshot: the origin note has since been revised (blob `01dd2c24bd7d`, 2026-10-04) to mark the placement superseded.
+| Accurate
+
+| This repository: "its handoff to this repository is tracked in secret-types#2"
+| `secret-types#2` tracks the repository being un-minted, the scaffolding sweep and type-family-map registration. It is not a handoff tracker, and no issue transfer has occurred.
+| *Inaccurate — corrected in this change*
+
+| `epistemic-types` `docs/secret-types.adoc`: "the replacement issue is the transferred #32 itself, not a duplicate"
+| No transfer has occurred or is in flight: no transfer event on #32, no replacement issue in `secret-types`, and issue writes currently return 403 (matching `STATE.a2ml`'s "pending GitHub issue-write access").
+| *Not evidenced — wording fix prepared, unapplied (belongs to `epistemic-types`)*
+
+| `epistemic-types` `docs/secret-types.adoc`: "`epistemic-types#29` ... is resolved and stays closed"
+| #29 is CLOSED as COMPLETED since 2026-09-27T05:58:28Z; PR #31 landed the note; the preserved commit `bde5842e` has no ref but is still retrievable by SHA through the API; `AUDIT.adoc` was not restored.
+| Accurate
+
+| `epistemic-types` README: secrecy work is out of scope there; the standalone home is `hyperpolymath/secret-types` (D153/D154)
+| This repository exists, is public, and carries the canonical scope statement and ADR-0004.
+| Accurate
+
+| This repository: statements about `epistemic-types` modules "remain statements about *that* repository's narrower interfaces. They are not re-homed here."
+| The module-by-module material (`Modality`, `Access.Preorder`, `BeliefModality`'s missing `reflect`, `FactiveModality.reflect`, `Warrant`, `ProofTransport`, `Echo`/`BoundedEcho`, the `--safe` gate) is retained in the origin note and is absent from this repository's canonical spec.
+| Accurate
+
+| This repository: no consumer and no frontier item selected; `valence-shell#92` is the nearest frontier item by name only
+| `valence-shell#92` is open and still blocked; the RMO key-provisioning use remains an inference in valence-shell's direction doc, not a selected consumer.
+| Accurate
+
+| This repository: the TYPE-CONNECTIONS row is proposed in `nextgen-typing#118`
+| #118 is open and still ends "secret-types pending"; no row has landed.
+| Accurate
+
+| `secret-types#2` body: "This repo is un-minted. The README is still" unfilled template tokens.
+| Stale since PR #4 (2026-10-04): the README is real project content. The placeholder sweep across the rest of the tree remains outstanding.
+| *Premise stale — update prepared, unposted*
+
+| Attribution of rulings: D153 on `secret-types#2`, D154 on `epistemic-types#32`
+| Matches the estate harvest table and both on-issue ruling comments.
+| Accurate
+|===
+
+== What has moved, what remains, where follow-up belongs
+
+=== Moved to this repository (now canonical here)
+
+* The confidentiality-label model: two labels `Public ⊑ Secret`, the order
+  direction, the join of dependencies, and the clearance reading.
+* The use case and trust boundary: the pure, total policy/configuration
+  function; trusted source labels that no annotation can authenticate.
+* The attacker and observation model, including what it assumes and what it
+  excludes (no I/O, state, concurrency, divergence, or side channels).
+* Permitted and forbidden flows, including implicit flow, and the baseline's
+  refusal to declassify anything (D154 admits declassification only at explicit
+  audited points, which the baseline does not yet specify).
+* The low-equivalence and termination-insensitive noninterference target.
+* The candidate `Secret ℓ A` surface and its limit (no unrestricted
+  eliminator, no observer API without a clearance semantics).
+* Ownership of the remaining first-stage review and of all later stages:
+  syntax and typing rules, expected-rejection fixtures, the semantic
+  noninterference proof, and any runtime correspondence argument.
+* The placement decision itself: standalone repository (checklist item 5 of the
+  origin note is now decided, which removes one previously open question).
+
+=== Remains owned by `epistemic-types`
+
+* Issue #32 as the origin decision record, open and untransferred, with the
+  D154 ruling comment of 2026-09-30 unchanged and still governing.
+* `docs/secret-types.adoc` there as the boundary/history note (current blob
+  `01dd2c24bd7d`): why that repository hosts no `Secret` API, the superseded
+  2026-09-27 placement recommendation, and the retained checklist as history.
+* The statements about *that* repository's own interfaces: `Modality`,
+  `Access.Preorder` / `AccessibleModality.increase`, `BeliefModality`'s missing
+  `reflect` (a factivity gap, not a confidentiality result), `FactiveModality`,
+  `Warrant` / `ProofTransport`, `Echo` / `BoundedEcho` grades, and the
+  17-module `--safe --without-K` gate. None of these is a security guarantee,
+  and none is re-homed here.
+* The "`Access.Preorder` is not the security interface" comparison and the
+  repository-boundary analysis.
+* The README out-of-scope entry, the documentation-index entry, the CHANGELOG
+  entries, `STATE.a2ml`, `META.a2ml` ADR-007, and the `0-AI-MANIFEST.a2ml`
+  entries.
+* The closed history of #29 and of the preservation branch.
+
+=== Follow-up routing
+
+[cols="2,1,2",options="header"]
+|===
+| Work item | Home | Status
+
+| Item-by-item review of the model checklist | this repository | Not started; the scope statement says so explicitly.
+
+| Syntax, typing rules, proof controls, expected-rejection fixtures | this repository | No issue exists yet here; the origin note keeps them as its checked follow-on stages.
+
+| The noninterference theorem | this repository | Not proved; stated only as the future target.
+
+| `just repo-init` placeholder sweep; type-family-map registration (D153) | this repository, tracked in issue #2 | Open; the map row is still "pending" in nextgen-typing#118.
+
+| Tracking disposition of `epistemic-types#32` (transfer it, or keep it as the origin record) | owner decision | Deliberately untouched by this review; #32 stays open and untransferred meanwhile.
+
+| Wording fix in `epistemic-types` `docs/secret-types.adoc` (the "transferred #32" sentence) | `epistemic-types` | Prepared here, unapplied; this session cannot push a branch there.
+
+| valence-shell `docs/THEORY-FEED.adoc` mint-vs-fold sentence and the RMO inference cell | valence-shell | Recorded in ADR-0004 consequences; not a selected consumer, no claim made here.
+
+| `occupancy-types` ULTRAPLAN no-imports mention | occupancy-types | Noted in `secret-types#2`; belongs to that repository's own tracked work.
+|===
+
+== Review status of `epistemic-types#32`
+
+The transition is evidenced in both repositories. The review is not complete.
+That is the whole reason #32 stays open:
+
+* The origin note's checklist (labels and order; use case and low-observer
+  boundary; out-of-scope items; the exact noninterference statement and a
+  future soundness proof; placement; then syntax and typing rules) has been
+  carried into this repository's canonical spec, but no one has accepted it
+  item by item. ADR-0004 records the model as not yet accepted item by item.
+* Issue #32's own acceptance criteria ask for the chosen definitions and
+  non-claims to be recorded, and for `BeliefModality`'s missing `reflect` and
+  `EchoBridge.Grade` never to be described as a confidentiality or leakage
+  guarantee. The recordings exist in both repositories, and both keep that
+  non-claim; but the required review has not happened, and the follow-on
+  module, fixtures, theorem and runtime integration were always separate,
+  separately reviewed work.
+* Neither a closure nor a transfer is ours to make. No issue write is
+  available to this session at all (evidence in <<prepared_updates>>).
+
+[[prepared_updates]]
+== Prepared updates (not posted)
+
+=== Why they are unposted
+
+On 2026-10-05 the session's token could read both repositories but not write
+issues. The decisive probe:
+
+[source,bash]
+----
+gh api -X POST repos/hyperpolymath/epistemic-types/issues/32/labels \
+  -f 'labels[]=zzz-no-such-label-zzz'
+# {"message":"Resource not accessible by integration", ... "status":"403"}
+----
+
+The same probe against `secret-types#2` returns the same 403. A token with
+issue-write would have created the label instead of returning 403. This matches
+the record in `secret-types` PR #4 ("`pull_requests=write` but not
+`issues=write`") and `epistemic-types` `STATE.a2ml`'s "pending GitHub
+issue-write access".
+
+Consequently **neither text below was posted, and no issue state was
+changed**. They are stored here verbatim so that whoever next holds issue-write
+can post them unchanged.
+
+=== Prepared comment for `epistemic-types#32` (unposted)
+
+[source,markdown]
+----
+### Secret Types transition — verified cross-references (review recorded 2026-10-05)
+
+**Status: this issue stays open. Nothing is transferred, closed, or re-owned.**
+(This update was prepared by the secret-types transition-review session but not
+posted: that session's token has no issue-write access.)
+
+Verified 2026-10-05 against both repositories:
+
+- The transition is evidenced. `hyperpolymath/secret-types` PR #4 (merged
+  2026-10-04T09:07:42Z, commit `906e110f`) mints the standalone repository:
+  canonical `docs/secret-types.adoc`, real README, and
+  `docs/decisions/0004-standalone-repo-and-scope.adoc` (owner confirmation
+  2026-10-04, superseding the fold-into-#32 alternative). This repository's
+  PR #37 (merged 2026-10-04T07:57:54Z, commit `eb810d4`) added the
+  "Boundary and history — 2026-10-04" section to `docs/secret-types.adoc`
+  (blob `01dd2c24bd7d`), marked the 2026-09-27 placement section superseded,
+  and updated README, `docs/README.adoc`, CHANGELOG, `STATE.a2ml`,
+  `META.a2ml` (ADR-007) and `0-AI-MANIFEST.a2ml`.
+- Provenance is exact: `secret-types` cites the ported blob `583017cfd5fa`,
+  which is this repository's `docs/secret-types.adoc` at PR #33 (`d97ecaa`,
+  merged 2026-09-27T08:14:42Z).
+- `#29` stays closed (COMPLETED 2026-09-27T05:58:28Z), landed by PR #31
+  (`c71cc25`). Its AUDIT.adoc criterion is consistent with the tree: the
+  current `AUDIT.adoc` is the #22 rewrite (`ad14e35`), the pre-#22 text stays
+  in history at `a0153f4`, and the retired copy was not restored. No action
+  requested.
+- No transfer has occurred and none is in flight: this issue has no transfer
+  event, `secret-types` has no replacement specification issue, and issue
+  writes currently fail with 403 — matching `STATE.a2ml`'s "the transfer of
+  epistemic-types#32 to secret-types is pending GitHub issue-write access and
+  must not be duplicated".
+- Wording fix needed in this repository: the boundary section says "the
+  replacement issue is the transferred #32 itself, not a duplicate", which
+  presumes a transfer that has not happened. Suggested replacement: "No
+  transfer has occurred; `secret-types` has no replacement specification issue
+  yet, and its only open issue (#2) tracks minting, scaffolding and
+  type-family-map registration."
+
+What moved, what remains here, where follow-ups belong:
+
+- **Moved to `secret-types` (canonical):** the two-level `Public ⊑ Secret`
+  label model and order direction; the pure/total use case and source-trust
+  boundary; the low-observer attacker and observation model; permitted and
+  forbidden flows; the low-equivalence/termination-insensitive
+  noninterference target; the candidate `Secret ℓ A` surface and its limits;
+  and ownership of the review checklist, typing rules, expected-rejection
+  fixtures, the noninterference proof, and any runtime correspondence.
+- **Remains owned here:** this issue as the origin decision record (D154,
+  2026-09-30, unchanged and still governing); `docs/secret-types.adoc` as the
+  boundary/history note; the module-by-module statements (`Modality`,
+  `Access.Preorder`, `BeliefModality`'s missing `reflect` is not
+  confidentiality, `FactiveModality.reflect`, `Warrant`, `ProofTransport`,
+  `Echo`/`BoundedEcho` grades, the 17-module `--safe --without-K` gate);
+  ADR-007 and the machine-readable state. No `Secret` API and no
+  information-flow implementation are added here.
+- **Why open:** `secret-types`' own scope statement records that its review
+  checklist "has not yet been completed item by item" (ADR-0004: the model
+  "is not yet accepted item by item"). The transition is evidenced; the
+  required review is not complete.
+- **Owner-gated next steps:** (1) post this update and the `secret-types#2`
+  update when issue-write access returns; (2) decide the tracking disposition
+  — transfer this issue by owner action, or keep it here as the origin record
+  and open an acceptance/review item in `secret-types`; (3) apply the wording
+  fix above.
+
+Verification record: `hyperpolymath/secret-types`
+`docs/epistemic-types-transition-review.adoc` (branch
+`arena/01a10aad-secret-types`; not yet on `main`).
+----
+
+=== Prepared comment for `secret-types#2` (unposted)
+
+[source,markdown]
+----
+### Status refresh (prepared 2026-10-05; not posted — issue-write unavailable)
+
+The "un-minted" premise in the body is stale: PR #4 (merged 2026-10-04) landed
+a real README, the canonical `docs/secret-types.adoc`, and ADR-0004, so the
+repository is minted in scope. What remains from this issue: the
+`just repo-init` placeholder sweep across the tree, the one-sentence
+question/boundary in TYPE-CONNECTIONS style (the README now states it), and the
+family-map row that `nextgen-typing#118` still carries as "secret-types
+pending" — D153 requires registration on that boundary.
+
+Also recorded for accuracy: no transfer of `epistemic-types#32` has occurred,
+and this issue is not the handoff tracker for it. The verified cross-references
+are in `docs/epistemic-types-transition-review.adoc`; the prepared
+`epistemic-types#32` update is stored there. Keeping this issue open.
+----
+
+=== Prepared wording fix for `epistemic-types` `docs/secret-types.adoc` (unapplied)
+
+Current text (blob `01dd2c24bd7d`, "Boundary and history — 2026-10-04"):
+
+[source,text]
+----
+* `epistemic-types#32` ("Specify an in-repository security model for secret
+  types") is obsolete as titled: the work moves to `hyperpolymath/secret-types`
+  (D153/D154). Until that transfer lands, this note and issue #32 remain the
+  record; the replacement issue is the transferred #32 itself, not a duplicate.
+----
+
+Suggested replacement (not applied by this review; it belongs to
+`epistemic-types`):
+
+[source,text]
+----
+* `epistemic-types#32` ("Specify an in-repository security model for secret
+  types") is obsolete as titled: the work moves to `hyperpolymath/secret-types`
+  (D153/D154), and this note and issue #32 remain the origin record. No issue
+  transfer has occurred as of 2026-10-05: the transfer is pending GitHub
+  issue-write access, and `secret-types` has no replacement specification issue
+  yet (its only open issue, #2, tracks minting, scaffolding and type-family-map
+  registration). Whether #32 is transferred or stays here as the origin record
+  is an owner decision; either way nothing is duplicated. See the verification
+  record in `secret-types` `docs/epistemic-types-transition-review.adoc`.
+----
+
+== History preservation
+
+* No file was moved, renamed or deleted in either repository by this review.
+  The only `epistemic-types` changes are the prepared texts above.
+* `epistemic-types#29` stays closed with its receipts: PR #31 landed the note
+  (commit `c71cc25`), the branch `preserve/secret-types-note-2026-07-13` no
+  longer exists on origin (only `main` does), and the preserved commit
+  `bde5842e8b619018a751002fbfde9be829fc0974` has no ref but is still
+  retrievable by SHA through the GitHub API. Nothing was re-opened or
+  re-litigated.
+* The retired pre-#22 `AUDIT.adoc` was not restored; the current file is the
+  #22 rewrite, and the older text remains in history at `a0153f4`.
+* No issue ownership moved. The only write attempt made during this review was
+  the permission probe quoted above, which applied nothing.
+
+== Verification limits
+
+* No `asciidoctor` in this sandbox, so the local AsciiDoc-render gate was not
+  run here; CI remains the render authority.
+* Issue writes are unavailable to this session (403), so every tracking update
+  is prepared, not posted.
+* This session may only push branch `arena/01a10aad-secret-types` in this
+  repository; a change to `epistemic-types` (such as the wording fix) cannot be
+  made from here.
+* Only public data (both repositories, the API, the `standards` harvest
+  comment) was used.
+
+[[how_to_re-verify]]
+== How to re-verify
+
+[source,bash]
+----
+gh issue view 32 --repo hyperpolymath/epistemic-types --json state,title,labels,comments
+gh api repos/hyperpolymath/epistemic-types/issues/32/timeline --jq '.[].event'
+gh api repos/hyperpolymath/epistemic-types/commits/d97ecaab042ce3b793e151dbead43f9ffb9b88d7 \
+  --jq '.files[] | {filename, sha, additions}'
+gh pr view 4 --repo hyperpolymath/secret-types --json title,mergedAt,files
+gh api repos/hyperpolymath/standards/issues/comments/5912989503 --jq .body
+git -C epistemic-types ls-remote --heads origin      # preserve/* is absent
+----
+
+A fresh clone of `epistemic-types` at `eb810d4` plus a clone of this repository
+at its current `main` lets readers inspect the repository content and Git
+history cited in <<evidence_checked,Evidence checked>>. Rerun the API checks
+above to recheck current GitHub issue, PR, timeline and comment data. The
+recorded 403 is specific to the session's token; reproduce it by rerunning the
+POST label probe in <<prepared_updates>> with a token that lacks issue-write
+access.
