@@ -409,5 +409,9 @@ git -C epistemic-types ls-remote --heads origin      # preserve/* is absent
 ----
 
 A fresh clone of `epistemic-types` at `eb810d4` plus a clone of this repository
-at its current `main` is sufficient to reproduce every claim in
-<<evidence_checked,Evidence checked>>.
+at its current `main` lets readers inspect the repository content and Git
+history cited in <<evidence_checked,Evidence checked>>. Rerun the API checks
+above to recheck current GitHub issue, PR, timeline and comment data. The
+recorded 403 is specific to the session's token; reproduce it by rerunning the
+POST label probe in <<prepared_updates>> with a token that lacks issue-write
+access.
