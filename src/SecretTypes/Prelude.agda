@@ -1,6 +1,8 @@
 {-# OPTIONS --safe --without-K #-}
 -- SPDX-License-Identifier: MPL-2.0
 -- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+-- Minimal prelude over Agda builtins only (no stdlib): negation, equality
+-- lemmas, Maybe with monadic bind, and pairs.  Used by the TINI proof.
 module SecretTypes.Prelude where
 
 open import Agda.Builtin.Nat public using (Nat; zero; suc; _+_)
