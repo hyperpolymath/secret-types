@@ -17,14 +17,17 @@ data _⊑_ : Label → Label → Set where
   H⊑H : H ⊑ H
 
 infixl 6 _⊔_
+-- Combine flow labels: the result is secret if either input is secret.
 _⊔_ : Label → Label → Label
 L ⊔ y = y
 H ⊔ y = H
 
+-- A public join guarantees that its left input is public.
 ⊔-L₁ : ∀ {x y} → x ⊔ y ≡ L → x ≡ L
 ⊔-L₁ {L} _ = refl
 ⊔-L₁ {H} ()
 
+-- A public join guarantees that its right input is public.
 ⊔-L₂ : ∀ {x y} → x ⊔ y ≡ L → y ≡ L
 ⊔-L₂ {L} e = e
 ⊔-L₂ {H} ()

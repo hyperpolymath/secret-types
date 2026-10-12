@@ -9,6 +9,8 @@ open import SecretTypes.Prelude
 open import SecretTypes.Lattice
 open import SecretTypes.Lang
 
+-- Classify an expression as secret exactly when it mentions hi;
+-- literals and expressions using only lo are public.
 lab : Expr → Label
 lab (lit _)    = L
 lab (var x)    = label x

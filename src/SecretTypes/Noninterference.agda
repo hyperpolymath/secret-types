@@ -21,6 +21,7 @@ open import SecretTypes.Lang
 open import SecretTypes.Typing
 
 ----------------------------------------------------------------------
+-- A public expression has equal values in stores that agree on lo.
 eval-low : ∀ e {s s'} → lab e ≡ L → s ≈ s' → eval s e ≡ eval s' e
 eval-low (lit n)    _ _  = refl
 eval-low (var lo)   _ eq = eq
@@ -29,8 +30,13 @@ eval-low (plus a b) p eq = cong₂ _+_ (eval-low a (⊔-L₁ p) eq) (eval-low b 
 
 ----------------------------------------------------------------------
 -- Confinement: under a secret program counter the public variable is unchanged.
+-- Requires evidence that execution finishes with the supplied fuel.
 confine   : ∀ {c} fuel {s t} → H ⊢ c → exec fuel c s ≡ just t → low t ≡ low s
+-- Confinement for a finishing conditional with supplied guard value n;
+-- both branches must be typed under a secret program counter.
 confineIf : ∀ {c₁ c₂} fuel n {s t} → H ⊢ c₁ → H ⊢ c₂ → execIf fuel n c₁ c₂ s ≡ just t → low t ≡ low s
+-- Confinement for a finishing loop continuation with remaining fuel and
+-- supplied guard value n, when its body is typed under a secret counter.
 confineW  : ∀ {e c} fuel n {s t} → H ⊢ c → execWhile fuel n e c s ≡ just t → low t ≡ low s
 
 confine fuel skip                 e = cong low (sym (just-inj e))
@@ -50,12 +56,19 @@ confineW fuel zero    t e with bind-just _ _ e
 confineW fuel (suc _) t e = cong low (sym (just-inj e))
 
 ----------------------------------------------------------------------
--- The theorem.
+-- Finishing runs of a well-typed command preserve low-equivalence.
+-- The fuel bounds may differ; runs returning nothing are not covered.
 tini   : ∀ {pc c} fuel fuel' {s s' t t'} → pc ⊢ c → s ≈ s'
        → exec fuel c s ≡ just t → exec fuel' c s' ≡ just t' → t ≈ t'
+-- Preserve low-equivalence across two finishing conditional evaluations.
+-- ℓ is the program-counter label joined with the guard's label; when it
+-- is secret, the runs may take different branches.  Fuel bounds may differ.
 tiniIf : ∀ {pc e c₁ c₂} fuel fuel' {s s' t t'} ℓ → pc ⊔ lab e ≡ ℓ
        → pc ⊔ lab e ⊢ c₁ → pc ⊔ lab e ⊢ c₂ → s ≈ s'
        → execIf fuel (eval s e) c₁ c₂ s ≡ just t → execIf fuel' (eval s' e) c₁ c₂ s' ≡ just t' → t ≈ t'
+-- Preserve low-equivalence across two finishing loop continuations.
+-- ℓ is the program-counter label joined with the guard's label; the fuel
+-- bounds are those remaining after each loop's decrement and may differ.
 tiniW  : ∀ {pc e c} fuel fuel' {s s' t t'} ℓ → pc ⊔ lab e ≡ ℓ
        → pc ⊔ lab e ⊢ c → s ≈ s'
        → execWhile fuel (eval s e) e c s ≡ just t → execWhile fuel' (eval s' e) e c s' ≡ just t' → t ≈ t'
@@ -66,6 +79,7 @@ tini fuel fuel' (assign {pc} {lo} {g} ok) eq e e' =
   (trans (eval-low g (⊔-L₂ (low-pc ok)) eq)
          (cong low (just-inj e')))
   where
+  -- Any label allowed to flow to the public variable must itself be public.
   low-pc : ∀ {x} → x ⊑ L → x ≡ L
   low-pc L⊑L = refl
 tini fuel fuel' (assign {x = hi} _) eq e e' =
@@ -81,6 +95,7 @@ tini (suc fuel) (suc fuel') (while {pc} {g} t) eq e e' = tiniW {pc} {g} fuel fue
 tiniIf {pc} {g} {c₁} {c₂} fuel fuel' {s} {s'} {t} {t'} L p t₁ t₂ eq e e' =
   go (eval s g) (eval-low g (⊔-L₂ p) eq) e e'
   where
+  -- Equal guard values select the same branch in the two finishing runs.
   go : ∀ n {m} → n ≡ m → execIf fuel n c₁ c₂ s ≡ just t → execIf fuel' m c₁ c₂ s' ≡ just t' → t ≈ t'
   go zero    refl e e' = tini fuel fuel' t₁ eq e e'
   go (suc n) refl e e' = tini fuel fuel' t₂ eq e e'
@@ -92,6 +107,7 @@ tiniIf {pc} {g} {c₁} {c₂} fuel fuel' {s} {s'} H p t₁ t₂ eq e e' =
 tiniW {pc} {g} {c} fuel fuel' {s} {s'} {t} {t'} L p tc eq e e' =
   go (eval s g) (eval-low g (⊔-L₂ p) eq) e e'
   where
+  -- Equal guard values make both finishing runs continue the loop or stop.
   go : ∀ n {m} → n ≡ m → execWhile fuel n g c s ≡ just t → execWhile fuel' m g c s' ≡ just t' → t ≈ t'
   go zero    refl e e' with bind-just _ _ e | bind-just _ _ e'
   ... | s₁ , (e₁ , e₂) | s₁' , (e₁' , e₂') = tini fuel fuel' (while tc) (tini fuel fuel' tc eq e₁ e₁') e₂ e₂'
