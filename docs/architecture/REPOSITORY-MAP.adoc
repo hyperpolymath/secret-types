@@ -113,6 +113,10 @@ predecessors did.
 | yes
 | REUSE licence texts, dual-licence model (code MPL-2.0 / docs CC-BY-SA-4.0)
 
+| `PROOF-STATUS.adoc`
+| yes
+| project theorem evidence and fragment limits, linked from README.adoc
+
 | `README.adoc`
 | yes
 | -
@@ -160,6 +164,10 @@ predecessors did.
 | `scripts/`
 | yes
 | repo helper scripts
+
+| `secret-types.agda-lib`
+| yes
+| Agda discovers library descriptors at the project root
 
 | `session/`
 | yes

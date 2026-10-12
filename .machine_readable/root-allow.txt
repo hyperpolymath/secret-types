@@ -38,6 +38,10 @@ CLAUDE.md                  # generated arrival pack; the generator, pre-commit a
 Justfile                   # thin; delegates phases to build/just/*.just
 coordination.k9.ncl        # repo-local session binding (template-mandated)
 
+# ─── Project-specific root entries ───────────────────────────────────────────
+PROOF-STATUS.adoc          # project theorem evidence and fragment limits, linked from README.adoc
+secret-types.agda-lib      # Agda discovers library descriptors at the project root
+
 # ─── Conventional dotfiles (tool-required at root) ───────────────────────────
 .editorconfig
 .envrc

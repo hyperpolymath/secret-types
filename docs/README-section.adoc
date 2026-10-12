@@ -1,0 +1,15 @@
+// Splice into README.adoc, replacing "== Status" (specification only).
+== Status
+
+Core theorem PROVEN (2026-10-12): termination-insensitive noninterference
+for the two-point lattice, `src/SecretTypes/Noninterference.agda`
+(`tini`), with the explicit and implicit flows refused by the type system
+and shown to leak by computation (`tests/reject/`, `Witness.agda`). The
+fragment is one public and one secret variable with a `while` language and
+fuel semantics; see link:PROOF-STATUS.adoc[]. Termination is the channel
+the theorem leaves open, by name.
+
+Conjecture (not claimed): for a well-typed program, the public observer's
+Echo fibre over its outputs does not separate secret inputs — the Echo
+reading of noninterference, and the first candidate connection
+Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
