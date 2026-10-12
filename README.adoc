@@ -38,17 +38,18 @@ this standalone home), the first model, and the explicit non-claims.
 
 == Status
 
-* *Specification only.* There is no `Secret` type, no information-flow
-  calculus, no declassification rule, no noninterference theorem and no
-  cross-repository import in this project.
-* *Minted 2026-10-04 in scope, not yet in scaffolding.* The scope statement and
-  this README are real project content. The RSR template placeholder sweep
-  (`just repo-init`) has not been run across the tree yet, so other files still
-  carry `{{TOKEN}}` template text; that sweep is tracked in
-  link:https://github.com/hyperpolymath/secret-types/issues/2[issue #2].
-* *No progress grade claimed.* A documentation link is not a mechanised
-  dependency; an integration may only be claimed once a real import builds in
-  CI.
+Core theorem PROVEN (2026-10-12): termination-insensitive noninterference
+for the two-point lattice, `src/SecretTypes/Noninterference.agda`
+(`tini`), with the explicit and implicit flows refused by the type system
+and shown to leak by computation (`tests/reject/`, `Witness.agda`). The
+fragment is one public and one secret variable with a `while` language and
+fuel semantics; see link:PROOF-STATUS.adoc[]. Termination is the channel
+the theorem leaves open, by name.
+
+Conjecture (not claimed): for a well-typed program, the public observer's
+Echo fibre over its outputs does not separate secret inputs — the Echo
+reading of noninterference, and the first candidate connection
+Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
 == Where things belong
 

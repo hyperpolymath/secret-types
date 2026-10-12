@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= secret-types — Proof Status
+:revdate: 2026-10-12
+
+Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN. Every PROVEN line
+names its module; all modules are `--safe --without-K --no-libraries`,
+checked with `--double-check`, no postulates.
+
+== Fragment (stated before the claims)
+
+One public and one secret variable; naturals; expressions `lit`, `var`,
+`plus`; commands `skip`, assignment, sequence, `ifz`, `while`; fuel-indexed
+big-step semantics (`nothing` when fuel runs out). Volpano–Smith typing with
+a program-counter label over the two-point lattice. Not in the fragment:
+n variables / arbitrary lattices, declassification, procedures, concurrency,
+timing. Termination is the one channel the theorem names as open.
+
+== Claims
+
+[cols="1,3,1",options="header"]
+|===
+| ID | Claim | Status
+| N-1 | *TINI*: `pc ⊢ c → s ≈ s' → exec n c s ≡ just t → exec n' c s' ≡ just t' → t ≈ t'`, fuels independent | PROVEN (`Noninterference.tini`)
+| N-2 | Public expressions read the same in low-equivalent stores | PROVEN (`eval-low`)
+| N-3 | Confinement: under a secret program counter the public variable is unchanged, loops included | PROVEN (`confine`)
+| N-4 | The typing side-condition is load-bearing: an explicit flow and an implicit flow are each refused (`L != H` at the `⊑` obligation) *and* each actually leaks from low-equivalent stores | TESTED (`tests/reject/ExplicitFlow`, `ImplicitFlow`; `Witness.explicit-leaks`, `implicit-leaks`)
+| N-5 | Termination-insensitivity is real, not vacuous: a well-typed program spins on one secret and stops on another; TINI says nothing about that pair, by design | TESTED (`Witness.secret-loop-spins/stops`)
+| N-6 | Laws census: the proof uses only the two-point order (`⊔-L₁`, `⊔-L₂`, `H ⊔ y = H`) and decidable zero-testing of naturals; no lattice law beyond that | ASSUMED by inspection (no parametric lattice to certify against yet)
+|===
+
+== Separation from siblings (criterion 2 of the family bar)
+
+* Noninterference is a property of *two* runs. Echo grades, tropical grades
+  and occupancy grades are accumulations over *one* run; none of them can
+  state N-1. That is the separation, and it is why this is a family and not
+  a view. The converse connection — that a well-typed program's low
+  observer has an Echo fibre that does not separate secret inputs — is a
+  CONJECTURE, recorded in the README, not claimed here.
+* A label is not an epistemic standpoint (README). The Kripke frame built
+  for choreographic-types indexes knowledge by *views*; a label indexes
+  *permission to flow*. Nothing here imports epistemic-types, deliberately.
+
+== Open
+
+* Termination-sensitive noninterference (close the named channel): needs a
+  stronger typing rule for `while` on secret guards. Pre-registered:
+  the falsifier is `secret-loop` above, which TSNI must refuse.
+* Arbitrary lattices (parametric in a `Lattice` record, with the census in
+  N-6 then certifiable the way resource-algebra's is).
+* Declassification; multiple variables.
+* CI (`proofs.yml`): DESIGNED until first green run on the 2.6.4.3 pin.
