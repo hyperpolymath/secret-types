@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MPL-2.0
+# The Agda proof gate.  Pattern: choreographic-types .github/workflows/proofs.yml,
+# a digest-pinned Debian 13 container with the prover apt-pinned to one
+# package version.  The development uses Agda builtins only, so neither the
+# standard library nor any sibling is fetched.
+#
+# Every `uses:` is a full commit SHA with its tag in a comment, and the lock
+# record lives in .github/workflows/actions.lock (scripts/check-lock-sync.sh).
+name: Agda proofs
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+jobs:
+  proofs:
+    name: Core proofs, countermodels, expected rejections, minimal-laws certificate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container: debian:13-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+    steps:
+      - name: Install the pinned prover
+        run: |
+          apt-get update
+          apt-get install --no-install-recommends -y ca-certificates agda-bin=2.6.4.3-1+b2
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the checked Agda version
+        run: test "$(agda --version)" = 'Agda version 2.6.4.3'
+      - name: Core proofs, countermodels and expected rejections
+        run: bash scripts/check.sh
+      - name: Which laws generic TINI uses
+        run: bash scripts/minimal-laws.sh

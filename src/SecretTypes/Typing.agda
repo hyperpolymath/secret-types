@@ -1,25 +1,19 @@
 {-# OPTIONS --safe --without-K #-}
 -- SPDX-License-Identifier: MPL-2.0
 -- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
--- Volpano–Smith security typing: expressions get the join of their
--- variables' labels; commands are typed under a program-counter label.
+-- Volpano–Smith security typing at the two-point lattice: the generic rules
+-- (SecretTypes.Typing.Generic) with the public variable labelled L, the
+-- secret variable H, and literals L.
 module SecretTypes.Typing where
 
-open import SecretTypes.Prelude
 open import SecretTypes.Lattice
 open import SecretTypes.Lang
 
--- Classify an expression as secret exactly when it mentions hi;
--- literals and expressions using only lo are public.
-lab : Expr → Label
-lab (lit _)    = L
-lab (var x)    = label x
-lab (plus a b) = lab a ⊔ lab b
+-- Classify the public variable as L and the secret variable as H.
+label : Var → Label
+label lo = L
+label hi = H
 
-infix 3 _⊢_
-data _⊢_ : Label → Cmd → Set where
-  skip   : ∀ {pc} → pc ⊢ skip
-  assign : ∀ {pc x e} → pc ⊔ lab e ⊑ label x → pc ⊢ (x ≔ e)
-  seq    : ∀ {pc c₁ c₂} → pc ⊢ c₁ → pc ⊢ c₂ → pc ⊢ (c₁ ﹔ c₂)
-  ifz    : ∀ {pc e c₁ c₂} → pc ⊔ lab e ⊢ c₁ → pc ⊔ lab e ⊢ c₂ → pc ⊢ ifz e c₁ c₂
-  while  : ∀ {pc e c} → pc ⊔ lab e ⊢ c → pc ⊢ while e c
+-- lab classifies an expression as secret exactly when it mentions hi;
+-- literals and expressions using only lo are public.
+open import SecretTypes.Typing.Generic _⊑_ _⊔_ L label public

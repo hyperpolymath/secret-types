@@ -4,10 +4,14 @@
 Core theorem PROVEN (2026-10-12): termination-insensitive noninterference
 for the two-point lattice, `src/SecretTypes/Noninterference.agda`
 (`tini`), with the explicit and implicit flows refused by the type system
-and shown to leak by computation (`tests/reject/`, `Witness.agda`). The
-fragment is one public and one secret variable with a `while` language and
-fuel semantics; see link:PROOF-STATUS.adoc[]. Termination is the channel
-the theorem leaves open, by name.
+and shown to leak by computation (`tests/reject/`, `Witness.agda`). Since
+2026-10-19 that theorem is an instance: typing and TINI are stated over a
+`Lattice` record and any down-closed observer
+(`src/SecretTypes/Noninterference/Generic.agda`), and the laws the proof
+uses are certified (`scripts/minimal-laws.sh`) and each shown necessary
+(`Countermodels.agda`). The fragment is two variables with a `while`
+language and fuel semantics; see link:PROOF-STATUS.adoc[]. Termination is
+the channel the theorem leaves open, by name.
 
 Conjecture (not claimed): for a well-typed program, the public observer's
 Echo fibre over its outputs does not separate secret inputs — the Echo
