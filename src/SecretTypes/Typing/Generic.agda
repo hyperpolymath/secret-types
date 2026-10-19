@@ -19,8 +19,8 @@ module SecretTypes.Typing.Generic
 
 -- Module parameters take no fixity, so joins and flows are parenthesised.
 
--- Label an expression with the join of its variables' labels; literals
--- get ⊥ₗ.
+-- Classify expressions with ⊥ₗ for literals and label for variables,
+-- joining the operands' labels for addition.
 lab : Expr → Carrier
 lab (lit _)    = ⊥ₗ
 lab (var x)    = label x

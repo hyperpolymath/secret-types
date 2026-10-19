@@ -44,29 +44,36 @@ s₁ = ⟨ 0 , 1 ⟩
 -- ⊔-upper₁ dropped: the join forgets its left input, so a secret program
 -- counter vanishes inside a branch and the implicit flow is typable.
 module NoUpper₁ where
+  -- Combine labels by keeping only the right input.
   _⊔ʳ_ : Label → Label → Label
   x ⊔ʳ y = y
 
+  -- The right projection still bounds its right input in the two-point order.
   upper₂ : ∀ x y → y ⊑ (x ⊔ʳ y)
   upper₂ _ L = L⊑L
   upper₂ _ H = H⊑H
 
+  -- Joining H with L gives L, which cannot bound H.
   not-upper₁ : ¬ (∀ x y → x ⊑ (x ⊔ʳ y))
   not-upper₁ h with h H L
   ... | ()
 
   open import SecretTypes.Noninterference.Statement _⊑_ _⊔ʳ_ L std
 
+  -- Reveal whether hi is zero by writing 0 or 1 to lo.
   implicit : Cmd
   implicit = ifz (var hi) (lo ≔ lit 0) (lo ≔ lit 1)
 
+  -- The faulty join admits both public writes under the secret guard.
   typed : L ⊢ implicit
   typed = ifz (assign L⊑L) (assign L⊑L)
 
+  -- The observer at L sees the same lo value despite the different hi values.
   agree : s₀ ≈[ _⊑ L ] s₁
   agree lo _ = refl
   agree hi ()
 
+  -- Refute TINI with two finishing runs that leave lo at 0 and 1.
   refutes : ¬ TINI (_⊑ L)
   refutes tini = absurd (tini 1 1 typed agree refl refl lo L⊑L)
 
@@ -74,29 +81,36 @@ module NoUpper₁ where
 -- ⊔-upper₂ dropped: the join forgets its right input, so a secret operand
 -- vanishes and the explicit flow is typable.
 module NoUpper₂ where
+  -- Combine labels by keeping only the left input.
   _⊔ˡ_ : Label → Label → Label
   x ⊔ˡ y = x
 
+  -- The left projection still bounds its left input in the two-point order.
   upper₁ : ∀ x y → x ⊑ (x ⊔ˡ y)
   upper₁ L _ = L⊑L
   upper₁ H _ = H⊑H
 
+  -- Joining L with H gives L, which cannot bound H.
   not-upper₂ : ¬ (∀ x y → y ⊑ (x ⊔ˡ y))
   not-upper₂ h with h L H
   ... | ()
 
   open import SecretTypes.Noninterference.Statement _⊑_ _⊔ˡ_ L std
 
+  -- Copy the secret value directly into the public variable.
   explicit : Cmd
   explicit = lo ≔ var hi
 
+  -- The faulty join discards the expression's H label, admitting the write.
   typed : L ⊢ explicit
   typed = assign L⊑L
 
+  -- The observer at L sees the same lo value despite the different hi values.
   agree : s₀ ≈[ _⊑ L ] s₁
   agree lo _ = refl
   agree hi ()
 
+  -- Refute TINI with two finishing runs that copy different hi values to lo.
   refutes : ¬ TINI (_⊑ L)
   refutes tini = absurd (tini 1 1 typed agree refl refl lo L⊑L)
 
@@ -105,18 +119,22 @@ module NoUpper₂ where
 -- the genuine two-point one; a flow from lo up to hi reaches the observer
 -- from a variable it does not see.
 module NoDownClosure where
+  -- See only H, leaving values at L unobserved despite their flow to H.
   sees : Label → Set
   sees x = x ≡ H
 
+  -- Down-closure would require seeing L because L flows to the seen label H.
   not-down-closed : ¬ (∀ {x y} → x ⊑ y → sees y → sees x)
   not-down-closed h with h L⊑H refl
   ... | ()
 
   open import SecretTypes.Noninterference.Statement _⊑_ _⊔_ L std
 
+  -- Copy the unseen lo value into the seen variable hi.
   up : Cmd
   up = hi ≔ var lo
 
+  -- The two-point order permits this upward flow from L to H.
   typed : L ⊢ up
   typed = assign L⊑H
 
@@ -125,10 +143,12 @@ module NoDownClosure where
   t₀ = ⟨ 0 , 0 ⟩
   t₁ = ⟨ 1 , 0 ⟩
 
+  -- The observer sees equal hi values while the unseen lo values differ.
   agree : t₀ ≈[ sees ] t₁
   agree lo ()
   agree hi _ = refl
 
+  -- Refute TINI with two finishing runs that copy different lo values to hi.
   refutes : ¬ TINI sees
   refutes tini = absurd (tini 1 1 typed agree refl refl hi refl)
 
@@ -168,6 +188,7 @@ module NoTrans where
   L′ ∨ L′ = L′
   L′ ∨ T  = T
 
+  -- Every join bounds its left input even though the order is not transitive.
   upper₁ : ∀ x y → x ≤ (x ∨ y)
   upper₁ B  _  = B≤
   upper₁ T  _  = refl≤
@@ -187,6 +208,7 @@ module NoTrans where
   upper₁ L′ L′ = refl≤
   upper₁ L′ T  = ≤T
 
+  -- Every join bounds its right input even though the order is not transitive.
   upper₂ : ∀ x y → y ≤ (x ∨ y)
   upper₂ B  _  = refl≤
   upper₂ T  _  = ≤T
@@ -206,6 +228,7 @@ module NoTrans where
   upper₂ L′ L′ = refl≤
   upper₂ L′ T  = refl≤
 
+  -- H′ flows to M and M to L′, but H′ does not flow to L′.
   not-trans : ¬ (∀ {x y z} → x ≤ y → y ≤ z → x ≤ z)
   not-trans t with t H≤M M≤L
   ... | ()
@@ -217,15 +240,19 @@ module NoTrans where
 
   open import SecretTypes.Noninterference.Statement _≤_ _∨_ B label
 
+  -- Copy hi at H′ into lo at M, along an allowed flow.
   explicit : Cmd
   explicit = lo ≔ var hi
 
+  -- A counter at B permits the write from H′ to M.
   typed : B ⊢ explicit
   typed = assign H≤M
 
+  -- Flow to L′ reveals lo at M but hides the differing hi values at H′.
   agree : s₀ ≈[ _≤ L′ ] s₁
   agree lo _ = refl
   agree hi ()
 
+  -- Refute TINI for flow to L′ using finishing runs with different lo results.
   refutes : ¬ TINI (_≤ L′)
   refutes tini = absurd (tini 1 1 typed agree refl refl lo M≤L)

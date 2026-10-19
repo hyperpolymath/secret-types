@@ -36,13 +36,16 @@ module _ (V : Observer 𝓛) where
   open Observer V
 
   private
+    -- Agreement on the variables whose labels V sees; unseen values may differ.
     infix 4 _≈_
     _≈_ : Store → Store → Set
     s ≈ s' = s ≈[ sees ] s'
 
+    -- Reverse agreement for V, without requiring the stores to be equal.
     ≈-sym : ∀ {s s'} → s ≈ s' → s' ≈ s
     ≈-sym p x v = sym (p x v)
 
+    -- Combine agreement for V through a shared intermediate store.
     ≈-trans : ∀ {s s' s''} → s ≈ s' → s' ≈ s'' → s ≈ s''
     ≈-trans p q x v = trans (p x v) (q x v)
 
@@ -64,8 +67,6 @@ module _ (V : Observer 𝓛) where
     cong₂ _+_ (eval-low a (sees-↓ (⊔-upper₁ _ _) v) eq) (eval-low b (sees-↓ (⊔-upper₂ _ _) v) eq)
 
   ----------------------------------------------------------------------
-  -- Confinement: under a program counter V cannot see, nothing V sees
-  -- changes.  Requires evidence that execution finishes with the fuel.
   private
     -- An assignment allowed under an unseen counter targets an unseen
     -- variable, so every seen variable keeps its value.
@@ -75,6 +76,8 @@ module _ (V : Observer 𝓛) where
     confine-assign hi e n s np ok lo v = refl
     confine-assign hi e n s np ok hi v = ⊥-elim (unseen-⊔ (lab e) np (sees-↓ ok v))
 
+  -- Confinement: under a program counter V cannot see, nothing V sees
+  -- changes.  Requires evidence that execution finishes with the fuel.
   confine   : ∀ {pc c} fuel {s t} → ¬ sees pc → pc ⊢ c → exec fuel c s ≡ just t → t ≈ s
   -- Confinement for a finishing conditional with supplied guard value n;
   -- both branches are typed under the same unseen counter ℓ.
@@ -108,8 +111,6 @@ module _ (V : Observer 𝓛) where
   confineL {e = g} (suc fuel) {s} np t e = confineW fuel (eval s g) np t e
 
   ----------------------------------------------------------------------
-  -- Finishing runs of a well-typed command preserve agreement for V.
-  -- The fuel bounds may differ; runs returning nothing are not covered.
   private
     -- An allowed assignment to a seen variable assigns an expression whose
     -- label V sees, so both runs assign the same value.
@@ -120,6 +121,8 @@ module _ (V : Observer 𝓛) where
     tini-assign hi e ok eq lo v = eq lo v
     tini-assign hi e ok eq hi v = eval-low e (sees-↓ (⊔-upper₂ _ _) (sees-↓ ok v)) eq
 
+  -- Finishing runs of a well-typed command preserve agreement for V.
+  -- The fuel bounds may differ; runs returning nothing are not covered.
   tini   : TINI sees
   -- Preserve agreement across two finishing conditional evaluations, given
   -- whether V sees the branch label; when it does not, the runs may take

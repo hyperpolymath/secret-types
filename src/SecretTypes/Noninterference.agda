@@ -35,6 +35,7 @@ public-observer = principal two-point L
 ≈→agree eq lo _ = eq
 ≈→agree eq hi ()
 
+-- Recover low-equivalence from agreement on the public observer's variables.
 agree→≈ : ∀ {s s'} → s G.≈[ Observer.sees public-observer ] s' → s ≈ s'
 agree→≈ f = f lo L⊑L
 
