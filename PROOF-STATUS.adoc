@@ -5,7 +5,10 @@
 Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN. Every PROVEN line
 names its module; all modules are `--safe --without-K --no-libraries`,
 checked with `--double-check` and `-W error` by `scripts/check.sh`, no
-postulates.
+postulates. CI: TESTED. `.github/workflows/proofs.yml` (Debian 13,
+`agda-bin=2.6.4.3-1+b2`) ran both gates green on f149e08, run
+https://github.com/hyperpolymath/secret-types/actions/runs/39289501788[39289501788],
+whose log ends `PASS: minimal-laws certificate (3 laws, each needed)`.
 
 == Fragment (stated before the claims)
 
@@ -67,4 +70,3 @@ double negation.
   stated here. In a reader-set lattice a coalition is not a principal
   observer.
 * Declassification; multiple variables.
-* CI (`proofs.yml`): DESIGNED until first green run on the 2.6.4.3 pin.
