@@ -27,20 +27,22 @@ tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
 # fields <file> <record>: the field declaration lines of one record.
 fields() {
-  awk -v rec="$2" '
+  local file="$1" rec="$2"
+  awk -v rec="$rec" '
     $0 ~ "^record " rec " " { inrec = 1; next }
     inrec && /^[^ ]/        { inrec = 0 }
     inrec && /^  field$/    { infield = 1; next }
     inrec && infield && /^    [^ ]+ +: / { print; next }
     inrec && infield        { infield = 0 }
-  ' "$1"
+  ' "$file"
 }
 
 # stage <record file>: a copy of src/SecretTypes with that Lattice.Record.
 stage() {
+  local record="$1"
   rm -rf "$tmp/src"; mkdir -p "$tmp/src"
   (cd src && find SecretTypes -name '*.agda' -exec cp --parents {} "$tmp/src" \;)
-  cp "$1" "$tmp/src/SecretTypes/Lattice/Record.agda"
+  cp "$record" "$tmp/src/SecretTypes/Lattice/Record.agda"
 }
 
 # 2. No drift.

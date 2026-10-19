@@ -3,9 +3,13 @@
 -- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 --
 -- Each law the generic TINI proof uses is necessary (PROOF-STATUS N-8).
--- For each law there is a structure that keeps every other law, the typing
--- rules of SecretTypes.Typing.Generic unchanged, and a well-typed program
--- that leaks: TINI (SecretTypes.Noninterference.Statement) is refuted.
+-- For ⊔-upper₁, ⊔-upper₂ and observer down-closure there is a structure
+-- that keeps the other two, the typing rules of SecretTypes.Typing.Generic
+-- unchanged, and a well-typed program that leaks: TINI
+-- (SecretTypes.Noninterference.Statement) is refuted.  NoTrans is of a
+-- different kind: it drops ⊑-trans, which generic TINI does not use, and
+-- shows that the principal observer then need not be down-closed and TINI
+-- fails for it.  That is why `principal` needs ⊑-trans.
 --
 --   NoUpper₁       x ⊔ y = y         ⊔-upper₂, down-closure, ⊑-trans hold
 --   NoUpper₂       x ⊔ y = x         ⊔-upper₁, down-closure, ⊑-trans hold
