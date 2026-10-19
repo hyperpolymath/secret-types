@@ -14,7 +14,7 @@ expected_version="${AGDA_VERSION:-2.6.4.3}"
 
 version="$("$prover" --version)"
 echo "$version"
-if [ "$version" != "Agda version $expected_version" ]; then
+if [[ "$version" != "Agda version $expected_version" ]]; then
   echo "ERROR: expected 'Agda version $expected_version' (the Debian pin); set AGDA_VERSION to check with another" >&2
   exit 1
 fi
@@ -51,7 +51,7 @@ for file in "${rejects[@]}"; do
   fi
   invalid_line="$(grep -nE '^invalid ' "$file" | head -1 | cut -d: -f1)"
   diag_line="$(grep -oE "/$name\.agda:[0-9]+,[0-9]+" "$log" | head -1 | sed -E 's/.*:([0-9]+),.*/\1/')"
-  if [ -z "$invalid_line" ] || [ -z "$diag_line" ] || [ "$diag_line" -lt "$invalid_line" ] ||
+  if [[ -z "$invalid_line" || -z "$diag_line" || "$diag_line" -lt "$invalid_line" ]] ||
      ! grep -q 'when checking that' "$log" ||
      grep -Eq 'Not in scope|Failed to find|Unsolved|Parse error' "$log"; then
     cat "$log"

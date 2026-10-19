@@ -47,7 +47,7 @@ stage() {
 
 # 2. No drift.
 for rec in Lattice Observer; do
-  if [ -z "$(fields "$minimal" "$rec")" ]; then
+  if [[ -z "$(fields "$minimal" "$rec")" ]]; then
     echo "ERROR: no fields of $rec found in $minimal" >&2; exit 1
   fi
   if missing="$(fields "$minimal" "$rec" | grep -vxF -f <(fields "$real" "$rec"))"; then
@@ -56,11 +56,11 @@ for rec in Lattice Observer; do
   fi
 done
 extra="$(fields "$real" Lattice | grep -vxF -f <(fields "$minimal" Lattice) | awk '{print $1}' | tr '\n' ' ')"
-if [ "$extra" != "⊑-trans " ]; then
+if [[ "$extra" != "⊑-trans " ]]; then
   echo "ERROR: the real Lattice should add exactly ⊑-trans to the census, adds: ${extra:-nothing}" >&2
   exit 1
 fi
-if [ "$(fields "$real" Observer)" != "$(fields "$minimal" Observer)" ]; then
+if [[ "$(fields "$real" Observer)" != "$(fields "$minimal" Observer)" ]]; then
   echo "ERROR: the real Observer differs from the census Observer" >&2; exit 1
 fi
 echo 'PASS: census record matches the real record (which adds only ⊑-trans)'
