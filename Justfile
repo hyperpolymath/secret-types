@@ -137,9 +137,11 @@ clean-all: clean
 # Run all tests
 test *args:
     #!/usr/bin/env bash
-    # The proof gate: core proofs and expected rejections (scripts/check.sh).
+    # The proof gate: core proofs, countermodels and expected rejections
+    # (scripts/check.sh), then the laws census (scripts/minimal-laws.sh).
     set -euo pipefail
     bash scripts/check.sh
+    bash scripts/minimal-laws.sh
 
 # Run tests with verbose output
 test-verbose:

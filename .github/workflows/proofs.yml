@@ -22,7 +22,7 @@ env:
   LC_ALL: C.UTF-8
 jobs:
   proofs:
-    name: Core proofs, expected rejections, minimal-laws certificate
+    name: Core proofs, countermodels, expected rejections, minimal-laws certificate
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     container: debian:13-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
@@ -37,5 +37,7 @@ jobs:
           persist-credentials: false
       - name: Verify the checked Agda version
         run: test "$(agda --version)" = 'Agda version 2.6.4.3'
-      - name: Core proofs and expected rejections
+      - name: Core proofs, countermodels and expected rejections
         run: bash scripts/check.sh
+      - name: Which laws generic TINI uses
+        run: bash scripts/minimal-laws.sh
