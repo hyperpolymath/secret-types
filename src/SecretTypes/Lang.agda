@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: MPL-2.0
 -- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 --
--- A small while-language with one public and one secret variable, and a
+-- A small while-language with two variables, lo and hi, and a
 -- fuel-indexed big-step semantics.  Fuel is what makes "termination-
 -- insensitive" a real qualifier: a loop that does not finish within the
 -- fuel returns `nothing`, and the theorem is stated only for runs that
@@ -10,15 +10,12 @@
 module SecretTypes.Lang where
 
 open import SecretTypes.Prelude
-open import SecretTypes.Lattice
 
 data Var : Set where
   lo hi : Var
 
--- Classify the public variable as L and the secret variable as H.
-label : Var → Label
-label lo = L
-label hi = H
+-- Variables carry no label here: the labelling is a parameter of typing
+-- (SecretTypes.Typing.Generic), and the two-point one is SecretTypes.Typing.label.
 
 record Store : Set where
   constructor ⟨_,_⟩
@@ -40,11 +37,15 @@ data Cmd : Set where
   ifz   : Expr → Cmd → Cmd → Cmd      -- if e = 0 then c₁ else c₂
   while : Expr → Cmd → Cmd            -- while e = 0 do c
 
+-- Read a variable's current value from the store.
+read : Store → Var → Nat
+read s lo = low s
+read s hi = high s
+
 -- Evaluate an expression using the store's current variable values.
 eval : Store → Expr → Nat
 eval s (lit n)    = n
-eval s (var lo)   = low s
-eval s (var hi)   = high s
+eval s (var x)    = read s x
 eval s (plus a b) = eval s a + eval s b
 
 -- Return a store with the selected variable replaced, preserving the other.

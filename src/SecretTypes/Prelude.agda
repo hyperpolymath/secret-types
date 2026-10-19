@@ -58,3 +58,33 @@ P × Q = Σ P (λ _ → Q)
 bind-just : {A : Set} (m : Maybe A) (f : A → Maybe A) {t : A}
           → bind m f ≡ just t → Σ A (λ a → (m ≡ just a) × (f a ≡ just t))
 bind-just (just a) f e = a , (refl , e)
+
+-- From a contradiction, anything.
+⊥-elim : {A : Set} → ⊥ → A
+⊥-elim ()
+
+-- Evidence for P, or evidence that P is refuted.  Same constructors as
+-- Lintel's local copy (metadatastician/lintel, LNT-01), which it drops on
+-- re-pin.
+data Dec (P : Set) : Set where
+  yes : P → Dec P
+  no  : ¬ P → Dec P
+
+-- Decide equality of naturals.
+infix 4 _≟_
+_≟_ : (m n : Nat) → Dec (m ≡ n)
+zero  ≟ zero  = yes refl
+zero  ≟ suc n = no λ ()
+suc m ≟ zero  = no λ ()
+suc m ≟ suc n with m ≟ n
+... | yes refl = yes refl
+... | no m≢n   = no λ { refl → m≢n refl }
+
+-- A decidable proposition is stable: double negation can be removed.
+dec-stable : {P : Set} → Dec P → ¬ ¬ P → P
+dec-stable (yes p) _  = p
+dec-stable (no ¬p) h = ⊥-elim (h ¬p)
+
+-- Excluded middle holds under double negation, for every proposition.
+¬¬-dec : (P : Set) → ¬ ¬ Dec P
+¬¬-dec P k = k (no λ p → k (yes p))
