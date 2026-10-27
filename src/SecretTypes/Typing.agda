@@ -7,7 +7,7 @@
 module SecretTypes.Typing where
 
 open import SecretTypes.Lattice
-open import SecretTypes.Lang
+open import SecretTypes.Lang.Two
 
 -- Classify the public variable as L and the secret variable as H.
 label : Var → Label
@@ -16,4 +16,4 @@ label hi = H
 
 -- lab classifies an expression as secret exactly when it mentions hi;
 -- literals and expressions using only lo are public.
-open import SecretTypes.Typing.Generic _⊑_ _⊔_ L label public
+open import SecretTypes.Typing.Generic two _⊑_ _⊔_ L label public

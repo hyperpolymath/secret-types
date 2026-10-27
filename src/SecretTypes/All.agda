@@ -4,7 +4,9 @@ module SecretTypes.All where
 import SecretTypes.Prelude
 import SecretTypes.Lattice.Record
 import SecretTypes.Lattice
+import SecretTypes.Vars
 import SecretTypes.Lang
+import SecretTypes.Lang.Two
 import SecretTypes.Typing.Generic
 import SecretTypes.Typing
 import SecretTypes.Noninterference.Statement

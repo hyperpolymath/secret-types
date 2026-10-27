@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = secret-types — Proof Status
-:revdate: 2026-10-19
+:revdate: 2026-10-27
 
 Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN. Every PROVEN line
 names its module; all modules are `--safe --without-K --no-libraries`,
@@ -12,18 +12,20 @@ whose log ends `PASS: minimal-laws certificate (3 laws, each needed)`.
 
 == Fragment (stated before the claims)
 
-Two variables, `lo` and `hi`; naturals; expressions `lit`, `var`, `plus`;
-commands `skip`, assignment, sequence, `ifz`, `while`; fuel-indexed big-step
-semantics (`nothing` when fuel runs out). Volpano–Smith typing with a
-program-counter label over any instance of the `Lattice` record
-(`SecretTypes.Lattice.Record`), with the variables' labels a parameter
-`label : Var → Carrier`. An observer is a down-closed set of labels; the
-principal observer at `o` sees exactly the labels `ℓ ⊑ o`. The two-point
-lattice `L ⊑ H` is the first instance (`Lattice.two-point`), with `lo`
-labelled `L` and `hi` labelled `H`, and its public observer is the principal
-observer at `L`. Not in the fragment: n variables, declassification,
-procedures, concurrency, timing. Termination is the one channel the theorem
-names as open.
+Variables of any type with decidable equality (the `Vars` record,
+`SecretTypes.Vars`), a store giving each a natural; expressions `lit`,
+`var`, `plus`; commands `skip`, assignment, sequence, `ifz`, `while`;
+fuel-indexed big-step semantics (`nothing` when fuel runs out).
+Volpano–Smith typing with a program-counter label over any instance of the
+`Lattice` record (`SecretTypes.Lattice.Record`), with the variables' labels
+a parameter `label : Var → Carrier`. An observer is a down-closed set of
+labels; the principal observer at `o` sees exactly the labels `ℓ ⊑ o`. The
+two-point development uses two variables, `lo` and `hi`
+(`SecretTypes.Lang.Two`), and the two-point lattice `L ⊑ H`
+(`Lattice.two-point`), with `lo` labelled `L` and `hi` labelled `H`; its
+public observer is the principal observer at `L`. Not in the fragment:
+declassification, procedures, concurrency, timing. Termination is the one
+channel the theorem names as open.
 
 == Claims
 
@@ -36,7 +38,7 @@ names as open.
 | N-4 | The typing side-condition is load-bearing: an explicit flow and an implicit flow are each refused (`L != H` at the `⊑` obligation) *and* each actually leaks from low-equivalent stores | TESTED (`tests/reject/ExplicitFlow`, `ImplicitFlow`; `Witness.explicit-leaks`, `implicit-leaks`)
 | N-5 | Termination-insensitivity is real, not vacuous: a well-typed program spins on one secret and stops on another; TINI says nothing about that pair, by design | TESTED (`Witness.secret-loop-spins/stops`)
 | N-6 | Laws census: generic TINI uses exactly `⊔-upper₁`, `⊔-upper₂` and the observer's down-closure; principal observers add `⊑-trans`, which is what makes "flows to `o`" down-closed. It uses no decidability (of `⊑` or of observers), no `⊥ ⊑ x` (`⊥ₗ` labels literals and needs no law), no reflexivity, antisymmetry, leastness of `⊔` or top | TESTED (`scripts/minimal-laws.sh`: `Noninterference.Generic` checks against `tests/minimal-laws`, a record with only those three laws; removing any one of them is refused; prints `PASS: minimal-laws certificate (3 laws, each needed)`)
-| N-7 | *TINI over the record*: for every `Lattice`, labelling `label` and down-closed observer `V`, two finishing runs of a well-typed command from stores agreeing on what `V` sees end agreeing on it, fuels independent | PROVEN (`Noninterference.Generic.tini : (V : Observer 𝓛) → TINI (Observer.sees V)`; statement `Noninterference.Statement.TINI`)
+| N-7 | *TINI over the record*: for every set of variables with decidable equality, `Lattice`, labelling `label` and down-closed observer `V`, two finishing runs of a well-typed command from stores agreeing on what `V` sees end agreeing on it, fuels independent. Of the variables the proof uses only decidable equality, to tell the written variable from the rest | PROVEN (`Noninterference.Generic.tini : (V : Observer 𝓛) → TINI (Observer.sees V)`, module parameters `𝓥 : Vars`, `𝓛`, `label`; statement `Noninterference.Statement.TINI`); the rules at three variables refuse a flow into a third (`tests/reject/ThirdVariable`, TESTED)
 | N-8 | Each census law is necessary: dropping `⊔-upper₁`, `⊔-upper₂` or observer down-closure, with the others kept and the typing rules unchanged, admits a well-typed program that leaks. `⊑-trans` is necessary for principal observers: without it "flows to `o`" can fail to be down-closed, and TINI fails for that observer | PROVEN (`Countermodels.NoUpper₁.refutes`, `NoUpper₂.refutes`, `NoDownClosure.refutes`; `NoTrans.refutes` for the principal observer; each `¬ TINI _`)
 |===
 
@@ -69,4 +71,4 @@ double negation.
   N-7 already covers it, but no union combinator or coalition instance is
   stated here. In a reader-set lattice a coalition is not a principal
   observer.
-* Declassification; multiple variables.
+* Declassification.

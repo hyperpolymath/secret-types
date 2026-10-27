@@ -7,15 +7,18 @@
 -- program-counter label.  The rules use the operations only, no laws, so a
 -- structure that breaks a law still has these rules
 -- (SecretTypes.Countermodels).
-open import SecretTypes.Lang
+open import SecretTypes.Vars
 
 module SecretTypes.Typing.Generic
+  (𝓥 : Vars)                     -- the variables
   {Carrier : Set}
   (_⊑_ : Carrier → Carrier → Set)
   (_⊔_ : Carrier → Carrier → Carrier)
   (⊥ₗ : Carrier)                 -- the label of a literal
-  (label : Var → Carrier)        -- the label of each variable
+  (label : Vars.Var 𝓥 → Carrier) -- the label of each variable
   where
+
+open import SecretTypes.Lang 𝓥
 
 -- Module parameters take no fixity, so joins and flows are parenthesised.
 

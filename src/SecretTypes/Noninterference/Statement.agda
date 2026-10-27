@@ -8,17 +8,19 @@
 -- law; SecretTypes.Noninterference.Generic proves it for every Lattice and
 -- every down-closed observer.
 open import SecretTypes.Prelude
-open import SecretTypes.Lang hiding (_≈_)
+open import SecretTypes.Vars
 
 module SecretTypes.Noninterference.Statement
+  (𝓥 : Vars)
   {Carrier : Set}
   (_⊑_ : Carrier → Carrier → Set)
   (_⊔_ : Carrier → Carrier → Carrier)
   (⊥ₗ : Carrier)
-  (label : Var → Carrier)
+  (label : Vars.Var 𝓥 → Carrier)
   where
 
-open import SecretTypes.Typing.Generic _⊑_ _⊔_ ⊥ₗ label public
+open import SecretTypes.Lang 𝓥
+open import SecretTypes.Typing.Generic 𝓥 _⊑_ _⊔_ ⊥ₗ label public
 
 -- Two stores agree for an observer when they agree on every variable whose
 -- label it sees.

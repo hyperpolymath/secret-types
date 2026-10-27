@@ -7,9 +7,9 @@
 --
 --   tini V : TINI (sees V)
 --
--- Instantiate with a lattice and a labelling of the variables:
+-- Instantiate with variables, a lattice and a labelling of the variables:
 --
---   open import SecretTypes.Noninterference.Generic 𝓛 label
+--   open import SecretTypes.Noninterference.Generic 𝓥 𝓛 label
 --
 -- which also brings the typing rules and the statement into scope.  A
 -- principal observer (SecretTypes.Lattice.Record.principal) is the usual
@@ -22,15 +22,18 @@
 -- the two runs may branch differently the proof case-splits on whether V
 -- sees the branch label.  That split needs no decidability: the goal is an
 -- equation between naturals, so it is stable, and excluded middle holds
--- under double negation.
+-- under double negation.  Of the variables only decidable equality is
+-- used, to tell the written variable from the rest of the store.
 open import SecretTypes.Prelude
+open import SecretTypes.Vars
 open import SecretTypes.Lattice.Record
-open import SecretTypes.Lang hiding (_≈_)
 
-module SecretTypes.Noninterference.Generic (𝓛 : Lattice) (label : Var → Lattice.Carrier 𝓛) where
+module SecretTypes.Noninterference.Generic
+  (𝓥 : Vars) (𝓛 : Lattice) (label : Vars.Var 𝓥 → Lattice.Carrier 𝓛) where
 
 open Lattice 𝓛
-open import SecretTypes.Noninterference.Statement _⊑_ _⊔_ ⊥ₗ label public
+open import SecretTypes.Lang 𝓥
+open import SecretTypes.Noninterference.Statement 𝓥 _⊑_ _⊔_ ⊥ₗ label public
 
 module _ (V : Observer 𝓛) where
   open Observer V
@@ -69,12 +72,12 @@ module _ (V : Observer 𝓛) where
   ----------------------------------------------------------------------
   private
     -- An assignment allowed under an unseen counter targets an unseen
-    -- variable, so every seen variable keeps its value.
+    -- variable, so every seen variable keeps its value: a seen variable is
+    -- not the written one.
     confine-assign : ∀ {pc} x e n s → ¬ sees pc → (pc ⊔ lab e) ⊑ label x → update x n s ≈ s
-    confine-assign lo e n s np ok lo v = ⊥-elim (unseen-⊔ (lab e) np (sees-↓ ok v))
-    confine-assign lo e n s np ok hi v = refl
-    confine-assign hi e n s np ok lo v = refl
-    confine-assign hi e n s np ok hi v = ⊥-elim (unseen-⊔ (lab e) np (sees-↓ ok v))
+    confine-assign x e n s np ok y v with x ≟ᵥ y
+    ... | yes refl = ⊥-elim (unseen-⊔ (lab e) np (sees-↓ ok v))
+    ... | no  _    = refl
 
   -- Confinement: under a program counter V cannot see, nothing V sees
   -- changes.  Requires evidence that execution finishes with the fuel.
@@ -113,13 +116,13 @@ module _ (V : Observer 𝓛) where
   ----------------------------------------------------------------------
   private
     -- An allowed assignment to a seen variable assigns an expression whose
-    -- label V sees, so both runs assign the same value.
+    -- label V sees, so both runs assign the same value; every other
+    -- variable keeps the agreement it had.
     tini-assign : ∀ {pc} x e {s s'} → (pc ⊔ lab e) ⊑ label x → s ≈ s'
                 → update x (eval s e) s ≈ update x (eval s' e) s'
-    tini-assign lo e ok eq lo v = eval-low e (sees-↓ (⊔-upper₂ _ _) (sees-↓ ok v)) eq
-    tini-assign lo e ok eq hi v = eq hi v
-    tini-assign hi e ok eq lo v = eq lo v
-    tini-assign hi e ok eq hi v = eval-low e (sees-↓ (⊔-upper₂ _ _) (sees-↓ ok v)) eq
+    tini-assign x e ok eq y v with x ≟ᵥ y
+    ... | yes refl = eval-low e (sees-↓ (⊔-upper₂ _ _) (sees-↓ ok v)) eq
+    ... | no  _    = eq y v
 
   -- Finishing runs of a well-typed command preserve agreement for V.
   -- The fuel bounds may differ; runs returning nothing are not covered.

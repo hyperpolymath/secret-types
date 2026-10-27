@@ -6,7 +6,7 @@ module SecretTypes.Witness where
 
 open import SecretTypes.Prelude
 open import SecretTypes.Lattice
-open import SecretTypes.Lang
+open import SecretTypes.Lang.Two
 open import SecretTypes.Typing
 open import SecretTypes.Noninterference
 

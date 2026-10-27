@@ -23,7 +23,7 @@
 module SecretTypes.Countermodels where
 
 open import SecretTypes.Prelude
-open import SecretTypes.Lang hiding (_≈_)
+open import SecretTypes.Lang.Two hiding (_≈_)
 open import SecretTypes.Lattice using (Label; L; H; _⊑_; L⊑L; L⊑H; H⊑H; _⊔_)
 
 private
@@ -58,7 +58,7 @@ module NoUpper₁ where
   not-upper₁ h with h H L
   ... | ()
 
-  open import SecretTypes.Noninterference.Statement _⊑_ _⊔ʳ_ L std
+  open import SecretTypes.Noninterference.Statement two _⊑_ _⊔ʳ_ L std
 
   -- Reveal whether hi is zero by writing 0 or 1 to lo.
   implicit : Cmd
@@ -95,7 +95,7 @@ module NoUpper₂ where
   not-upper₂ h with h L H
   ... | ()
 
-  open import SecretTypes.Noninterference.Statement _⊑_ _⊔ˡ_ L std
+  open import SecretTypes.Noninterference.Statement two _⊑_ _⊔ˡ_ L std
 
   -- Copy the secret value directly into the public variable.
   explicit : Cmd
@@ -128,7 +128,7 @@ module NoDownClosure where
   not-down-closed h with h L⊑H refl
   ... | ()
 
-  open import SecretTypes.Noninterference.Statement _⊑_ _⊔_ L std
+  open import SecretTypes.Noninterference.Statement two _⊑_ _⊔_ L std
 
   -- Copy the unseen lo value into the seen variable hi.
   up : Cmd
@@ -238,7 +238,7 @@ module NoTrans where
   label lo = M
   label hi = H′
 
-  open import SecretTypes.Noninterference.Statement _≤_ _∨_ B label
+  open import SecretTypes.Noninterference.Statement two _≤_ _∨_ B label
 
   -- Copy hi at H′ into lo at M, along an allowed flow.
   explicit : Cmd

@@ -22,9 +22,9 @@ module SecretTypes.Noninterference where
 open import SecretTypes.Prelude
 open import SecretTypes.Lattice
 open import SecretTypes.Lattice.Record using (Observer; principal)
-open import SecretTypes.Lang
+open import SecretTypes.Lang.Two
 open import SecretTypes.Typing
-import SecretTypes.Noninterference.Generic two-point label as G
+import SecretTypes.Noninterference.Generic two two-point label as G
 
 -- The public observer sees exactly the labels that flow to L.
 public-observer : Observer two-point

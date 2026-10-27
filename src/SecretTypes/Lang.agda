@@ -2,27 +2,25 @@
 -- SPDX-License-Identifier: MPL-2.0
 -- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 --
--- A small while-language with two variables, lo and hi, and a
--- fuel-indexed big-step semantics.  Fuel is what makes "termination-
--- insensitive" a real qualifier: a loop that does not finish within the
--- fuel returns `nothing`, and the theorem is stated only for runs that
--- return `just`.
-module SecretTypes.Lang where
-
+-- A small while-language over any variables with decidable equality
+-- (SecretTypes.Vars), with a fuel-indexed big-step semantics.  Fuel is what
+-- makes "termination-insensitive" a real qualifier: a loop that does not
+-- finish within the fuel returns `nothing`, and the theorem is stated only
+-- for runs that return `just`.  The two-variable instance is
+-- SecretTypes.Lang.Two.
 open import SecretTypes.Prelude
+open import SecretTypes.Vars
 
-data Var : Set where
-  lo hi : Var
+module SecretTypes.Lang (𝓥 : Vars) where
+
+open Vars 𝓥 public
 
 -- Variables carry no label here: the labelling is a parameter of typing
 -- (SecretTypes.Typing.Generic), and the two-point one is SecretTypes.Typing.label.
 
-record Store : Set where
-  constructor ⟨_,_⟩
-  field
-    low  : Nat
-    high : Nat
-open Store public
+-- A store gives every variable its current value.
+Store : Set
+Store = Var → Nat
 
 data Expr : Set where
   lit  : Nat → Expr
@@ -39,8 +37,7 @@ data Cmd : Set where
 
 -- Read a variable's current value from the store.
 read : Store → Var → Nat
-read s lo = low s
-read s hi = high s
+read s x = s x
 
 -- Evaluate an expression using the store's current variable values.
 eval : Store → Expr → Nat
@@ -48,10 +45,15 @@ eval s (lit n)    = n
 eval s (var x)    = read s x
 eval s (plus a b) = eval s a + eval s b
 
--- Return a store with the selected variable replaced, preserving the other.
+-- The first value when the decision holds, the second otherwise.
+select : ∀ {P : Set} → Dec P → Nat → Nat → Nat
+select (yes _) n _ = n
+select (no  _) _ m = m
+
+-- Return a store with the selected variable replaced, preserving the others:
+-- each variable is compared with the written one.
 update : Var → Nat → Store → Store
-update lo n ⟨ l , h ⟩ = ⟨ n , h ⟩
-update hi n ⟨ l , h ⟩ = ⟨ l , n ⟩
+update x n s y = select (x ≟ᵥ y) n (s y)
 
 -- exec fuel c s: `just t` if c runs to completion within fuel, else `nothing`.
 -- Fuel bounds recursive loop evaluation: each while consumes one unit,
@@ -80,8 +82,3 @@ execIf fuel (suc _) c₁ c₂ s = exec fuel c₂ s
 
 execWhile fuel zero    e c s = bind (exec fuel c s) (exec fuel (while e c))
 execWhile fuel (suc _) e c s = just s
-
--- Low-equivalence: the public observer sees the same thing.
-infix 4 _≈_
-_≈_ : Store → Store → Set
-s ≈ s' = low s ≡ low s'
