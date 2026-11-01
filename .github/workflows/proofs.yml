@@ -14,6 +14,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Container jobs default to `sh`, not `bash` (measured 2026-11-01: PIPESTATUS and
+# ${var:0:n} are bashisms, and a dash shell exits 2 on both).  Declare it.
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -37,7 +42,42 @@ jobs:
           persist-credentials: false
       - name: Verify the checked Agda version
         run: test "$(agda --version)" = 'Agda version 2.6.4.3'
+      # The gate surfaces its own failure twice: once in the log, and once as a
+      # check annotation. The annotation matters because the job log is not
+      # always reachable (GitHub serves it from a blob host that some agent
+      # sandboxes cannot fetch), and a gate nobody can read is a gate that gets
+      # admin-overridden. Doctrine: fail loudly.
+      # The gate writes its log and its exit code to /tmp; the step that follows
+      # always runs and publishes them as check annotations.  Two reasons:
+      # this runner drops annotations emitted by a step that then fails
+      # (measured 2026-11-01), and job logs are served from a host some agent
+      # sandboxes cannot reach, so a red gate was unreadable from the session
+      # that has to fix it.
       - name: Core proofs, countermodels and expected rejections
-        run: bash scripts/check.sh
+        run: |
+          set +e
+          bash scripts/check.sh 2>&1 | tee /tmp/check.log
+          echo "${PIPESTATUS[0]}" > /tmp/check.rc
+          exit "$(cat /tmp/check.rc)"
+      - name: Publish the gate failure reason
+        if: always()
+        run: |
+          set +e
+          rc="$(cat /tmp/check.rc 2>/dev/null || echo unknown)"
+          printf '::notice title=gate exited::rc=%s bytes=%s\n' "$rc" "$(wc -c < /tmp/check.log 2>/dev/null || echo missing)"
+          if [ "$rc" != "0" ]; then
+            out="$(tr '\n' '~' < /tmp/check.log | cut -c1-3400)"
+            printf '::error title=Agda gate failed (rc=%s)::%s\n' "$rc" "$out"
+          fi
+          exit 0
       - name: Which laws generic TINI uses
         run: bash scripts/minimal-laws.sh
+      - name: Verification receipt matches the tree and the claim list
+        run: bash scripts/grade-receipt.sh --check
+      # The receipt above is committed by the change that produces it, so it
+      # records its parent commit. This step re-emits it for the commit actually
+      # under test, which is what a mathesis receipt has to name.
+      - name: Emit the receipt for this commit
+        run: |
+          bash scripts/grade-receipt.sh --write --commit "$(git rev-parse --short=12 HEAD)"
+          sed -n '1,80p' verification/receipts/agda-grade3.a2ml

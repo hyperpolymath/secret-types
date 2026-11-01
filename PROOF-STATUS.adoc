@@ -1,14 +1,132 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = secret-types — Proof Status
-:revdate: 2026-10-27
+:revdate: 2026-11-01
 
-Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN. Every PROVEN line
-names its module; all modules are `--safe --without-K --no-libraries`,
-checked with `--double-check` and `-W error` by `scripts/check.sh`, no
-postulates. CI: TESTED. `.github/workflows/proofs.yml` (Debian 13,
+Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN, with the closed ledger
+tokens of `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 in
+link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger]. Every PROVEN line names
+its module. All modules are `--safe --without-K --no-libraries`, checked with
+`--double-check` and `-W error` by
+`scripts/check.sh`, no postulates. The flag set and the Agda pin live in exactly
+one place, `scripts/proof-flags.sh`, so this file, the gate and the receipt
+cannot disagree. CI: TESTED. `.github/workflows/proofs.yml` (Debian 13,
 `agda-bin=2.6.4.3-1+b2`) ran both gates green on f149e08, run
 https://github.com/hyperpolymath/secret-types/actions/runs/39289501788[39289501788],
 whose log ends `PASS: minimal-laws certificate (3 laws, each needed)`.
+
+== Grade, and the independent-witness legs
+
+This repository reports **mathesis Grade 3** and no higher. The grade is not a
+claim we invented: it is the estate's own record vocabulary
+(`mathesis/estate-mathematical-architecture` §5), and Grade 3 is precisely
+"type-checks locally in Agda under strict flags, not translated to an independent
+foundational system".
+
+[cols="1,2,2",options="header"]
+|===
+| Claim | Grade | Why not higher
+
+| N-1, N-2, N-3, N-7, N-8 | *Grade 3* | No Rocq leg and no Lean leg exists. Under
+  `standards/3-practice/PROOF-POLICY.adoc` §2 both are required for Grade 2i/ii,
+  and `transported`/`re-proved` is the only vocabulary either leg may use.
+
+| N-4, N-5, N-6 | below Grade 3 (`tested-only`) | They are checked demonstrations —
+  refusals, computed witnesses, a shell-orchestrated law-ablation certificate —
+  not theorems. Mathesis grades theorems; recording these as Grade 3 would grade
+  the wrong object.
+
+| Termination-sensitive noninterference, declassification | OPEN | Not started.
+  `N-5` is the pre-registered falsifier for the first.
+|===
+
+=== The two legs, recorded honestly
+
+`PROOF-POLICY.adoc` §2 requires every Agda theory proof to be rechecked in Rocq
+and in Lean, by transport through Dedukti first and by hand re-proof as the
+fallback, with the route named per theorem. Neither leg exists here, and the
+policy is explicit that a policy's adoption is not an execution: each row below
+would need its own CI receipt.
+
+[cols="1,1,1,3",options="header"]
+|===
+| Claim | Rocq leg | Lean leg | Record
+
+| N-1, N-2, N-3, N-7, N-8 | `unavailable` | `unavailable`
+| No Agda→Dedukti transport has been attempted from this repository (the
+  estate's exchange layer lives in `echidna`, and `PROOF-POLICY` §2.2 names
+  ECHIDNA as a longer-term destination, not a prerequisite), and no hand
+  re-proof has been attempted. Nothing was skipped silently: this is the
+  opening state, stated.
+
+| all rows | — | —
+| *A leg that does not exist cannot be evidenced by a file that happens to be
+  present.* `verification/proofs/coq/TypeSafety.v`,
+  `verification/proofs/lean4/ApiTypes.lean` and the other skeletons under
+  `verification/proofs/` are RSR template boilerplate ("replace with your
+  project's …"). They prove nothing, they are not the legs, and their
+  `MANIFEST` lines claiming `gated` are false — no workflow invokes
+  `scripts/check-proofs.sh`. Recorded as finding F-4 in
+  link:docs/reports/audit/consistency-audit-2026-11-01.adoc.
+|===
+
+Should a leg ever be attempted, `PROOF-POLICY` §2.2 fixes the record: exact
+proposition, assumptions, universe discipline, source revision, compiler and
+library versions, invocation, observed result, and the bridge or statement
+correspondence — *transported* or *re-proved* — and the local statuses
+AGDA-VERIFIED / COQ-CHECKED / LEAN-CHECKED / BRIDGE-PENDING before RECONCILED.
+
+=== What the grade does *not* include: `--cubical-compatible`
+
+`PROOF-POLICY` §2.1 (dated 2026-11-01) names
+`agda --safe --without-K --cubical-compatible` as the canonical invocation. This
+repository meets `--safe` and `--without-K`, is stricter in four other dimensions,
+and **does not** use `--cubical-compatible`. That was tested, not assumed: the
+flag was adopted on 2026-11-01 and the gate refused three times, twice for
+construction-injectivity lemmas (fixed: one deleted as dead code, one replaced by
+a retraction that computes definitionally) and then at `Lattice.agda:46`, where
+every clause matching on `_⊑_` is an *indexed match* — a property of how the
+two-point order is represented, not a stray lemma.
+
+Part of it was then fixed for real: the two-point order was an indexed family
+(matching a proof needed injectivity of the index constructors `L`/`H`), and it is
+now a **computed predicate** (`L ⊑ _ = ⊤`, `H ⊑ L = ⊥`), so the order laws hold
+by computation and those warnings are gone. What remains is one class —
+`just`-injectivity in the fuel semantics — which needs the big-step relation
+rather than an equality on computed results, and that changes how N-5 states
+divergence. Both arms, the two shortcuts that were measured and failed, and that
+consequence are in `docs/proof-debt.adoc#waivers`.
+
+The gap is recorded rather than closed by suppressing the warning: a gate that
+says `-WnoUnsupportedIndexedMatch` would be a green gate over a weakened check.
+Full evidence, the two arms (keep the waiver, or re-represent the order as a
+computed predicate), and what would make the waiver wrong are in
+link:docs/proof-debt.adoc#waivers[`docs/proof-debt.adoc` W-1]; the receipt carries
+`cubical-compatible = "waived"` so it is machine-visible. The grade is unaffected:
+mathesis Grade 3 is "type-checks locally in Agda under strict flags, not
+translated", and this gate is strict on the axes that bear on soundness.
+
+=== What the grade is anchored to
+
+`verification/receipts/agda-grade3.a2ml`, generated by
+`scripts/grade-receipt.sh` and checked in CI, records the exact source commit,
+the Agda pin and provenance, the flag set, the `sha256` of every module, the
+claim IDs with their ledger tokens and legs, and the trust-base counts
+(`postulates = 0`, `escape-hatches = 0`, `library-dependencies = 0`,
+`axioms-assumed = 0`). A change to a proved statement cannot leave the receipt
+intact; a claim added here cannot leave the receipt intact either, in either
+direction.
+
+Proof debt, in the four dispositions the trusted-base policy requires, is
+link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted —
+and that file's `#waivers` section carries the one obligation this repository does
+not meet (`--cubical-compatible`), with its evidence and both arms.
+
+CI: the whole gate — core proofs, expected rejections, the laws certificate, the
+receipt drift check and the receipt emit — is green on `8e421cc`, run
+link:https://github.com/hyperpolymath/secret-types/actions/runs/41327614303[41327614303].
+That run is also the evidence for the two Agda changes the flag attempt forced
+(`just-inj` removed as dead code, `_≟_` re-expressed through `pred`), which is why
+they are recorded rather than quietly folded in.
 
 == Fragment (stated before the claims)
 
@@ -61,6 +179,12 @@ double negation.
 * A label is not an epistemic standpoint (README). The Kripke frame built
   for choreographic-types indexes knowledge by *views*; a label indexes
   *permission to flow*. Nothing here imports epistemic-types, deliberately.
+* The four structures are kept apart by name in `docs/secret-types.adoc`
+  (`#four_distinct_structures`): confidentiality label, epistemic standpoint,
+  resource grade, Echo residue. No mapping is proved between any two of them,
+  in either direction, and the separation above is the reason a relabelling
+  could not preserve this theorem's statement — three of the four are
+  single-run accumulations.
 
 == Open
 

@@ -124,8 +124,13 @@ module NoDownClosure where
   sees x = x ≡ H
 
   -- Down-closure would require seeing L because L flows to the seen label H.
+  --
+  -- The indices are given explicitly because the order is a computed predicate
+  -- (SecretTypes.Lattice, _⊑_): `L⊑H` no longer *pins* its target label by its
+  -- type, since `L ⊑ y` is `⊤` for every y.  Naming the indices keeps this
+  -- refutation about L ⊑ H and not about an unsolved meta.
   not-down-closed : ¬ (∀ {x y} → x ⊑ y → sees y → sees x)
-  not-down-closed h with h L⊑H refl
+  not-down-closed h with h {x = L} {y = H} L⊑H refl
   ... | ()
 
   open import SecretTypes.Noninterference.Statement two _⊑_ _⊔_ L std

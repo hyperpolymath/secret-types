@@ -32,6 +32,18 @@ baseline declassifies nothing: an ordinary `Secret`-to-`Public` flow is outside
 the discipline, and any release requires a separate policy and theorem. As of
 2026-10-04 *no consumer and no frontier item is selected* for this project.
 
+That decision is about selection, not about existence, and the difference is
+worth stating because it was measured on 2026-11-01:
+link:https://github.com/metadatastician/lintel[`metadatastician/lintel`] imports
+`SecretTypes.{Prelude,Vars,Lattice.Record,Lang,Noninterference.Generic}`, defines
+`reader-sets : Lattice`, and opens the generic TINI at it, so the estate does
+have a mechanised consumer of this calculus. It is pinned at `ee01db4`; Lintel's
+own gate was run against this repository's HEAD on 2026-11-01 and passes, so the
+lattice re-representation described in link:docs/proof-debt.adoc#waivers[the
+proof-debt record] is non-breaking for it. Recording a consumer that exists is
+not a change to the 2026-10-04 decision, which stands: no consumer is *selected*,
+and nothing here is designed around Lintel's requirements.
+
 The canonical statement is link:docs/secret-types.adoc[docs/secret-types.adoc].
 It records the owner decisions (D153, D154, and the 2026-10-04 confirmation of
 this standalone home), the first model, and the explicit non-claims.
@@ -56,22 +68,43 @@ Echo fibre over its outputs does not separate secret inputs — the Echo
 reading of noninterference, and the first candidate connection
 Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
+*Grade.* The proved claims are **mathesis Grade 3** and no higher: they
+type-check in Agda under the estate's canonical strict flags
+(`scripts/proof-flags.sh`) and have not been translated to an independent
+foundational system. The Rocq and Lean recheck legs that `PROOF-POLICY.adoc` §2
+requires for Grade 2 do not exist; they are recorded `unavailable`, not skipped
+silently. Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof
+Ledger], the machine record is
+link:verification/receipts/agda-grade3.a2ml[`verification/receipts/agda-grade3.a2ml`]
+(checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
+dispositions. This paragraph states no grade the ledger does not support.
+
 == Where things belong
 
 * This repository owns the confidentiality-label definitions, the typing and
   observation semantics, and its own proof evidence.
 * link:https://github.com/hyperpolymath/nextgen-typing/blob/main/docs/TYPE-CONNECTIONS.adoc[TYPE-CONNECTIONS]
-  is the shared family map; this family's row is proposed in
-  link:https://github.com/hyperpolymath/nextgen-typing/issues/118[nextgen-typing#118].
+  is the shared family map. This family's row **landed on 2026-10-05** and
+  link:https://github.com/hyperpolymath/nextgen-typing/issues/118[nextgen-typing#118]
+  is closed, which satisfies D153's registration requirement. A row is not a
+  dependency: no import exists in either direction.
 * Neighbours and their limits (`epistemic-types`, `systemet`/`anytype`,
   `echo-types`, `tropical-types`) are covered in the canonical spec. None is a
-  dependency.
-* The origin record stays with `epistemic-types`: its
-  link:https://github.com/hyperpolymath/epistemic-types/blob/main/docs/secret-types.adoc[boundary/history note]
-  and link:https://github.com/hyperpolymath/epistemic-types/issues/32[issue #32]
-  remain open there, untransferred. link:docs/epistemic-types-transition-review.adoc[The transition review]
-  records the verified cross-references and the prepared, unposted tracking
-  updates.
+  dependency. They are also not one another: a confidentiality label, an
+  epistemic standpoint, a resource grade and an Echo residue are four distinct
+  structures, and
+  link:docs/secret-types.adoc#four_distinct_structures[the spec says why they
+  stay distinct].
+* The *origin* record stays with `epistemic-types` — its
+  link:https://github.com/hyperpolymath/epistemic-types/blob/main/docs/secret-types.adoc[boundary/history
+  note] — and it is a record, not a dependency: that repository proves no
+  confidentiality or noninterference theorem and hosts no `Secret` API. Its
+  issue #32 was closed by the owner on 2026-10-05T06:37Z as delivered here, with
+  no transfer and none required; its successor guard #39 closed on 2026-10-25.
+  Nothing is to be reopened.
+  link:docs/epistemic-types-transition-review.adoc[The transition review]
+  records the verified cross-references, keeps its 2026-10-05 text as history,
+  and carries a 2026-11-01 reconciliation addendum.
 
 == Licence
 
