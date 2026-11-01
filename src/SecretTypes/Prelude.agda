@@ -80,28 +80,27 @@ data Dec (P : Set) : Set where
   yes : P → Dec P
   no  : ¬ P → Dec P
 
--- Predecessor, used below to recover injectivity of `suc` as a retraction
--- rather than by the injectivity rule.  (`suc` is a constructor, so `pred`
--- computes on `suc k` definitionally.)  The predecessor of zero is zero.
+-- Predecessor.  `suc` is a constructor, so `pred` computes on `suc k`
+-- definitionally — which is what makes the retraction below usable.  The
+-- predecessor of zero is zero.
 pred : Nat → Nat
 pred zero    = zero
 pred (suc k) = k
 
--- Injectivity of `suc`, without the injectivity *rule*.  Matching directly on
--- `suc m ≡ suc n` and returning `refl` asks Agda to unify `suc m` with `suc n`,
--- which is constructor injectivity; Cubical Agda does not support it and warns
--- (-WUnsupportedIndexedMatch), which the canonical flags make fatal.  Composing
--- a retraction with `cong` gets the same term without that rule, and the result
--- computes: `pred (suc m)` reduces to `m`.
-suc-inj : {m n : Nat} → suc m ≡ suc n → m ≡ n
-suc-inj = cong pred
-
--- Intended to transport a decision on A to B using maps in both directions.
--- The positive case applies `cong` to evidence of A, though `cong` requires
--- equality evidence.  Used to lift `_≟_` over `suc`.
-Dec-map : {A B : Set} (f : A → B) (g : B → A) → Dec A → Dec B
+-- Decide an equality of images instead of the underlying equality: decide the
+-- preimages, then push the answer along `f`, pulling it back along `g`.
+--
+-- This exists because of a real constraint, not for elegance.  Proving
+-- injectivity of `suc` directly — matching `suc m ≡ suc n` and returning `refl` —
+-- asks for constructor injectivity, which Cubical Agda does not support
+-- (`-WUnsupportedIndexedMatch`), and the canonical flag set makes that warning
+-- fatal.  With `g = pred` the pullback is a retraction, so the same decisions
+-- are reachable without the rule: `pred (suc m)` reduces to `m`, so
+-- `cong pred q` *is* `m ≡ n`.
+Dec-map : {A B : Set} (f : A → B) (g : B → A) {x y : A}
+        → Dec (x ≡ y) → Dec (f x ≡ f y)
 Dec-map f g (yes p) = yes (cong f p)
-Dec-map f g (no ¬p) = no λ q → ¬p (g q)
+Dec-map f g (no ¬p) = no λ q → ¬p (cong g q)
 
 -- Decide equality of naturals.
 infix 4 _≟_
@@ -109,7 +108,7 @@ _≟_ : (m n : Nat) → Dec (m ≡ n)
 zero  ≟ zero  = yes refl
 zero  ≟ suc n = no λ ()
 suc m ≟ zero  = no λ ()
-suc m ≟ suc n = Dec-map (cong suc) suc-inj (m ≟ n)
+suc m ≟ suc n = Dec-map suc pred (m ≟ n)
 
 -- A decidable proposition is stable: double negation can be removed.
 dec-stable : {P : Set} → Dec P → ¬ ¬ P → P
