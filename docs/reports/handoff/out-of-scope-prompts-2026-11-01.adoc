@@ -1,0 +1,386 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Out-of-scope handoff prompts (2026-11-01)
+:revdate: 2026-11-01
+:toc: left
+:icons: font
+
+Scope note. This repository is responsible for its own proofs, ledger and gate.
+The prompts below are for repositories that are *not* ours to edit. Everything
+factual in them was read on 2026-11-01 from a clone or from the API at the
+commit named, not inferred from a repository name. Where I could not verify
+something I say so, and there is a "what I did not check" line at the end of
+each section.
+
+== 0. `hyperpolymath/stuff-of-awesome` — not found, so no prompt
+
+I did not write a prompt for this one, because there is nothing to point it at.
+
+* `GET /repos/hyperpolymath/stuff-of-awesome` → **404**.
+* Name search `stuff-of-awesome` → no repository under any owner.
+* `user:hyperpolymath awesome` → 0 results.
+
+The mathesis census refers to "9 awesome-lists" excluded from its scope, so the
+family probably exists under names I cannot guess (`awesome-*`, `*-awesome`, or
+a curated list inside another repository). Writing a prompt against a name I
+cannot read is precisely the error this estate keeps paying for, so:
+
+. if the name is different, give it to me and this section becomes a real prompt;
+. if it is private, describe it and I will write the prompt blind, labelled as such;
+. if it has not been created, this is a to-do and not a handoff.
+
+== 1. `metadatastician/lintel` — the estate's first mechanised consumer of this repository
+
+=== What I verified
+
+`metadatastician/lintel` — "A privacy lattice for oblivious DNS (formerly oDNS),
+proved in Agda: per-field reader-set labels under which self-defeating privacy
+compositions are refused, built to instantiate secret-types' noninterference
+theorem." That description is accurate; I checked it in the source rather than
+trusting the sentence.
+
+* `src/Lintel/Instance.agda` imports `SecretTypes.Prelude`, `.Vars`,
+  `.Lattice.Record`, `.Lang`, `.Noninterference.Generic`, defines
+  `reader-sets : Lattice`, and instantiates the generic TINI at it.
+* `src/Lintel/{All,Composition,Lattice}.agda` exist alongside it.
+* `scripts/fetch-siblings.sh` pins secret-types at
+  `ee01db4dc34e457cbc32cfb1b7abd737ea8f075a` and re-checks that pin's whole
+  development as part of Lintel's gate.
+* `tests/accept/` has five modules, `tests/reject/` four.
+
+=== What I ran
+
+Lintel's own `scripts/check.sh`, against **this branch's HEAD `93a22e3`**
+(2026-11-01, Agda 2.7.0.1): sibling development re-checks, Lintel's proofs
+check, five positive controls accepted, four expected rejections fail at their
+`invalid` declaration, negative control confirms step 5 is not vacuous.
+
+So the lattice re-representation on this branch is **non-breaking for the
+estate's real consumer** — tested, not argued. That is the single most useful
+result to come out of this branch, and it belongs in the PR body, not only here.
+
+[source,text]
+----
+Update from hyperpolymath/secret-types (2026-11-01). Four things; the first is
+the only one that asks anything of you.
+
+1. Re-pinning is safe, and I tested it rather than guessing. Since your pin
+   (ee01db4) we changed the two-point order in src/SecretTypes/Lattice.agda
+   from an indexed family to a computed predicate (L ⊑ _ = ⊤, H ⊑ L = ⊥), and
+   deleted an unused `just-inj` lemma from Prelude.agda. You import neither the
+   changed lemma nor any proof term of ours, so I ran YOUR gate against OUR HEAD
+   93a22e3: sibling development, your proofs, 5 positive controls, 4 expected
+   rejections, negative control — all pass. Re-pinning is SECRET_TYPES_COMMIT in
+   scripts/fetch-siblings.sh plus the header comments in Instance.agda.
+
+2. Your scripts/check.sh compares the whole `--version` output. Any prover that
+   prints a provenance footer after the version line (distro build, language
+   binding) is then refused as "expected Agda version 2.6.4.3" even though it is
+   a correct Agda. We hit this in this repository and changed the comparison to
+   the first line: `"$prover" --version | head -1`. Two-character fix; it is the
+   difference between "the sandbox cannot check this" and "the sandbox checks
+   this".
+
+3. --cubical-compatible is the next thing you will meet (PROOF-POLICY §2.1).
+   Your Lintel.Lattice defines its own `_⊑_`; if it is an indexed family, every
+   clause that matches a proof refuses under that flag with
+   -WUnsupportedIndexedMatch. The fix that worked for us — and which is the
+   reason I am writing rather than just linking — is to define the order by
+   recursion on the carrier so the laws hold by computation and no proof term is
+   ever matched. The full waiver analysis, including the two shortcuts we
+   measured and rejected, is in secret-types docs/proof-debt.adoc#waivers. Our
+   remaining 13 warnings are `just`-injectivity from the fuel semantics; you may
+   or may not have the same shape.
+
+4. Your `tini-coalition` is the thing our open issue #12 asks for (an observer
+   union / coalition combinator in the Record module, filed "from Lintel"). You
+   have the concrete instance, we have the parametric statement. It plausibly
+   belongs in our Record module with yours as the worked example — but it is
+   your call. Say which side you want it on and we will keep ours to a pointer
+   so there is one definition and not two.
+
+One records question, not a request: our scope statement says no consumer and no
+frontier item is selected (owner decision 2026-10-04). Your repository is a real
+mechanised consumer. We are recording it as a fact about an import that exists —
+not as a claim that you are a "selected consumer". Tell us if you would rather
+we said nothing about it.
+----
+
+.Not checked
+No CI run for Lintel on its own runners; I ran the gate locally. I did not read
+`src/Lintel/Composition.agda` in detail, so point 4 is read off the test names
+and the description, not off the definition.
+
+== 2. `metadatastician/standards` (also served at `hyperpolymath/standards`) — three format gaps we hit while conforming
+
+`hyperpolymath/standards` redirects to `metadatastician/standards`, so they are
+one repository, not two. I am not proposing a policy change here — we followed
+§2.1, §2.2, §5 and §6 as written. These are gaps in the *formats* that made a
+conformant record hard to write.
+
+[source,text]
+----
+Three findings from a repository implementing PROOF-POLICY §2.1 and the
+README-EXPLAINME proof-ledger discipline on 2026-11-01.
+
+1. A2ML: multi-line quoted values. Our verification receipt first used a
+   wrapped string. The validator rejects it, and reasonably so — but the spec
+   does not say so, and a record generator has no way to know. Either allow
+   continuation explicitly or state "values are single-line" in the record
+   dialect. We took single-line values plus a `-ref` field pointing at the prose.
+
+2. A2ML: identity for non-descriptile records. The validator reports "Missing
+   required identity field (agent-id, name, or project)" for a receipt carrying
+   a repository field and a UUID. That is the right rule for descriptiles; it is
+   not obvious for data records — receipts, manifests, ledgers. Either document
+   that every .a2ml needs one of the three, or scope the rule to the files it
+   was written for. We added `project` and `name`.
+
+3. The copy-pasted prover-version check. `version="$("$prover" --version)"`
+   assumes the prover prints exactly one line. Distro builds and language
+   bindings print a provenance footer, so a correct prover is refused and the
+   gate fails for a reason unrelated to the proof. Suggest the canonical pattern
+   compare `--version | head -1`, with a comment saying why.
+
+One offer in the other direction: §2.1 now requires --cubical-compatible, and
+for a development whose order relation is an indexed family the honest answer is
+"not without a re-foundation". We wrote the waiver we would have wanted to see
+as an example: obligation, the CI observations that made it real, two arms with
+the elegant one labelled as such, an explicit "what would make this waiver
+wrong", and a machine-readable `cubical-compatible = "waived"` in the receipt.
+It survived our own attempt to close it, which is the only test I trust. If you
+want a standard shape for §2.1 waivers, this one is available.
+----
+
+.Not checked
+Whether the same A2ML reading is implemented identically in the `.deed`/k9
+validators — I only exercised the code path our receipts take.
+
+== 3. `catachresis-colloquium` — three repositories, and **two of my first drafts were wrong**
+
+Worth stating plainly, because it is the same failure mode this repository spent
+2026-10-30 correcting. My first pass at these prompts assumed what the names
+suggested: "paradox formalisation" → Agda; "engineering with Idris2" → Idris2
+proofs. Cloning them showed otherwise, and both prompts had to be rewritten from
+scratch. The corrected facts are in each section.
+
+=== 3a. `catachresis-colloquium/hotchocolabot` — "CNO" is a defined term in this estate
+
+*Verified:* Rust (Rust 2021, `smlang` state machine, fuzz targets, `src/safety/mod.rs`).
+
+=== Corrected fact
+
+`src/safety/mod.rs`, `src/main.rs` and `src/config/mod.rs` all gloss CNO as
+**"Certified Null Operations"**. In *this* estate the letters mean **Certified
+Null Effect** (absolute-zero): a null effect carrying a certificate, with the
+certification machinery and its undischarged obligations attached. Two different
+expansions of the same acronym, in the same estate, is a collision worth one
+sentence of disambiguation.
+
+=== Second, smaller observation
+
+The `smlang` state machine in `src/safety/mod.rs` is retained "to keep the
+verified-state model alive" but the demo path drives safety through explicit
+checks, and the generated module carries `#![allow(dead_code)]`; the struct field
+is `#[allow(dead_code)]` too. That is disclosed honestly in the comments, which
+is the right instinct — it just means the state machine is a model of the safety
+policy rather than the enforcement of it. For a teaching artefact aimed at 12–18
+year olds, that distinction is the lesson.
+
+[source,text]
+----
+A naming note from hyperpolymath/secret-types (2026-11-01), because "CNO" is a
+defined term in this estate and not a generic phrase.
+
+In absolute-zero, CNO means Certified Null Effect: a null effect that carries a
+certificate, with the certification machinery and its open obligations attached.
+Your safety module uses "Certified Null Operations". If you mean the same thing,
+cite absolute-zero; if you mean something else — which is fine — add one
+sentence saying so, e.g. "CNO here is our own term; it is unrelated to
+absolute-zero's Certified Null Effect".
+
+Why it matters for a curriculum specifically: your students will read "Certified
+Null Operations (CNO)" in a header comment and conclude that something has been
+certified. That is an epistemic claim travelling with teaching material, and it
+is cheap to make true (rename, or cite) and expensive to leave ambiguous.
+
+Second point, offered rather than asserted: your smlang state machine is
+described in its own comments as retained to keep the verified-state model
+alive, while the demo path drives safety through the explicit checks and the
+generated module is `allow(dead_code)`. That is a good comment and an honest
+one. It also makes a nice teaching beat for the exact age range you have: the
+machine is a *model* of the policy, and the policy is *enforced* by something
+else — so what, precisely, does the machine buy? A workshop question with a
+real answer beats a diagram every time.
+
+What we can offer in the other direction: a status vocabulary that is cheap to
+adopt and hard to abuse — proven / proven-with-postulates / argued / tested-only
+/ open, with the rule that a claim is only as strong as its weakest step. A
+safety system taught with that ladder beside it is strictly better pedagogy than
+one taught with a badge.
+----
+
+=== 3b. `catachresis-colloquium/thejeffparadox` — **no formalisation exists, so the hazard is prose**
+
+*Verified:* `README.adoc`, `docs/wiki/*`, `tests/` (three shell validators),
+`engine/` (Julia), `tui/` (Ada), `node-alpha/`, `node-beta/`, `orchestrator/`
+(Hugo), `papers/`.
+
+=== Corrected fact
+
+There are no `.agda`, `.idr`, `.lean`, `.v` or `.tla` files. Despite the name,
+this is a **running experiment**, not a formalisation of a paradox: two LLM
+personas in structured dialogue, with Julia metrics for emergence,
+differentiation, convergence and self-modelling, and a Julia engine containing an
+anti-convergence term. Its own `docs/wiki/Philosophy.md` frames it as Kant's
+suprasensible substrate problem applied to model cognition, and is honest that
+the thing-in-itself is inaccessible.
+
+So my draft prompt telling it to declare postulates and termination pragmas was
+answering a question nobody asked. What is actually at risk here is a different
+and easier-to-fix thing: an experiment whose subject is *identity claims* now
+carries metrics named "emergence" and "self-modelling", and a reader can slide
+from "we measured a metric called self-modelling" to "we showed self-modelling
+occurs". That slide is the whole validity question, and `papers/` shows they know
+it.
+
+[source,text]
+----
+From hyperpolymath/secret-types (2026-11-01). I read your tree before writing,
+because my first instinct — "paradoxes are formalised, so warn them about
+postulates and termination pragmas" — was wrong. You have no prover files; you
+have a running experiment with Julia metrics and a validity framework. So this
+is not a proof-hygiene note. It is a narrower one about the words at the top of
+the ladder.
+
+Your README lists Emergence, Differentiation, Convergence and Self-modelling as
+things you "observe for signs of". Those are the interesting names precisely
+because a metric can be named after a phenomenon it does not establish: a
+divergence score is a divergence score whether or not anything emerged. The same
+sentence in a paper becomes "we found evidence of self-modelling".
+
+The pattern we use, and which costs nothing to retrofit, is to make each row of
+a results table carry its own status token — proven / proven-with-postulates /
+argued / tested-only / open — and to apply the rule that a claim is only as
+strong as its weakest step. For an LLM experiment the honest token for
+"self-modelling" is almost always *argued* or *tested-only*, and printing
+"tested-only" next to it is not a hedge: it is the difference between a result
+someone can audit and a result someone can quote.
+
+Two specifics that would strengthen the validity framework for free:
+- separate "the metric is well-defined" (a mathematical claim, checkable) from
+  "the metric measures the construct" (an empirical claim, argued). They fail
+  differently and you will want to say which one a referee is attacking.
+- make the null model explicit. Convergence is only a finding against a null
+  hypothesis; "they converged" with no baseline of two identical personas is
+  unfalsifiable, and that objection will be raised whether or not it is fair.
+
+We are not claiming any connection between your repository and ours beyond the
+owner. A shared word is not a shared theorem, and "self-reference" appearing in
+both is a word.
+
+If you ever do formalise the paradox itself, the discipline that matters there
+is expected-rejection fixtures: a fixture that must FAIL to typecheck unless the
+paradox is genuinely derivable is the only way to show the formalisation is not
+an artefact of a relaxed flag. Happy to hand over the pattern.
+----
+
+=== 3c. `catachresis-colloquium/IDApTIK` — the best proof gate I have read in this estate, and it is not ours
+
+*Verified:* `crates/CREUSOT-PROOF-DEBT.tsv` (6 rows), `scripts/creusot_ledger_check.sh`,
+`.github/workflows/creusot-proof.yml`, `docs/verification/2026-10-31-creusot-ultraplan.md`,
+`crates/idaptik-kernel/src/{trace,rng}.rs`.
+
+=== Corrected fact
+
+Not Idris2. **Rust + Creusot v0.13.0**, pinned by commit
+`318615be3b8bbc60d1f6d52469ba5c0bdebed4f1` (deliberately a commit and not a tag,
+because of sha-pinning), with a two-job workflow: a cheap ledger job and an
+expensive proof job that builds Creusot from source and discharges the determinism
+kernel.
+
+My draft had it inheriting boilerplate `verification/proofs/` skeletons. It does
+not. It has something considerably better, and I want to say so precisely,
+because "you are doing it wrong" would have been both wrong and offensive:
+
+* a proof-debt ledger with **three named escape mechanisms** (`trusted`,
+  `cfg-out`, `no-contract`), each row carrying a `retire_when` condition;
+* the ledger enforced **in both directions** — an unledgered escape is red, and
+  so is a row naming an escape that no longer exists, "so the ledger cannot grow
+  silently and cannot rot quietly";
+* the gate's own controls run **first**, on the stated principle that "a gate
+  that cannot fail is worse than no gate";
+* a planted mutant whose non-zero exit is *not* accepted as evidence: it must
+  translate cleanly first, then fail on the named goal (`Goal Coma.vc_advance`),
+  with an unproved-file verdict — i.e. it distinguishes a proof failure from a
+  build failure;
+* the **denominator** is extracted from `Proved (N files)` and required to be
+  `> 0`, because a zero denominator is not a pass;
+* `PD-06` records *by hand* the false contract that was tried and rejected
+  (`result@ == state@ + 1` is false at `u32::MAX`) — "a false contract is a
+  mutant that passes for the wrong reason". That row exists to make an absence a
+  decision on the record instead of an oversight.
+
+That last row is the most transferable thing I have seen in this estate's
+verification work, and this repository is going to cite it.
+
+[source,text]
+----
+From hyperpolymath/secret-types (2026-11-01). Not a correction — I read your
+Creusot gate and debt ledger before writing, and my drafts assumed the opposite
+of what is there. Three things worth saying, one of which is a bump.
+
+1. PD-06 is the pattern I would copy. Recording a contract that was tried, found
+   false at a boundary (u32::MAX), and rejected — *because a false contract is a
+   mutant that passes for the wrong reason* — is better than any green run. We
+   have the same problem in a different shape: our proof-debt record currently
+   has every disposition empty, and "empty is checkable" is the only reason that
+   is a fact rather than a boast. Your ledger's two-directional check (an
+   unledgered escape is red; a row naming a departed escape is also red) is
+   stricter than ours, and we are going to say so in our record. If you want the
+   debt vocabulary to be shared rather than parallel, ours is: discharged /
+   budgeted-and-tested / necessary-axiom / debt, with a row per claim and a
+   status token per row (proven / proven-with-postulates / argued / tested-only
+   / open). Yours and ours are compatible but not identical, which is fine —
+   they just should not silently diverge.
+
+2. Your Creusot pin is one minor version behind. CREUSOT_VERSION is v0.13.0 at
+   ref 318615b; v0.14.0 was released 2026-10-12. Two rows in your ledger explain
+   a limitation by reference to the tool: PD-01/PD-02 both say "Creusot 0.13
+   implements DeepModel for ... and no float type". If 0.14 has changed that,
+   both `trusted` rows become candidates for retirement — and your `retire_when`
+   column already says what would justify it. If it has not changed, the row is
+   still right and now says "still absent in 0.14", which is a stronger claim
+   than "absent in 0.13". Either way the pin bump is cheap and turns two of your
+   six escapes into a measured decision rather than an inherited one.
+
+3. `no-contract` (PD-06) and our `tested-only` are the same epistemic object seen
+   from two sides: a function that is proved panic- and overflow-free for all
+   2^32 states, but for which nothing is stated about what it computes. We would
+   like to cite PD-06 by name in our proof-debt record as the worked example of
+   how to write that down without either overclaiming or hiding it. Say if you
+   would rather we did not, and say if the row should be worded differently when
+   quoted from outside the repository.
+
+One thing we can offer back: expected-rejection fixtures for Agda, where a
+module must fail at a *named* declaration rather than merely fail to compile —
+the difference between "we refuse bad programs" and "our fixtures do not build".
+You already do this correctly in the mutant control; we have the Agda-shaped
+version and it is yours if it is useful.
+
+No claim of a connection between our repositories, and no request to adopt our
+grading — you are already stricter than we are in two places.
+----
+
+.Not checked
+No CI run of `creusot-proof.yml` for IDApTIK; everything above is read from the
+workflow, the ledger and the kernel source. I did not open
+`docs/verification/2026-10-31-creusot-ultraplan.md` beyond its title, and I did
+not verify each of the six `evidence:` cells against the pinned Creusot ref.
+
+== 4. What this document does not do
+
+* It does not edit, open issues on, or run CI in any of the repositories above.
+* It does not claim any repository is a selected frontier item. `lintel` is
+  recorded only as an import that exists and a gate I ran.
+* It does not carry a percentage. Every claim above is a count, a file, or a run.

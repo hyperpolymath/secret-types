@@ -32,6 +32,18 @@ baseline declassifies nothing: an ordinary `Secret`-to-`Public` flow is outside
 the discipline, and any release requires a separate policy and theorem. As of
 2026-10-04 *no consumer and no frontier item is selected* for this project.
 
+That decision is about selection, not about existence, and the difference is
+worth stating because it was measured on 2026-11-01:
+link:https://github.com/metadatastician/lintel[`metadatastician/lintel`] imports
+`SecretTypes.{Prelude,Vars,Lattice.Record,Lang,Noninterference.Generic}`, defines
+`reader-sets : Lattice`, and opens the generic TINI at it, so the estate does
+have a mechanised consumer of this calculus. It is pinned at `ee01db4`; Lintel's
+own gate was run against this repository's HEAD on 2026-11-01 and passes, so the
+lattice re-representation described in link:docs/proof-debt.adoc#waivers[the
+proof-debt record] is non-breaking for it. Recording a consumer that exists is
+not a change to the 2026-10-04 decision, which stands: no consumer is *selected*,
+and nothing here is designed around Lintel's requirements.
+
 The canonical statement is link:docs/secret-types.adoc[docs/secret-types.adoc].
 It records the owner decisions (D153, D154, and the 2026-10-04 confirmation of
 this standalone home), the first model, and the explicit non-claims.
