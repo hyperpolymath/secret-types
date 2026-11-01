@@ -56,6 +56,17 @@ Echo fibre over its outputs does not separate secret inputs — the Echo
 reading of noninterference, and the first candidate connection
 Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
+*Grade.* The proved claims are **mathesis Grade 3** and no higher: they
+type-check in Agda under the estate's canonical strict flags
+(`scripts/proof-flags.sh`) and have not been translated to an independent
+foundational system. The Rocq and Lean recheck legs that `PROOF-POLICY.adoc` §2
+requires for Grade 2 do not exist; they are recorded `unavailable`, not skipped
+silently. Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof
+Ledger], the machine record is
+link:verification/receipts/agda-grade3.a2ml[`verification/receipts/agda-grade3.a2ml`]
+(checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
+dispositions. This paragraph states no grade the ledger does not support.
+
 == Where things belong
 
 * This repository owns the confidentiality-label definitions, the typing and

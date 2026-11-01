@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Proof debt
+:toc:
+:icons: font
+
+// Schema: standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc §"proof-debt schema".
+// The names in brackets are that schema's categories; they are kept verbatim so
+// a scanner can find them. Four empty sections are the claim; see the note
+// under (a) for why "empty" here is evidence rather than an omission.
+
+This repository's proof debt, in the four dispositions the trusted-base policy
+allows. An escape hatch is either discharged, budgeted and tested, a necessary
+axiom, or debt. There is no fifth category and no silent one.
+
+The difference from most repositories' version of this file: everything below is
+empty, and that emptiness is *enforced* rather than asserted. `scripts/check.sh`
+refuses the build if any `.agda` file under `src/SecretTypes` or `tests`
+contains `postulate`, and the same tree is compiled with `--safe`, which
+independently refuses `postulate`, `{-# TERMINATING #-}`, `{-# NON_TERMINATING #-}`
+and `--type-in-type`. `verification/receipts/agda-grade3.a2ml` records the
+counts (`postulates = 0`, `escape-hatches = 0`) *derived from the tree*, and CI
+fails if they move.
+
+== (a) Discharged in this repo
+
+_None — and none ever needed._ No escape hatch was ever introduced here to be
+later discharged: the development has been `--safe` since its first module, so
+there is no historical debt that a reader would otherwise have to trust a
+changelog about.
+
+Evidence: `scripts/check.sh` step 0 (trusted base), `scripts/proof-flags.sh`
+(the `--safe` flag and why), and the `[trust-base]` block of the receipt.
+
+== (b) Budgeted — tested with refutation budget
+
+_None._ No escape hatch is covered by tests with a refutation budget, because
+there is no escape hatch.
+
+Not to be confused with, and deliberately not filed here: the two *negative
+controls* (`tests/reject/{ExplicitFlow,ImplicitFlow,ThirdVariable}`) and the
+leak witnesses (`SecretTypes.Witness`). Those are checks of the typing rules,
+not escapes from them — a fixture that type-checked would be a failure, and
+`scripts/check.sh` fails if one is accepted, or if it fails for the wrong reason
+(missing import, parse error, unsolved meta). Calling them "budgeted debt" would
+misreport what they are.
+
+== (c) Necessary axiom
+
+_None._ No axiom is assumed, so nothing needs a justification, a citation or a
+trust-boundary entry.
+
+This is the load-bearing sentence for the repository's status claims: with no
+postulates and no axioms in the trusted base, `PROOF-STATUS.adoc` may use the
+ledger token `proven` rather than `proven-with-postulates`
+(`standards/docs/README-EXPLAINME-STANDARD.adoc` §5, `PROOF-POLICY.adoc` §5). If
+an axiom is ever needed, the procedure is fixed in advance: name it here with its
+justification, list it in that claim's trust-boundary column in the
+link:EXPLAINME.adoc#proof-ledger[Proof Ledger], and demote the token in the same
+change. `scripts/grade-receipt.sh` counts axioms, so the receipt cannot quietly
+keep saying zero.
+
+== (d) DEBT — actively to be closed
+
+_None in the proof development._
+
+Two items are open *obligations* rather than proof debt, and are listed here so
+that they are not mistaken for either:
+
+* *Grade 2 legs.* `PROOF-POLICY.adoc` §2 asks for every Agda theory proof to be
+  rechecked in Rocq and in Lean. Neither leg exists; both are recorded
+  `unavailable` in the receipt and in
+  link:../PROOF-STATUS.adoc[`PROOF-STATUS.adoc`]. An absent recheck is not an
+  escape hatch in a proof — the proof has no hole — but it does bound the grade
+  at 3, and that bound is recorded rather than glossed.
+* *Termination-sensitive noninterference.* An open research question, not debt:
+  a blocked obligation is only debt if something claims it is discharged.
+  Nothing here claims TSNI.
+
+== Who checks this file
+
+* `scripts/grade-receipt.sh --check` (CI: `.github/workflows/proofs.yml`) — the
+  derived counts, and the claim IDs, must match the tree and
+  `PROOF-STATUS.adoc`.
+* `scripts/check.sh` — `postulate` refusal, then the full gate.
+* The receipt's `[trust-base]` block is the machine copy of sections (a)–(c).
+
+A future addition to this file that is not accompanied by a change in those three
+places is a claim the gate does not support.

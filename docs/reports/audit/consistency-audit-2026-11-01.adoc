@@ -489,3 +489,104 @@ more than their size suggests:
   proposal and false of the implementation. Left uncorrected, that sentence would
   have been the most misleading line in the repository, because it claims to have
   closed the one channel the theorem names as open.
+
+[[proof-grade-conformance]]
+== Second pass: conformance to the estate's proof-grading policy
+
+The first pass audited *internal* consistency. This pass audits conformance to
+the two documents that actually govern how a proof here is graded, both read on
+2026-11-01:
+
+* `standards/3-practice/PROOF-POLICY.adoc` (owner ruling 2026-10-26, with a
+  §2.1 dated **2026-11-01**) — which prover carries which obligation, the
+  canonical Agda invocation, and the closed status vocabulary.
+* `mathesis/estate-mathematical-architecture` §5/§6 — the grade ladder
+  (Open → Grade 3 → Grade 2i/ii → Grade 1) and the requirement that a receipt
+  name its exact commit.
+
+Also read: `standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc` (proof-debt
+schema), `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 (the Proof Ledger),
+and mathesis's own catalogue, which had already indexed this repository as
+`theory`, `agda 16`, 67 declarations, **0 holes / 0 axioms / 0 unsafe**.
+
+=== What the first pass missed, because it was not the lens
+
+Four findings, all of them paperwork rather than mathematics — which is the same
+class as F-1…F-5 and, in this estate, the class that matters.
+
+[cols="1,2,3",options="header"]
+|===
+| ID | Finding | State
+
+| F-9
+| *No Proof Ledger, while the README claims PROVEN.*
+  `README-EXPLAINME-STANDARD.adoc` §5: the ledger is required when README,
+  EXPLAINME or AFFIRMATION claims anything is proved, and "README never states a
+  proof grade that the ledger does not support". The README claimed a proven
+  core theorem; no ledger existed. `docs/EXPLAINME.adoc` was 118 lines of
+  `rsr-template-repo` boilerplate (session dispatch, Dependabot, Julia
+  packaging) and did not mention a proof.
+| Closed: `docs/EXPLAINME.adoc` retitled, `[[proof-ledger]]` added with 10 rows
+  (five proven, three tested-only, two open), using the closed lowercase tokens.
+
+| F-10
+| *No proof-debt record.* `TRUSTED-BASE-REDUCTION-POLICY.adoc` requires a
+  `docs/proof-debt.md` (or `.adoc`) with dispositions (a)–(d). Absent — so a
+  reader could not distinguish "no escape hatches" from "no audit".
+| Closed: `docs/proof-debt.adoc`, all four dispositions empty **and enforced**
+  (`check.sh` postulate refusal, `--safe`, receipt counts).
+
+| F-11
+| *Gate not at the canonical invocation.* `PROOF-POLICY` §2.1 (dated the same
+  day this audit was written) sets `agda --safe --without-K
+  --cubical-compatible` for first-party theory entrypoints, and says prior
+  `--safe` successes are "historical evidence, not receipts for this new
+  combined profile". Our gate ran `--safe --without-K --no-libraries
+  --ignore-interfaces --double-check -W error`: strictly stronger in four
+  dimensions, missing `--cubical-compatible`.
+| Closed: flags now come from one definition, `scripts/proof-flags.sh`, which
+  adds `--cubical-compatible`. Because a new combined profile needs a *new*
+  receipt, the Grade-3 receipt was regenerated under it rather than inherited.
+
+| F-12
+| *No receipt, and template prover files that invite a false reading.* mathesis
+  §6 wants the exact commit hash of the verification result; we had none. Worse,
+  the §2 recheck legs (Rocq, Lean) could be "evidenced" by
+  `verification/proofs/{coq,lean4}/*` — template skeletons with `MANIFEST` lines
+  saying `gated`, from F-4.
+| Closed for the confusion, open for the cleanup: the receipt records both legs
+  `unavailable` per row, and `PROOF-STATUS.adoc` states that "a leg that does not
+  exist cannot be evidenced by a file that happens to be present" and names the
+  skeletons as not-legs. F-4's disposition (delete or quarantine) is still open,
+  because deleting a tree on the strength of "it looks like boilerplate" is the
+  name-versus-code error.
+|===
+
+=== The grade this repository now reports
+
+*mathesis Grade 3, and no higher.* Grade 3 is "type-checks in Agda under strict
+flags, not translated to an independent foundational system" — which is exactly
+what exists, and the receipt now says so with the commit, pin, flags, module
+hashes and trust-base counts.
+
+The temptation to overstate here is specific and worth naming: this repository
+has *both* Agda and Coq and Lean files, so a careless reader — or a careless
+agent — could read the presence of `verification/proofs/coq/TypeSafety.v` as the
+Rocq leg of Grade 2i. It is not. It is a template skeleton proving a
+`TyNat`/`TyBool` toy, it has nothing to do with TINI, and no workflow checks it.
+Grade 2i would need the TINI statement itself transported or re-proved, with the
+statement correspondence recorded per `PROOF-POLICY` §2.2 — a real piece of work,
+not a file that exists.
+
+=== Honest edges of this pass
+
+* **The flags changed without a local run.** No Agda exists in this sandbox, so
+  `--cubical-compatible` was adopted from the policy and verified in CI, not
+  before it. If CI rejects it, the flag and the receipt are reverted and F-11
+  reopens as a blocked item — the policy's own rule is that flags are never
+  weakened to make a check green, so a failure is reported, not absorbed.
+* **The receipt is not a proof.** It records which gate produced which result and
+  at which commit; the CI log remains the execution evidence.
+* **Mathesis grades theorems, not checks.** N-4/N-5/N-6 are recorded
+  `below-grade-3` with the token `tested-only` rather than graded, because a
+  refusal fixture and a shell-orchestrated ablation certificate are not theorems.

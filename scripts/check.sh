@@ -10,7 +10,10 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 export LC_ALL="${LC_ALL:-C.UTF-8}"
 prover="${AGDA:-agda}"
-expected_version="${AGDA_VERSION:-2.6.4.3}"
+# The flag set and the version pin live in one place: scripts/proof-flags.sh.
+# PROOF-POLICY.adoc §2.1 (2026-11-01) is the canonical invocation; see there.
+. scripts/proof-flags.sh
+expected_version="${AGDA_VERSION:-$(proof_agda_pin)}"
 
 version="$("$prover" --version)"
 echo "$version"
@@ -27,7 +30,8 @@ if stray="$(grep -rlw --include='*.agda' postulate src/SecretTypes tests)"; then
 fi
 echo 'PASS: trusted base (no postulates under src/SecretTypes or tests)'
 
-flags=(--safe --without-K --no-libraries --ignore-interfaces --double-check -W error -i src)
+mapfile -t flags < <(proof_flags)
+flags+=(-i src)
 "$prover" "${flags[@]}" src/SecretTypes/All.agda
 echo 'PASS: core proofs (SecretTypes.All, builtins only)'
 

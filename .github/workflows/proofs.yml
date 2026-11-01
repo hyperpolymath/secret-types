@@ -41,3 +41,12 @@ jobs:
         run: bash scripts/check.sh
       - name: Which laws generic TINI uses
         run: bash scripts/minimal-laws.sh
+      - name: Verification receipt matches the tree and the claim list
+        run: bash scripts/grade-receipt.sh --check
+      # The receipt above is committed by the change that produces it, so it
+      # records its parent commit. This step re-emits it for the commit actually
+      # under test, which is what a mathesis receipt has to name.
+      - name: Emit the receipt for this commit
+        run: |
+          bash scripts/grade-receipt.sh --write --commit "$(git rev-parse --short=12 HEAD)"
+          sed -n '1,80p' verification/receipts/agda-grade3.a2ml
