@@ -16,4 +16,4 @@ permissions:
   contents: read
 jobs:
   rust-ci:
-    uses: metadatastician/standards/.github/workflows/rust-ci-reusable.yml@da2c748aad55c1a1dcba00b60fe4a35017bc6540
+    uses: metadatastician/standards/.github/workflows/rust-ci-reusable.yml@46ee18323305d5b36e2eef936e47dd54c39ea736
