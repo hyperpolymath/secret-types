@@ -90,7 +90,7 @@ escape_hits() {
 check_claim_ids() {
   local decl doc
   decl="$(claims | cut -d'|' -f1 | LC_ALL=C sort)"
-  doc="$(grep -oE '^\| N-[0-9]+ ' PROOF-STATUS.adoc | tr -d '| ' | LC_ALL=C sort -u)"
+  doc="$(grep -oE '^\| N-[0-9]+ ' PROOF-STATUS.adoc | tr -d '| ' | LC_ALL=C sort -u || true)"
   if [[ -z "$doc" ]]; then
     echo 'ERROR: no claim ids found in PROOF-STATUS.adoc; the table layout changed' >&2
     exit 1
