@@ -42,36 +42,27 @@ jobs:
       # always reachable (GitHub serves it from a blob host that some agent
       # sandboxes cannot fetch), and a gate nobody can read is a gate that gets
       # admin-overridden. Doctrine: fail loudly.
-      # TEMPORARY DIAGNOSTIC (removed once the cause is known): does the pinned
-      # Agda accept the canonical flag set?  The result is published as an
-      # annotation because this sandbox cannot read job logs.
-      - name: DIAG flag probe
-        run: |
-          set +e
-          mkdir -p /tmp/p
-          printf 'module p where\n' > /tmp/p/p.agda
-          o1="$(agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i /tmp/p /tmp/p/p.agda 2>&1)"
-          r1=$?
-          o2="$(agda --safe --without-K --no-libraries --ignore-interfaces --double-check -W error -i /tmp/p /tmp/p/p.agda 2>&1)"
-          r2=$?
-          printf '::error title=probe canonical rc=%s::%s\n' "$r1" "$(printf '%s' "$o1" | tr '\n' ' ' | cut -c1-900)"
-          printf '::warning title=probe no-cubical rc=%s::%s\n' "$r2" "$(printf '%s' "$o2" | tr '\n' ' ' | cut -c1-900)"
-          exit 0
+      # The gate writes its log to /tmp, and the step that follows publishes the
+      # reason as a check annotation.  Why not annotate from the gate step
+      # itself: this runner drops annotations from steps that fail, so an
+      # annotation emitted just before `exit 1` never appears — measured, not
+      # guessed, on 2026-11-01.  A gate whose failure cannot be read from an
+      # agent session is a gate that gets admin-overridden, so the reason is
+      # published from a step that exits 0.
       - name: Core proofs, countermodels and expected rejections
         run: |
-          set +e
-          bash scripts/check.sh > /tmp/check.log 2>&1
-          rc=$?
-          set -e
-          cat /tmp/check.log
-          if [ "$rc" -ne 0 ]; then
-            # Always non-empty: GitHub silently drops annotations with an empty
-            # message, which is how the first attempt at this lost the error.
-            msg="$(grep -E '^(ERROR|[^ ]*\.agda:[0-9]+,[0-9]+)' /tmp/check.log | head -8 | tr '\n' ' ')"
+          set -o pipefail
+          bash scripts/check.sh 2>&1 | tee /tmp/check.log
+      - name: Publish the gate failure reason
+        if: always()
+        run: |
+          # The gate's last line on success is "PASS: core proofs and all N ...".
+          if [ -s /tmp/check.log ] && ! grep -q '^PASS: core proofs and all' /tmp/check.log; then
+            msg="$(grep -E '^(ERROR|[^ ]*[.]agda:[0-9]+,[0-9]+|.*[Ee]rror:)' /tmp/check.log | head -8 | tr '\n' ' ')"
             [ -n "$msg" ] || msg="$(tail -n 8 /tmp/check.log | tr '\n' ' ')"
-            printf '::error title=Agda gate failed (exit %s)::%s\n' "$rc" "${msg:0:4000}"
-            exit 1
+            printf '::error title=Agda gate failed::%s\n' "${msg:0:4000}"
           fi
+          exit 0
       - name: Which laws generic TINI uses
         run: bash scripts/minimal-laws.sh
       - name: Verification receipt matches the tree and the claim list
