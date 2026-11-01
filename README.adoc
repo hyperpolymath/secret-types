@@ -61,17 +61,27 @@ Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 * This repository owns the confidentiality-label definitions, the typing and
   observation semantics, and its own proof evidence.
 * link:https://github.com/hyperpolymath/nextgen-typing/blob/main/docs/TYPE-CONNECTIONS.adoc[TYPE-CONNECTIONS]
-  is the shared family map; this family's row is proposed in
-  link:https://github.com/hyperpolymath/nextgen-typing/issues/118[nextgen-typing#118].
+  is the shared family map. This family's row **landed on 2026-10-05** and
+  link:https://github.com/hyperpolymath/nextgen-typing/issues/118[nextgen-typing#118]
+  is closed, which satisfies D153's registration requirement. A row is not a
+  dependency: no import exists in either direction.
 * Neighbours and their limits (`epistemic-types`, `systemet`/`anytype`,
   `echo-types`, `tropical-types`) are covered in the canonical spec. None is a
-  dependency.
-* The origin record stays with `epistemic-types`: its
-  link:https://github.com/hyperpolymath/epistemic-types/blob/main/docs/secret-types.adoc[boundary/history note]
-  and link:https://github.com/hyperpolymath/epistemic-types/issues/32[issue #32]
-  remain open there, untransferred. link:docs/epistemic-types-transition-review.adoc[The transition review]
-  records the verified cross-references and the prepared, unposted tracking
-  updates.
+  dependency. They are also not one another: a confidentiality label, an
+  epistemic standpoint, a resource grade and an Echo residue are four distinct
+  structures, and
+  link:docs/secret-types.adoc#four_distinct_structures[the spec says why they
+  stay distinct].
+* The *origin* record stays with `epistemic-types` — its
+  link:https://github.com/hyperpolymath/epistemic-types/blob/main/docs/secret-types.adoc[boundary/history
+  note] — and it is a record, not a dependency: that repository proves no
+  confidentiality or noninterference theorem and hosts no `Secret` API. Its
+  issue #32 was closed by the owner on 2026-10-05T06:37Z as delivered here, with
+  no transfer and none required; its successor guard #39 closed on 2026-10-25.
+  Nothing is to be reopened.
+  link:docs/epistemic-types-transition-review.adoc[The transition review]
+  records the verified cross-references, keeps its 2026-10-05 text as history,
+  and carries a 2026-11-01 reconciliation addendum.
 
 == Licence
 

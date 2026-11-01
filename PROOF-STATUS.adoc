@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = secret-types — Proof Status
-:revdate: 2026-10-27
+:revdate: 2026-11-01
 
 Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN. Every PROVEN line
 names its module; all modules are `--safe --without-K --no-libraries`,
@@ -61,6 +61,12 @@ double negation.
 * A label is not an epistemic standpoint (README). The Kripke frame built
   for choreographic-types indexes knowledge by *views*; a label indexes
   *permission to flow*. Nothing here imports epistemic-types, deliberately.
+* The four structures are kept apart by name in `docs/secret-types.adoc`
+  (`#four_distinct_structures`): confidentiality label, epistemic standpoint,
+  resource grade, Echo residue. No mapping is proved between any two of them,
+  in either direction, and the separation above is the reason a relabelling
+  could not preserve this theorem's statement — three of the four are
+  single-run accumulations.
 
 == Open
 
