@@ -56,7 +56,7 @@ install_agda() {
     note "already present: $(agda --version | head -1)"
     return 0
   fi
-  if ! [ -x "$venv/bin/pip" ]; then
+  if ! [[ -x "$venv/bin/pip" ]]; then
     python3 -m venv "$venv"
   fi
   "$venv/bin/pip" install --quiet --upgrade agda
@@ -67,7 +67,7 @@ install_agda() {
   local npmdir
   npmdir="$(npm_root)"
   mkdir -p "$npmdir"
-  ( cd "$npmdir" && npm install --silent agda-wasm )
+  npm install --silent --prefix "$npmdir" agda-wasm
   local site
   site="$("$venv/bin/python" -c 'import agda, os; print(os.path.dirname(agda.__file__))')"
   ln -sfn "$npmdir/node_modules/agda-wasm/data/$ver" "$site/data"
@@ -91,7 +91,7 @@ install_zig() {
     note "already present: $(zig version)"
     return 0
   fi
-  if ! [ -x "$venv/bin/pip" ]; then
+  if ! [[ -x "$venv/bin/pip" ]]; then
     python3 -m venv "$venv"
   fi
   if "$venv/bin/pip" install --quiet ziglang 2>/dev/null; then
@@ -120,9 +120,9 @@ install_docs() {
   local dir
   dir="$(docs_root)"
   mkdir -p "$dir"
-  ( cd "$dir" && npm install --silent @asciidoctor/core@2.2.9 @asciidoctor/cli@3.5.0 )
+  npm install --silent --prefix "$dir" @asciidoctor/core@2.2.9 @asciidoctor/cli@3.5.0
   note "installed: $("$dir/node_modules/.bin/asciidoctor" --version | head -1)"
-  note "put it on PATH with: PATH=$dir/node_modules/.bin:\$PATH"
+  note "add $dir/node_modules/.bin to PATH to use it instead of the gem"
 }
 
 status() {
