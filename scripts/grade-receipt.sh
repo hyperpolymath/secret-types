@@ -118,10 +118,9 @@ emit() {
   printf '\n[identity]\n'
   printf 'repository = "%s"\n' "$repo"
   printf 'uuid = "%s"\n' "$uuid"
-  printf 'uuid-note = "uuid5(URL, github.com/%s). CLADE.a2ml still carries the\n' "$repo"
-  printf '             RSR template uuid — finding F-1 in\n'
-  printf '             docs/reports/audit/consistency-audit-2026-11-01.adoc, open"\n'
-  printf 'kind = "theory"                # mathesis catalogue class; Agda carries theory here\n'
+  printf 'uuid-source = "uuid5(URL, github.com/%s)"\n' "$repo"
+  printf 'uuid-note = "CLADE.a2ml still carries the RSR template uuid — finding F-1, open"\n'
+  printf 'kind = "theory"\n'
   printf 'source-commit = "%s"\n' "$source_commit"
   printf '\n[prover]\n'
   printf 'tool = "agda"\n'
@@ -130,18 +129,14 @@ emit() {
   printf 'library = "none (--no-libraries; Agda builtins only)"\n'
   printf 'flags = "%s"\n' "$flag_line"
   printf 'flags-source = "scripts/proof-flags.sh"\n'
-  printf 'flags-note = "one definition, read by the gate and by this receipt at\n'
-  printf '              generation time, so the receipt cannot describe a gate that\n'
-  printf '              did not run"\n'
+  printf 'flags-note = "one definition, read by the gate and by this receipt; the receipt cannot describe a gate that did not run"\n'
   printf '\n[conformance]\n'
   printf 'policy = "standards/3-practice/PROOF-POLICY.adoc"\n'
   printf 'policy-revision = "owner ruling 2026-10-26; section 2.1 dated 2026-11-01"\n'
   printf 'canonical-invocation = "agda --safe --without-K --cubical-compatible"\n'
   printf 'cubical-compatible = "waived"\n'
-  printf 'waiver = "docs/proof-debt.adoc#waivers — every clause matching on the\n'
-  printf '          order relation is an indexed match, which Cubical Agda does not\n'
-  printf '          support; suppressing -WUnsupportedIndexedMatch would be a green\n'
-  printf '          gate over a weakened check, so the flag is absent and recorded"\n'
+  printf 'waiver-ref = "docs/proof-debt.adoc#waivers"\n'
+  printf 'waiver-reason = "every clause matching on the order relation is an indexed match, which Cubical Agda does not support; suppressing -WUnsupportedIndexedMatch would be a green gate over a weakened check"\n'
   printf 'stronger-than-canonical = ["--no-libraries", "--ignore-interfaces", "--double-check", "-W error"]\n'
   printf '\n[gate]\n'
   printf 'command = "bash scripts/check.sh"\n'
@@ -154,8 +149,7 @@ emit() {
   printf 'escape-hatches = %s\n' "$(escape_hits | wc -l | tr -d ' ')"
   printf 'library-dependencies = 0\n'
   printf 'axioms-assumed = 0\n'
-  printf 'note = "a non-zero count above fails the gate; the receipt is only\n'
-  printf '        meaningful while all four are zero"\n'
+  printf 'note = "a non-zero count above fails the gate; the receipt is only meaningful while all four are zero"\n'
   printf '\n[[claims]]\n'
   printf '# id | ledger token | mathesis grade | coq-leg | lean-leg\n'
   printf '# mathesis grades theorems.  A refusal fixture or a witness of a leak is a\n'
