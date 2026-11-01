@@ -82,7 +82,7 @@ data Dec (P : Set) : Set where
 
 -- Predecessor, used below to recover injectivity of `suc` as a retraction
 -- rather than by the injectivity rule.  (`suc` is a constructor, so `pred`
--- computes on `suc k` definitionally.)
+-- computes on `suc k` definitionally.)  The predecessor of zero is zero.
 pred : Nat → Nat
 pred zero    = zero
 pred (suc k) = k
@@ -96,8 +96,9 @@ pred (suc k) = k
 suc-inj : {m n : Nat} → suc m ≡ suc n → m ≡ n
 suc-inj = cong pred
 
--- Push a decision through a pair of inverse maps: decide the left side, then
--- transport the answer along the retraction.  Used to lift `_≟_` over `suc`.
+-- Intended to transport a decision on A to B using maps in both directions.
+-- The positive case applies `cong` to evidence of A, though `cong` requires
+-- equality evidence.  Used to lift `_≟_` over `suc`.
 Dec-map : {A B : Set} (f : A → B) (g : B → A) → Dec A → Dec B
 Dec-map f g (yes p) = yes (cong f p)
 Dec-map f g (no ¬p) = no λ q → ¬p (g q)

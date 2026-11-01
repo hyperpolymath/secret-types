@@ -47,6 +47,7 @@
 # the same module checked by the gate.  That asymmetry is deliberate: the gate is
 # the only place a claim may come from, and PROOF-STATUS names the gate.
 
+# Print the canonical Agda arguments, one per line, including both parts of -W error.
 proof_flags() {
   printf '%s\n' \
     --safe \
