@@ -10,12 +10,14 @@
 # does not substitute for the CI log.
 
 [identity]
+project = "secret-types"
+name = "agda-grade3 verification receipt"
 repository = "hyperpolymath/secret-types"
 uuid = "462660d5-8b7e-5bfb-a72c-a942273aa064"
 uuid-source = "uuid5(URL, github.com/hyperpolymath/secret-types)"
 uuid-note = "CLADE.a2ml still carries the RSR template uuid — finding F-1, open"
 kind = "theory"
-source-commit = "545246ebae28"
+source-commit = "7a347f25271c"
 
 [prover]
 tool = "agda"

@@ -116,6 +116,11 @@ emit() {
   printf '# pin and the exact commit the result belongs to.  It is not a proof and it\n'
   printf '# does not substitute for the CI log.\n'
   printf '\n[identity]\n'
+  # A2ML requires an identity field (agent-id, name or project).  The estate's
+  # validator scans every .a2ml in the tree, so a record without one fails the
+  # DEED gate — which is how this line came to exist.
+  printf 'project = "secret-types"\n'
+  printf 'name = "agda-grade3 verification receipt"\n'
   printf 'repository = "%s"\n' "$repo"
   printf 'uuid = "%s"\n' "$uuid"
   printf 'uuid-source = "uuid5(URL, github.com/%s)"\n' "$repo"
