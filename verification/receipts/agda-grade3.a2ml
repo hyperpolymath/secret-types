@@ -17,7 +17,7 @@ uuid = "462660d5-8b7e-5bfb-a72c-a942273aa064"
 uuid-source = "uuid5(URL, github.com/hyperpolymath/secret-types)"
 uuid-note = "CLADE.a2ml still carries the RSR template uuid — finding F-1, open"
 kind = "theory"
-source-commit = "8e421ccaec50"
+source-commit = "f4a9a42e6c4a"
 
 [prover]
 tool = "agda"
@@ -73,15 +73,15 @@ claim = { id = "N-8", token = "proven", grade = "grade-3", coq-leg = "unavailabl
 # sha256 of each module, so a change to a proved statement cannot leave the
 # receipt intact.  --check compares these.
 module = { path = "src/SecretTypes/All.agda", sha256 = "d151968f4f0be492093158a575ff0561ed9b1c37997cf9230d8444918e84fe09" }
-module = { path = "src/SecretTypes/Countermodels.agda", sha256 = "536ea5394791330c5d1be06dae3a4da7eb41a17c92b163acc38665eeae6608cc" }
+module = { path = "src/SecretTypes/Countermodels.agda", sha256 = "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31" }
 module = { path = "src/SecretTypes/Lang.agda", sha256 = "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570" }
 module = { path = "src/SecretTypes/Lang/Two.agda", sha256 = "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a" }
-module = { path = "src/SecretTypes/Lattice.agda", sha256 = "583718cf33e736af8e25528a414767cb873a9ddef8cac76bafa4cebd66d2ae57" }
+module = { path = "src/SecretTypes/Lattice.agda", sha256 = "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e" }
 module = { path = "src/SecretTypes/Lattice/Record.agda", sha256 = "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3" }
 module = { path = "src/SecretTypes/Noninterference.agda", sha256 = "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e" }
 module = { path = "src/SecretTypes/Noninterference/Generic.agda", sha256 = "b57e91faa098eec4136c78fb617c4c6f139ebe175452ffd6dc91547ffe915052" }
 module = { path = "src/SecretTypes/Noninterference/Statement.agda", sha256 = "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45" }
-module = { path = "src/SecretTypes/Prelude.agda", sha256 = "9c9b968229ff7fa6c59a673a749bcd389ba5dd6da72eed24c57bf5e09b5f6177" }
+module = { path = "src/SecretTypes/Prelude.agda", sha256 = "8fe48747ddac6ec990ae2a72f534bdb0054d03d54e0d904a7f932c70aca924bb" }
 module = { path = "src/SecretTypes/Typing.agda", sha256 = "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42" }
 module = { path = "src/SecretTypes/Typing/Generic.agda", sha256 = "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718" }
 module = { path = "src/SecretTypes/Vars.agda", sha256 = "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422" }

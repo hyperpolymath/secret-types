@@ -15,7 +15,11 @@ prover="${AGDA:-agda}"
 . scripts/proof-flags.sh
 expected_version="${AGDA_VERSION:-$(proof_agda_pin)}"
 
-version="$("$prover" --version)"
+# First line only: some distributions and bindings print a provenance footer
+# after the version line, and comparing the whole output would refuse a
+# perfectly correct prover.  The pinned CI package prints one line, so this is
+# no change there.
+version="$("$prover" --version | head -1)"
 echo "$version"
 if [[ "$version" != "Agda version $expected_version" ]]; then
   echo "ERROR: expected 'Agda version $expected_version' (the Debian pin); set AGDA_VERSION to check with another" >&2

@@ -87,6 +87,15 @@ a retraction that computes definitionally) and then at `Lattice.agda:46`, where
 every clause matching on `_⊑_` is an *indexed match* — a property of how the
 two-point order is represented, not a stray lemma.
 
+Part of it was then fixed for real: the two-point order was an indexed family
+(matching a proof needed injectivity of the index constructors `L`/`H`), and it is
+now a **computed predicate** (`L ⊑ _ = ⊤`, `H ⊑ L = ⊥`), so the order laws hold
+by computation and those warnings are gone. What remains is one class —
+`just`-injectivity in the fuel semantics — which needs the big-step relation
+rather than an equality on computed results, and that changes how N-5 states
+divergence. Both arms, the two shortcuts that were measured and failed, and that
+consequence are in `docs/proof-debt.adoc#waivers`.
+
 The gap is recorded rather than closed by suppressing the warning: a gate that
 says `-WnoUnsupportedIndexedMatch` would be a green gate over a weakened check.
 Full evidence, the two arms (keep the waiver, or re-represent the order as a

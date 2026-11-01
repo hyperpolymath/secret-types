@@ -8,6 +8,7 @@ module SecretTypes.Prelude where
 open import Agda.Builtin.Nat public using (Nat; zero; suc; _+_)
 open import Agda.Builtin.Equality public using (_≡_; refl)
 open import Agda.Builtin.Sigma public using (Σ; _,_; fst; snd)
+open import Agda.Builtin.Unit public using (⊤; tt)
 
 data ⊥ : Set where
 -- Negation is evidence that a proposition would imply a contradiction.
