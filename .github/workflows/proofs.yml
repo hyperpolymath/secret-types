@@ -37,8 +37,22 @@ jobs:
           persist-credentials: false
       - name: Verify the checked Agda version
         run: test "$(agda --version)" = 'Agda version 2.6.4.3'
+      # The gate surfaces its own failure twice: once in the log, and once as a
+      # check annotation. The annotation matters because the job log is not
+      # always reachable (GitHub serves it from a blob host that some agent
+      # sandboxes cannot fetch), and a gate nobody can read is a gate that gets
+      # admin-overridden. Doctrine: fail loudly.
       - name: Core proofs, countermodels and expected rejections
-        run: bash scripts/check.sh
+        run: |
+          set -o pipefail
+          if bash scripts/check.sh 2>&1 | tee /tmp/check.log; then
+            exit 0
+          fi
+          msg="$(grep -E '^(ERROR|[^ ]*\.agda:[0-9]+,[0-9]+)' /tmp/check.log | head -12 | tr '\n' ' ')"
+          printf '::error title=Agda gate failed::%s\n' "${msg:0:4000}"
+          printf '\n--- tail of the gate log ---\n'
+          tail -n 40 /tmp/check.log
+          exit 1
       - name: Which laws generic TINI uses
         run: bash scripts/minimal-laws.sh
       - name: Verification receipt matches the tree and the claim list
