@@ -70,10 +70,13 @@ agda_version="$(proof_agda_pin)"
 agda_from="$(proof_agda_provenance)"
 flag_line="$(proof_flags_line)"
 
+# Print the Agda module paths under src/SecretTypes in sorted order.
 modules() { find src/SecretTypes -name '*.agda' | LC_ALL=C sort; }
+# Print the Agda rejection fixture paths under tests/reject in sorted order.
 fixtures() { find tests/reject -name '*.agda' | LC_ALL=C sort; }
 
-# Every escape hatch the trusted-base policy names, in the gated trees.
+# Print matching escape-hatch lines with paths and line numbers from Agda files
+# in the gated trees. Suppress grep errors and return success even with no hits.
 escape_hits() {
   grep -rn --include='*.agda' -E \
     '(^|[^A-Za-z])(postulate|believe_me|trustMe|sorry|Admitted)([^A-Za-z]|$)|{-# *(TERMINATING|NON_TERMINATING) *#-}|--type-in-type' \
@@ -83,6 +86,7 @@ escape_hits() {
 # The claim list and PROOF-STATUS.adoc must name exactly the same claims.
 # PROOF-STATUS is the human record; this receipt is the machine one; a claim in
 # one and not the other is drift, in either direction.
+# Exit with an error if claim IDs cannot be read or differ.
 check_claim_ids() {
   local decl doc
   decl="$(claims | cut -d'|' -f1 | LC_ALL=C sort)"
@@ -99,6 +103,7 @@ check_claim_ids() {
   fi
 }
 
+# Print the derived receipt, including claim rows, module hashes and fixtures.
 emit() {
   printf '# SPDX-License-Identifier: CC-BY-SA-4.0\n'
   printf '# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)\n'
@@ -190,6 +195,7 @@ case "$mode" in
     # The source-commit line is expected to differ: a receipt is committed by
     # the change that produces it and so records its parent.  Everything else
     # must match byte for byte, including every module sha256.
+    # Print the receipt file in $1 without its source-commit line.
     filter() { grep -v '^source-commit = ' "$1"; }
     if ! diff -u <(filter "$out") <(filter "$tmp") > /tmp/receipt-diff.$$ 2>&1; then
       echo 'ERROR: verification receipt does not match the tree:' >&2

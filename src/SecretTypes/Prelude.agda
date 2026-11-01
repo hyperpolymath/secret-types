@@ -81,7 +81,8 @@ data Dec (P : Set) : Set where
   no  : ¬ P → Dec P
 
 -- Predecessor.  `suc` is a constructor, so `pred` computes on `suc k`
--- definitionally — which is what makes the retraction below usable.
+-- definitionally — which is what makes the retraction below usable.  The
+-- predecessor of zero is zero.
 pred : Nat → Nat
 pred zero    = zero
 pred (suc k) = k
