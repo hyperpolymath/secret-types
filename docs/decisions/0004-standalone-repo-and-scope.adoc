@@ -11,6 +11,9 @@ Date: 2026-10-04
 Accepted (owner confirmation 2026-10-04, relayed to the coordinating session;
 recorded publicly in link:https://github.com/hyperpolymath/secret-types/issues/2[secret-types#2])
 
+// Annotations dated 2026-11-01 correct consequence statements that have gone
+// stale; they do not amend the decision. The decision text above is unchanged.
+
 === Context
 
 The secret-types question began inside `epistemic-types` (`docs/secret-types.adoc`,
@@ -55,15 +58,33 @@ repository name.
 === Consequences
 
 * This repository needs the scope statement reviewed like any other proposal;
-  the review checklist is in `docs/secret-types.adoc`. The model is not yet
-  accepted item by item, and there is no code.
+  the live review checklist is in `docs/secret-types.adoc`. The model is not
+  accepted item by item. *Annotated 2026-11-01:* the sentence "there is no code"
+  was true when this ADR was accepted and is no longer: from 2026-10-12 there is
+  a proved termination-insensitive noninterference theorem, generic from
+  2026-10-19 (`src/SecretTypes/`, `PROOF-STATUS.adoc`). The decision itself is
+  unaffected — acceptance remains an owner act, and the implementation was built
+  before items 1–4 of the checklist were formally accepted.
 * The RSR template placeholder sweep (`just repo-init`) still has to run across
   the tree; until it does, the repository is minted in scope but not in
-  scaffolding. Tracked in `secret-types#2`.
+  scaffolding. Tracked in `secret-types#2`. *Annotated 2026-11-01:* still open,
+  and now evidenced rather than asserted — `.machine_readable/descriptiles/CLADE.a2ml`
+  declares the template's own name and UUID, so an arriving agent is told it is
+  in `rsr-template-repo`. Recorded as F-1 in
+  `docs/reports/audit/consistency-audit-2026-11-01.adoc`.
 * Cross-links that still describe the old alternatives need updating:
   `epistemic-types`#32 (the specification issue), `nextgen-typing`#118 /
   `TYPE-CONNECTIONS` (the family row), and valence-shell `docs/THEORY-FEED.adoc`
-  (the "mint vs fold" sentence and the RMO inference cell).
+  (the "mint vs fold" sentence and the RMO inference cell). *Resolved 2026-11-01
+  for the first two:* `epistemic-types`#32 was closed by the owner on
+  2026-10-05T06:37Z as delivered here with no transfer (successor guard #39
+  closed 2026-10-25), and the `TYPE-CONNECTIONS` row landed on 2026-10-05 with
+  #118 closed. This repository's own two "proposed row" sentences are corrected
+  in the same change. The valence-shell row remains untouched and un-mine: it is
+  still a name-level inference, and correcting it is that repository's work.
 * The SystemET/Anytype grade-instance option remains a neighbour comparison for
   any future grade-based realisation; it is not selected and no mapping is
-  claimed.
+  claimed. *Annotated 2026-11-01:* the lattice census narrows what a "grade
+  instance" would even mean here — generic TINI consumes transitivity, the two
+  upper-bound laws of `⊔` and observer down-closure, and nothing else — but a
+  shared order is not a mapping, and none is claimed.

@@ -19,10 +19,11 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 export LC_ALL="${LC_ALL:-C.UTF-8}"
 prover="${AGDA:-agda}"
+. scripts/proof-flags.sh
 real=src/SecretTypes/Lattice/Record.agda
 minimal=tests/minimal-laws/SecretTypes/Lattice/Record.agda
 census=(⊔-upper₁ ⊔-upper₂ sees-↓)
-flags=(--safe --without-K --no-libraries --ignore-interfaces --double-check -W error)
+mapfile -t flags < <(proof_flags)
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
 # fields <file> <record>: the field declaration lines of one record.

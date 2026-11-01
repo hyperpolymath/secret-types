@@ -415,3 +415,152 @@ above to recheck current GitHub issue, PR, timeline and comment data. The
 recorded 403 is specific to the session's token; reproduce it by rerunning the
 POST label probe in <<prepared_updates>> with a token that lacks issue-write
 access.
+
+[[reconciliation_2026_11_01]]
+== Reconciliation — 2026-11-01
+
+This addendum reconciles the 2026-10-05 review with both repositories as they
+stand on 2026-11-01. Everything above it stays as written: it is the record of
+what was true and verified on 2026-10-05, and per `epistemic-types`#39 the
+pointer must stay accurate rather than be rewritten. This section supersedes the
+2026-10-05 text *only* where it says a thing is still open or unposted.
+
+=== What changed since 2026-10-05
+
+[cols="2,3,3",options="header"]
+|===
+| Item | 2026-10-05 record | State on 2026-11-01
+
+| `epistemic-types`#32
+| OPEN; "the origin decision record is open and explicitly supported by the
+  owner ruling"; transfer pending
+| **CLOSED** by the owner 2026-10-05T06:37:06Z as "delivered here"; no transfer
+  occurred and **none is required**. Do not reopen. Successor guard #39
+  ("keep the pointer accurate, keep claims out") was itself closed
+  2026-10-25T22:16:23Z.
+
+| `epistemic-types`
+  `docs/secret-types.adoc`
+| blob `01dd2c24bd7d`; carried "the replacement issue is the transferred #32
+  itself", which this review flagged as *not evidenced*
+| Revised on 2026-10-25: the sentence is gone, the issue is recorded as closed
+  without transfer, and the note explicitly supersedes the present-tense
+  statements in the 2026-10-05 review. It also names **this repository's**
+  "specification only" status text and unfinished checklist as the outstanding
+  reconciliation — which is what the 2026-11-01 revision of
+  `docs/secret-types.adoc` resolves.
+
+| `nextgen-typing`#118
+| OPEN, "secret-types pending"; row not landed
+| **CLOSED** 2026-10-05T06:39:18Z and the family row **landed** in
+  `docs/TYPE-CONNECTIONS.adoc` (`00036257b3`, read 2026-11-01). D153
+  registration is satisfied. That map's explanatory note still says no
+  noninterference theorem exists here; the correction belongs to
+  `nextgen-typing`.
+
+| This repository's status text
+| "specification only. No source module, no proof, no CI proof gate"
+| Withdrawn 2026-11-01. The theorem is proved (two-point 2026-10-12, generic
+  2026-10-19; variables parametric 2026-10-27) and the CI proof gate is green on
+  `f581f82`. No cross-repository import exists in either direction, before or
+  after.
+
+| Prepared issue comments
+| Two, prepared and **unposted** (a `secret-types#2` refresh and an
+  `epistemic-types` wording fix)
+| Both are **moot**, and neither should now be posted. The `#2` refresh asked
+  the reader to treat the "un-minted" premise as stale; the issue stays open for
+  the RSR scaffolding sweep only, and that state is now recorded in this tree.
+  The wording fix belonged to a sentence `epistemic-types` has since deleted.
+  Posting either would now add noise to a closed record.
+|===
+
+=== The boundary, restated because it is the point
+
+`epistemic-types` contains a boundary/history note and its epistemic interfaces;
+it proves no confidentiality and no noninterference theorem (standpoint
+`5422cd5`). This repository contains the confidentiality calculus and the proof
+evidence. The split is therefore:
+
+* **Confidentiality label** — permission to flow; lives here; the only structure
+  an information-flow theorem is stated over.
+* **Epistemic standpoint `κ`, warrant** — what an agent knows, on what evidence;
+  lives there. Its `Access.Preorder`, `BeliefModality` (no `reflect`) and
+  `Warrant` must not be relabelled as security labels, and its accessibility
+  preorder must not be read as a clearance order.
+* **Resource grade** — what a run consumed; lives in `tropical-types`,
+  `occupancy-types`, `systemet`.
+* **Echo residue** — what distinctions an observation lost; lives in
+  `echo-types`.
+
+No mapping between them is proved in either repository, and none is claimed. The
+reason the distinction is structural rather than editorial: the last three are
+accumulations over *one* run, and noninterference is a property of *two* runs
+with equal public inputs and different secret inputs. A rename across that line
+would not preserve the theorem's statement, so it cannot be a relabelling
+convenience — it would be a different theorem.
+
+`docs/secret-types.adoc` now states this in its own section
+(`#four_distinct_structures`), so the boundary survives independently of either
+repository's history file.
+
+=== Prepared note for `epistemic-types` (unposted, owner-gated)
+
+The 2026-10-25 status update in that repository ends with a "still stale
+elsewhere" list. Two of its items were ours, and both are now done here:
+
+* "`secret-types#2` — mint and family-map registration — remains open". Remains
+  open, but for one reason only: the RSR scaffolding sweep. The family row landed
+  2026-10-05 (#118 closed), so the registration half is finished; the minting half
+  is evidenced as still outstanding — `CLADE.a2ml` there declares the template's
+  own name and UUID.
+* "that repository's own review checklist and its 'specification only' status
+  text". Both addressed on 2026-11-01: the status text is withdrawn, and the
+  checklist now carries a per-item state column recording what the implementation
+  evidences. The items are **not** marked accepted; acceptance stays an owner
+  act, and this repository says so explicitly.
+
+Prepared as a comment body, **not posted**: this repository does not write to
+`epistemic-types`' tracker, the item it refers to (#39) is closed, and the
+boundary guard there is "keep the pointer accurate, keep claims out" — a status
+refresh from here is the owner's call, not ours.
+
+[source,markdown]
+----
+Status refresh for the 2026-10-25 "still stale elsewhere" list, from
+`secret-types` at 2026-11-01 (`f581f82` + the reconciliation commit):
+
+1. The family registration is complete: the TYPE-CONNECTIONS row landed
+   2026-10-05 and nextgen-typing#118 closed. `secret-types#2` stays open only for
+   the RSR scaffolding sweep, which is evidenced: `.machine_readable/
+   descriptiles/CLADE.a2ml` still declares `rsr-template-repo`'s name and UUID
+   (the correct UUIDv5 for this repo is 462660d5-8b7e-5bfb-a72c-a942273aa064).
+2. Our "specification only" status text is withdrawn, and the review checklist
+   now records per-item what the implementation evidences. The items are not
+   marked accepted — that remains an owner decision, and evidencing is not
+   accepting.
+3. No import exists between our repositories in either direction, before or
+   after; the only change on your side of the boundary is that nothing on it
+   needs correcting.
+
+Nothing here adds a Secret API or an IFC claim to epistemic-types, and #32 stays
+closed.
+----
+
+=== Re-verification for this addendum
+
+[source,bash]
+----
+gh issue view 32 --repo hyperpolymath/epistemic-types --json state,closedAt
+gh issue view 39 --repo hyperpolymath/epistemic-types --json state,closedAt
+gh issue view 118 --repo hyperpolymath/nextgen-typing --json state,closedAt
+gh api repos/hyperpolymath/nextgen-typing/contents/docs/TYPE-CONNECTIONS.adoc --jq .sha
+gh api repos/hyperpolymath/epistemic-types/contents/docs/secret-types.adoc --jq .sha
+gh run list --repo hyperpolymath/secret-types --workflow proofs.yml --limit 3
+----
+
+Checked on 2026-11-01: #32 `CLOSED` 2026-10-05T06:37:06Z, #39 `CLOSED`
+2026-10-25T22:16:23Z, #118 `CLOSED` 2026-10-05T06:39:18Z, map
+`00036257b320526b547107d0744102badc4f78db`, and `proofs.yml` green on
+`f581f82` (2026-10-27). `epistemic-types` was read at standpoint `5422cd5` via the
+API, not cloned, so this addendum makes no claim about its commit series.

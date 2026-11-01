@@ -8,6 +8,7 @@ module SecretTypes.Prelude where
 open import Agda.Builtin.Nat public using (Nat; zero; suc; _+_)
 open import Agda.Builtin.Equality public using (_≡_; refl)
 open import Agda.Builtin.Sigma public using (Σ; _,_; fst; snd)
+open import Agda.Builtin.Unit public using (⊤; tt)
 
 data ⊥ : Set where
 -- Negation is evidence that a proposition would imply a contradiction.
@@ -38,9 +39,19 @@ data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- Recover equality of the values inside equal just results.
-just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
-just-inj refl = refl
+-- NOT provided: an injectivity lemma for `just`.  It was here
+-- (`just-inj : just a ≡ just b → a ≡ b`) until 2026-11-01 and nothing used it.
+-- Under the canonical flag set (scripts/proof-flags.sh, which includes
+-- --cubical-compatible per PROOF-POLICY §2.1) it is refused:
+--
+--   warning: -W[no]UnsupportedIndexedMatch
+--   This clause uses pattern-matching features that are not yet supported by
+--   Cubical Agda ... Reason: It relies on injectivity of the data constructor
+--   just, which is not yet supported
+--
+-- Deleting an unused lemma is the honest fix; disabling the warning, or the
+-- flag, would have bought a green gate with a weaker check.  If a later proof
+-- needs it, the way in is a cubical-compatible formulation, not a suppression.
 
 -- Pass a present value to f and return its result; propagate nothing
 -- without applying f when the input is absent.
@@ -70,15 +81,38 @@ data Dec (P : Set) : Set where
   yes : P → Dec P
   no  : ¬ P → Dec P
 
+-- Predecessor.  `suc` is a constructor, so `pred` computes on `suc k`
+-- definitionally — which is what makes the retraction below usable.  The
+-- predecessor of zero is zero.
+pred : Nat → Nat
+pred zero    = zero
+pred (suc k) = k
+
+-- Decide an equality of successors by deciding the predecessors' equality.
+--
+-- This exists because of a real constraint, not for elegance.  Proving
+-- injectivity of `suc` directly — matching `suc m ≡ suc n` and returning `refl` —
+-- asks for constructor injectivity, which Cubical Agda does not support
+-- (`-WUnsupportedIndexedMatch`), and the canonical flag set (scripts/proof-flags.sh)
+-- makes that warning fatal.  Here the pullback is a retraction rather than a
+-- rule: `cong pred q : pred (suc m) ≡ pred (suc n)`, and both sides *reduce* to
+-- `m` and `n`, so the negative case needs no injectivity.
+--
+-- The helper is deliberately concrete rather than a general "map a decision
+-- along a retraction": in the general form `g` is a variable and `g (f x)` does
+-- not reduce to `x`, so the negative case would need the retraction law as a
+-- hypothesis and a transport.  At `suc`/`pred` the computation is definitional.
+suc-dec : {m n : Nat} → Dec (m ≡ n) → Dec (suc m ≡ suc n)
+suc-dec (yes p) = yes (cong suc p)
+suc-dec (no ¬p) = no λ q → ¬p (cong pred q)
+
 -- Decide equality of naturals.
 infix 4 _≟_
 _≟_ : (m n : Nat) → Dec (m ≡ n)
 zero  ≟ zero  = yes refl
 zero  ≟ suc n = no λ ()
 suc m ≟ zero  = no λ ()
-suc m ≟ suc n with m ≟ n
-... | yes refl = yes refl
-... | no m≢n   = no λ { refl → m≢n refl }
+suc m ≟ suc n = suc-dec (m ≟ n)
 
 -- A decidable proposition is stable: double negation can be removed.
 dec-stable : {P : Set} → Dec P → ¬ ¬ P → P

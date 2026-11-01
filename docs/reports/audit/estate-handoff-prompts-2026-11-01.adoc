@@ -1,0 +1,535 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Estate handoff: what is mine here, and one prompt per other repository
+:revdate: 2026-11-01
+:toc: macro
+:toclevels: 2
+:icons: font
+
+[abstract]
+Written at `f581f82` on branch `arena/56b71604-secret-types`, after the
+re-recon recorded in
+link:consistency-audit-2026-11-01.adoc[consistency-audit-2026-11-01]. Part one
+splits the work: what belongs to this repository's chat, and what belongs to a
+chat on another repository. Part two is one ready-to-paste prompt per
+repository, each carrying an update from here, what this repository can offer
+that chat, and where this work is going — with the non-claims kept explicit so
+the prompt cannot be read as claiming a connection that a separation theorem
+forbids.
+
+toc::[]
+
+== Part one: the split
+
+=== Mine in this repository
+
+. *The Agda development and its gate.*
+  `src/SecretTypes/*` (14 modules), `tests/reject/*`, `tests/minimal-laws/*`,
+  `scripts/check.sh`, `scripts/minimal-laws.sh`. Standing invariants: every
+  module `--safe --without-K --no-library`-legal, no `postulate` under `src/` or
+  `tests/`, Debian-pinned Agda 2.6.4.3, `--double-check`, `-W error`.
+. *The claims.* `PROOF-STATUS.adoc` (N-1…N-8 and their statuses), the
+  separation-from-siblings argument, and the explicit non-claims in
+  `README.adoc` and `docs/secret-types.adoc`. Anything graded PROVEN must name
+  its module.
+. *The next proof work.* Termination-sensitive noninterference (the named open
+  channel and its pre-registered falsifier `secret-loop`), the coalition/observer
+  union combinator that open issue `#12` asks for, and — last — declassification
+  at audited points, which D154 permits and the baseline refuses.
+. *The scope and the record.* `docs/secret-types.adoc`, ADR-0004, and the
+  transition review with its *unposted* prepared updates (the `#2` refresh; the
+  `epistemic-types` wording fix).
+. *This repository's own scaffolding sweep* (`#2`): F-1 identity, F-4 the
+  ungated `verification/proofs/` tree, and the placeholder ROADMAP/READINESS.
+  The *symptoms* are mine; the *cause* is the template's.
+
+=== Another chat's, not mine
+
+[cols="2,2,3",options="header"]
+|===
+| Repository | What belongs there | Why it is not mine
+
+| `nextgen-typing`
+| The TYPE-CONNECTIONS row: its prose is stale against our proofs, and our two
+  documents still say the row is only "proposed".
+| The map is theirs; D153 registration is a shared boundary, but the row's
+  wording and status vocabulary belong to the map's owner.
+
+| `epistemic-types`
+| Issue #32 as the open origin record; the ruling of transfer-or-keep; the
+  prepared wording fix.
+| An owner decision plus issue ownership in their repository. I record it; I do
+  not act in it.
+
+| `choreographic-types`
+| K-CUT remaining open; the reading hazard in the map's "PROVEN (fragment)"
+  row; L8 blocked.
+| Research-blocked work in their repository. I borrow gate *patterns* only, and
+  must not become a consumer of its results.
+
+| `residual-evidence-types`
+| The distinct-versus-subsumed question; no stable API.
+| Their research plan. I copied the accept/reject gate shape, nothing else.
+
+| `echo-types`
+| The Echo reading of noninterference is *their* side to state, if they want it.
+| Our side is a conjecture about a fibre; verifying it means their definitions.
+
+| `tropical-types`, `occupancy-types`
+| Whether one-run grades can ever state a two-run property; their name-level
+  "no-imports" mentions of us.
+| Their algebras and boundaries.
+
+| `valence-shell`
+| `docs/THEORY-FEED.adoc` still carries the RMO fit as a name-level inference;
+  `#92` is blocked.
+| The correction has to land where the inference was made.
+
+| `rsr-template-repo` + `standards`
+| F-1 identity propagation (we are a *new unlisted victim*), F-3 the hexad feed
+  stub, F-5 the `logtalk` report format, F-6 the two workflows that fail at
+  startup.
+| Estate-common files and their generators. Fixing our copy would violate
+  "solutions at source".
+
+| `verisimdb`
+| The octad payload shape and whether `format = "hexad"` still validates.
+| The modality profile is theirs to define.
+
+| `metadatastician/lintel`
+| Whether their reader-set lattice instantiates `Lattice.Record`, and what they
+  want from open issue `#12`.
+| A cross-organisation consumer claim that ADR-0004 says needs a CI import
+  before it may be asserted.
+|===
+
+== Part two: the prompts
+
+Each block is self-contained. Paste as-is; nothing in them requires the reader
+to have seen this session.
+
+=== 1. `nextgen-typing`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, at f581f82). Two corrections to the
+Secret Types material in docs/TYPE-CONNECTIONS.adoc, both verified against code.
+
+1. The prose under "Where things belong" still says secret-types "is
+specification-stage — no Secret type, information-flow calculus,
+declassification rule or noninterference theorem exists there yet". That is now
+stale. There is a proved termination-insensitive noninterference theorem for the
+two-point lattice (SecretTypes.Noninterference.tini, 2026-10-12) and it is an
+instance of a generic theorem over a Lattice record and any down-closed observer
+(SecretTypes.Noninterference.Generic.tini, 2026-10-19), plus countermodels
+proving each law used is necessary. CI gate green: scripts/check.sh runs every
+module with --safe --without-K --no-libraries --double-check -W error and
+refuses any postulate under src/ or tests/.
+
+2. The connection row "Secret → (none yet) | OPEN | TINI proved; the Echo
+reading of noninterference is a conjecture" is accurate and we would like it to
+stay. The Open status is right for the connection, not for the theorem: no
+consumer and no frontier item is selected (owner confirmation 2026-10-04,
+ADR-0004 Decision 3), and the Echo reading stays a CONJECTURE until echo-types
+chooses to state it.
+
+Also: the row was added 2026-10-05 and #118 closed, but our README and scope
+statement still describe the row as "proposed in nextgen-typing#118". We will
+fix our two sentences; please confirm the row is intended to be permanent so we
+describe it correctly.
+
+What we can offer this chat, from here: the repository is now a worked example
+of the discipline this map asks for — a claim set where every PROVEN line names
+its module, an explicit census of which laws the proof uses and a certificate
+that removing any one of them breaks it (scripts/minimal-laws.sh), and
+expected-rejection fixtures that must fail *at their invalid declaration* rather
+than for a missing import. If useful, that pattern generalises: the census
+certificate is the cheapest available defence against a map row over-claiming.
+We make no request for a mechanised dependency and none exists.
+----
+
+=== 2. `epistemic-types`
+
+[source,text]
+----
+Update from secret-types on the 2026-10-04 transition (checked 2026-11-01 at
+secret-types f581f82).
+
+State: benign, and unchanged in ownership. Issue #32 here remains the open origin
+record of the decision (D153/D154, plus the 2026-10-04 owner confirmation that
+the standalone repository is the home). No issue was transferred, closed or
+re-owned, and no work of yours was moved or rewritten. secret-types now carries
+ADR-0004 and docs/secret-types.adoc as its canonical scope statement, and
+docs/epistemic-types-transition-review.adoc as the cross-reference record.
+
+Two things belong to this chat and not to ours:
+
+1. A wording fix in docs/secret-types.adoc. It currently says "the replacement
+   issue is the transferred #32 itself, not a duplicate". No transfer has ever
+   occurred, so the sentence asserts an event that did not happen. A suggested
+   replacement is prepared verbatim in the transition review at
+   secret-types:docs/epistemic-types-transition-review.adoc (§ "Prepared wording
+   fix for epistemic-types docs/secret-types.adoc"). It states instead that
+   #32 and the note remain the origin record, that transfer is pending an owner
+   decision, and that nothing is duplicated.
+
+2. The transfer-or-keep ruling. Either outcome is consistent with what we hold,
+   but the two repositories should not both describe it as decided.
+
+What we can offer from here: an independent, dated verification of every claim
+the transition made — blob SHAs (583017cfd5fa, cf0a152e46c6, 01dd2c24bd7d),
+merge timestamps, the 403 on issue writes, and the fact that our port is a
+point-in-time snapshot of your note rather than a live mirror. If your chat ever
+needs "what does secret-types actually assert about epistemic-types", the honest
+answer is: only that a label is not an epistemic standpoint, that an epistemic
+index is not a security label, and that possessing evidence is not possessing a
+secret — plus the deliberate absence of any import. We import nothing from you,
+and PROOF-STATUS says so explicitly. We are also not using a continuous
+confidence model anywhere; the Agda development has no numbers of that kind. If
+our divergence from your discrete constructive model ever looks like an
+invitation to align, it is not one: the two orders share a shape and nothing
+else.
+----
+
+=== 3. `choreographic-types`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82), and one warning about the shared
+map.
+
+We are downstream of you in *patterns only*, and we want that recorded as
+pattern-borrowing rather than as a dependency. Three citations:
+- .github/workflows/proofs.yml:2 — "Pattern: choreographic-types
+  .github/workflows/proofs.yml", a digest-pinned Debian 13 container with the
+  prover apt-pinned to one version.
+- scripts/minimal-laws.sh:4 — "Pattern: choreographic-types
+  scripts/minimal-laws.sh (K-4)". Ours certifies which lattice laws the generic
+  TINI proof uses: sufficiency against a record holding only the three census
+  laws, no-drift between that record and the real one, and a negative control
+  ablating each law to show the proof is then refused.
+- scripts/check.sh:3 — expected-rejection fixtures must fail *at their invalid
+  declaration*, never for a missing import or parse error.
+
+Nothing of yours is imported, and we treat K-CUT as open: our PROOF-STATUS names
+you only as a contrast case — you index knowledge by *views* in a Kripke frame,
+we index *permission to flow* by a label. L8 is not consumed by us and we make no
+deployability claim about your work.
+
+The warning: the estate map (nextgen-typing docs/TYPE-CONNECTIONS.adoc, read
+2026-11-01) carries "Resource Algebra → Choreographic | PROVEN (fragment) |
+K-CUT-LOSS parametric" directly under a row that correctly says "the general
+K-CUT result is open". A reader skimming statuses sees PROVEN next to
+choreographic and concludes K-CUT resolved. Since K-CUT-LOSS is open and VCL-UT
+L8 is blocked on it, that row is the most misreadable line in the map. That is
+your wording to own; we are flagging rather than editing.
+
+What we can offer: our minimal-laws certificate is, in effect, a machine that
+tests whether a fragment result is parametric or accidental — it will tell you
+exactly which laws a parametric proof consumes and whether each is necessary. If
+K-CUT-LOSS's parametricity claim has an analogous "which laws does the fragment
+actually need" question, that shape transfers. We can also share the
+double-checked gate configuration, which is the cheapest way to make a
+fragment claim safe: it cannot silently pass on an unproved step.
+----
+
+=== 4. `residual-evidence-types`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82).
+
+We cite you once, in scripts/check.sh:3, as the pattern for our accept/reject
+gate: core proofs, then a set of fixtures that must each fail at their marked
+invalid declaration, with the log checked so a fixture cannot pass by failing for
+the wrong reason (missing import, parse error, unsolved meta). That pattern is
+doing real work for us — it is what makes "the typing rule is load-bearing"
+checkable rather than asserted.
+
+We treat you as early research with no stable API and make no claim about your
+distinctness question. Our own separation argument, if it is of any use to you:
+noninterference is a property of *two* runs of one program with different secret
+inputs; every grade we know of in this family — Echo, tropical, occupancy — is an
+accumulation over *one* run, and no accumulation over one run can state it.
+That is a reason a family is needed rather than a view. Whether residual-evidence
+sits with echo+epistemic or stands alone is exactly the question our argument
+does not answer, because it is about accumulation, not about worlds.
+
+What we can offer: the certificate machinery. Two things you may not have yet —
+(a) a cheap sufficiency test that a parametric theorem really uses only the laws
+claimed (check the statement against a stripped record containing exactly the
+claimed laws), and (b) a negative control per law (ablate it; the proof must be
+refused, and refused with the right error). Together they convert "we believe
+the proof is parametric" into a checkable sentence. Both are in
+secret-types scripts/minimal-laws.sh and are short enough to port.
+----
+
+=== 5. `echo-types`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82), about the one connection between
+us that exists on paper, and why we are not asserting it.
+
+We now have a proved theorem: termination-insensitive noninterference for a
+two-point Public ⊑ Secret lattice over a while-language with fuel semantics, and
+a generic version for any Lattice record and any down-closed observer
+(SecretTypes.Noninterference.Generic.tini). Both proved, kernel-double-checked,
+no postulates, builtins only.
+
+The README records a CONJECTURE, not a result: for a well-typed program, the
+public observer's Echo fibre over its outputs does not separate secret inputs —
+the Echo reading of noninterference. It is deliberately unproved and it needs
+*your* definitions to even state, so we are not going to state it for you.
+
+Two things we would ask you to weigh, both honest questions rather than
+requests:
+1. Your EchoSecurity no-section / no-recovery property for a collapsing exit map
+   is a one-run statement about information loss. Our TINI is a two-run
+   statement. If Echo can only ever grade one run, the right conclusion is that
+   the conjecture is false as stated and the honest wording is "Echo cannot state
+   noninterference" — which is a stronger, cleaner separation than a conjecture
+   that lingers. If, on the other hand, a fibre over a *relation* between two
+   runs is available in your setting, the conjecture has a home.
+2. We are not treating Echo as a resource instance, and we are not assuming
+   bidirectional Echo↔Resource conversion anywhere. Both directions of the
+   bridge are outside what we claim.
+
+What we can offer: an independently proved, self-contained two-run property with
+a named open channel (termination) and a pre-registered falsifier — a well-typed
+program that spins on one secret and stops on another, which TINI says nothing
+about by design. That is exactly the test object you would need in order to
+decide whether an Echo fibre over outputs can distinguish any pair that TINI does
+not.
+----
+
+=== 6. `tropical-types`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82). Short, because the boundary is
+short.
+
+We state you as a neighbour with a limit and not as a dependency: a resource
+grade is not a confidentiality label, and a resource bound is not a leakage bound
+without a separate measure and theorem. Our PROOF-STATUS gives the reason we
+think the limit is structural rather than provisional: a tropical grade is an
+accumulation over *one* run; noninterference is a property of *two* runs with the
+same public inputs and different secret inputs, so no single-run accumulation can
+state it. If that reason is wrong, we would rather hear it from you than keep it
+in our status file.
+
+We are not claiming any of your results, and we hold your purity constraint in
+mind as a model: yours is Lean Init only, zero sorry, zero Classical.choice, zero
+Mathlib. Ours is the Agda analogue — --safe --without-K --no-libraries,
+--double-check, -W error, builtins only, and a script that refuses any postulate
+under src/ or tests. Different prover, same discipline, and we would rather keep
+the two independent than share a library and couple the failure modes.
+
+What we can offer: nothing you need. If you ever want a second, independent
+worked example of "prove the fragment, then prove that each law you relied on is
+necessary", ours is small: three census laws, a stripped record, an ablation per
+law, plus countermodels showing each law is semantically necessary. That is a
+reusable shape for any algebra whose laws are load-bearing.
+----
+
+=== 7. `occupancy-types`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82).
+
+You name us in a no-imports list (ULTRAPLAN §1.2/§6), and we are returning the
+favour with a cleaner boundary than you had when you wrote it. At the time the
+entry was written we had not said what we were; we now have a scope statement, a
+proved theorem, and 14 modules of Agda.
+
+What we are: confidentiality labels that constrain value flow, with
+declassification only at explicit audited points, proved for a pure total
+fragment. What we are not, and this is the part that matters for your list: we
+are not a resource calculus, not a grade algebra, and not a scheduler. Nothing we
+prove constrains occupancy, peaks, or reclamation at a cut.
+
+The separation we would offer you, in case it saves you work: occupancy is a
+high-water mark accumulated over *one* run, and an order-dependent peak is
+invisible locally. Noninterference is a property of *two* runs with equal public
+inputs and different secret inputs. So the two are not in tension and not in
+sequence: neither implies the other, and a no-imports entry is the right call.
+The only overlap is the shared two-point order, and an order is not a connection.
+
+What we can offer: our countermodel technique. We prove each law our theorem uses
+is not decorative by dropping it and exhibiting a well-typed program that then
+leaks. If your peak-composition claims have laws that are assumed rather than
+exercised, the same ablation shape would show which ones are actually doing work.
+----
+
+=== 8. `valence-shell`
+
+[source,text]
+----
+Update from secret-types (2026-11-01, f581f82). This one is a correction that
+belongs in your tree.
+
+docs/THEORY-FEED.adoc still carries the possible RMO key-provisioning /
+disclosure use as a feeder item, and it does so, by its own wording, as an
+inference from the repository name. We want to be unambiguous about our side:
+
+- We are not a selected consumer of valence-shell#92, and #92 is not selected as
+  a frontier item for us. Our ADR-0004 Decision 3 says so, and our scope
+  statement calls #92 "the nearest frontier item *by name only*".
+- We make no key-provisioning, key-rotation, key-revocation, obliteration or
+  disclosure claim. Those are listed verbatim among our non-claims.
+- We are not a cryptographic system. A label does not make a value unreadable.
+  It constrains flow, statically, in a pure fragment with no I/O.
+
+Why this matters to you specifically: a name-level inference in a direction doc
+becomes a dependency in someone's roadmap without anyone deciding it, and the
+estate has already paid for that pattern. If the row is still there, the accurate
+wording is "name-level adjacency only; no artefact, no theorem, no selected
+consumer".
+
+What we can offer in the other direction, and it is real: our noninterference
+theorem is a two-run property, and the RMO story that keeps being attached to us
+is a story about *what a lower-cleared observer can learn*. If valence-shell ever
+wants a formal complement to the extraction-gap boundary — a statement about
+static flows rather than about what survives extraction — that is the shape we
+have, for a small fragment, with the limits named. It would still not be a
+compliance claim, and we would not let it be written as one.
+----
+
+=== 9. `rsr-template-repo` (and `standards`)
+
+[source,text]
+----
+Four findings from a repository instantiated from this template
+(secret-types, 2026-11-01, at f581f82). The first one is new: secret-types is an
+instance of the CLADE propagation bug that CLADE.a2ml documents, and it is not in
+the confirmed-victims list in that file's own comment.
+
+1. Identity. .machine_readable/descriptiles/CLADE.a2ml in secret-types declares
+   canonical-name "rsr-template-repo", prefixed-name "rm-rsr-template-repo",
+   uuid a5ea1382-a34c-5334-8a46-a2ebe904c810, and clade primary "rm".
+   UUIDv5(URL, "github.com/hyperpolymath/secret-types") is
+   462660d5-8b7e-5bfb-a72c-a942273aa064. ECOSYSTEM.a2ml and STATE.a2ml are
+   likewise template self-descriptions (project = "rsr-template-repo",
+   completion-percentage = 97, chain "standards → rsr-template-repo → (every
+   estate repo)"), and the generated arrival pack in CLAUDE.md therefore opens
+   "This repo: rsr-template-repo · clade rm-rsr-template-repo" — so every
+   arriving agent is told it is in a different repository. `just repo-init` did
+   not replace these files for this repo. Suggested: add secret-types to the
+   victims list, and check whether repos minted after the fix regressed.
+
+2. Proof gate that cannot run. verification/proofs/{agda,coq,lean4,idris2,tlaplus}
+   ship template skeletons whose MANIFEST files say "gated" and
+   "Ground-truthed 2026-07-17". scripts/check-proofs.sh is only reachable from
+   build/just/proofs.just; no workflow in the tree invokes it, so the claim that
+   these are gated is false by construction in CI. This is precisely the failure
+   mode check-proofs.sh's own header says it was written to eliminate ("a gate
+   that cannot run must never report OK"), recurring one level up.
+
+3. VeriSimDB feed shape. .machine_readable/integrations/verisimdb.a2ml sets
+   format = "hexad" and the commented e2e stub posts to /api/v1/hexads.
+   hyperpolymath/verisimdb's README states the modality profile is the Octad —
+   eight fixed slots. The template's feed stub predates the octad and should not
+   be copied forward.
+
+4. Report format. .machine_readable/descriptiles/NEUROSYM.a2ml sets
+   report-format = "logtalk". If Logtalk has been removed estate-wide (the
+   .lgt files are dead artefacts and the active rule system is
+   rules/hypatia-elixir/), then this key names a removed tool in every repo that
+   inherits it. We have deliberately not guessed a replacement value.
+
+Observation, not a finding: scorecard.yml and hypatia-scan.yml fail at startup in
+secret-types (0s, no jobs created; run 41255739303), while proofs.yml is green.
+Red-but-unread gates are the mirror image of green-but-unrun ones.
+
+What we can offer: secret-types is a useful canary for items 1, 2 and 3 because
+it is both template-instantiated and proof-bearing — the gated tree
+(src/SecretTypes + tests) and the ungated template tree (verification/proofs)
+sit side by side, so the difference in trustworthiness is visible in one
+repository. Happy to have our copy used as the worked example for the sweep
+procedure.
+----
+
+=== 10. `verisimdb`
+
+[source,text]
+----
+One shape question from a downstream repository (secret-types, 2026-11-01).
+
+Our optional feed config, inherited from the RSR template, declares
+format = "hexad" and the template's commented e2e stub posts to
+/api/v1/hexads. Your README states the modality profile is the Octad — eight
+fixed modality slots — and distinguishes the profile from a subject's modality
+*set* (a strict subset is normal, and it is a property of the subject, not a
+variable-arity API).
+
+Questions we will not guess at:
+1. Is the wire format identifier now "octad", and is "hexad" still accepted, or
+   is it rejected?
+2. Is the entity path /api/v1/octads (or an octad-shaped record under a versioned
+   path)? We would rather be told than infer from a URL.
+3. Does an emitter that only ever produces six modalities need to declare the
+   absent slots explicitly, given that a strict subset is normal?
+
+Context on our side, so you can judge whether to care: secret-types emits scan
+results, build metrics and a dependency graph — no graph/vector/tensor payloads —
+so its modality set is genuinely a subset. If the correct behaviour is "emit the
+subset and let the profile supply the slots", that is the answer we will
+implement, and we will correct the template stub at source rather than in our
+copy.
+
+We are not asking for a schema change and we claim no integration: the feed file
+in our tree is template boilerplate marked "delete this file if your project does
+not feed data to VeriSimDB", and no CI path in our repository writes to VeriSimDB.
+----
+
+=== 11. `metadatastician/lintel`
+
+[source,text]
+----
+Cross-organisation note from hyperpolymath/secret-types (2026-11-01, f581f82).
+Two of our files make claims about Lintel, and one of them is a claim we are not
+entitled to make. We would rather correct it than leave it.
+
+1. src/SecretTypes/Prelude.agda:67 — our Dec type is annotated "Same
+   constructors as Lintel's local copy (metadatastician/lintel, LNT-01), which it
+   drops on re-pin." That is a record of a shared shape, nothing more; we import
+   nothing from you and we do not pin you.
+2. src/SecretTypes/Lattice/Record.agda:7 — asserts that "Lintel's reader-set
+   lattice" is a value of our Lattice record. That is a *consumer claim* and we
+   cannot witness it: our ADR-0004 says an integration may be claimed only after
+   a real import builds in CI, and no such import exists here. Unless you tell us
+   otherwise, we will soften it to "is intended to be a value of it" or drop the
+   example.
+
+What we have that may genuinely be useful to you, and the reason for writing:
+our Lattice record is not a full lattice. It carries exactly the laws the
+noninterference proof consumes — transitivity of ⊑, and the two upper-bound laws
+of ⊔ — with ⊥ as the literal label needing no law at all. We prove each is
+necessary by dropping it and exhibiting a well-typed program that then leaks
+(SecretTypes.Countermodels), and we certify sufficiency by typechecking the
+theorem against a record containing only those laws (scripts/minimal-laws.sh).
+For a reader-set lattice that is a pleasant result: no decidability, no
+reflexivity, no antisymmetry, no leastness of join and no top are required. If
+Lintel's reader sets satisfy transitivity and the two upper bounds — which they
+should, being a powerset-like order — then our generic theorem applies with no
+changes, and we would be glad to hand over the instance rather than have you
+re-derive it.
+
+Our open issue #12 ("observer union and coalition TINI in the Record module,
+from Lintel") is exactly this direction. If you would rather it lived in your
+tree, say so and we will keep our side to the comment only.
+----
+
+== What these prompts deliberately do not say
+
+* No prompt proposes a single unified adapter, an Echo↔Resource conversion, or
+  Echo-as-resource — all three are refuted in this estate.
+* No prompt treats the map's "PROVEN (fragment)" as K-CUT resolved.
+* No prompt asserts a mechanised dependency that does not exist. The only
+  integration claim anywhere in this tree that lacks a CI import is the Lintel
+  one, and prompt 11 opens by offering to withdraw it.
+* No prompt claims GDPR, thermodynamic, cryptographic or side-channel
+  properties. The non-claims list in `docs/secret-types.adoc` is load-bearing and
+  travels with every handoff.

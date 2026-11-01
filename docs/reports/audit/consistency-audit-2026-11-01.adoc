@@ -1,0 +1,609 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Consistency audit: working model against the proven estate invariants
+:revdate: 2026-11-01
+:toc: macro
+:toclevels: 2
+:icons: font
+
+[abstract]
+A re-reconnaissance of `secret-types` at `f581f82` (branch
+`arena/56b71604-secret-types`) followed by a self-audit of my working model of
+the hyperpolymath estate against sixteen structural invariants. Every status
+below is grounded in a file and line in this tree, in the live
+`nextgen-typing` map, or in a GitHub API read — not in a repository name. The
+audit found *no drift in the proof development* and *eight instances of
+document and manifest drift*, four of which are estate-common template residue
+that this repository inherited and never swept.
+
+toc::[]
+
+== Method and limits
+
+*Read:* `README.adoc`, `PROOF-STATUS.adoc`, `docs/secret-types.adoc`,
+`docs/epistemic-types-transition-review.adoc`, `docs/decisions/0004-*`,
+`docs/status/{ROADMAP,READINESS,PROOF-NEEDS}.adoc`, `docs/AUDIT.adoc`,
+all of `src/SecretTypes/` (14 modules), `tests/reject/`, `tests/minimal-laws/`,
+`scripts/{check,minimal-laws,check-proofs}.sh`, `.github/workflows/proofs.yml`,
+`.machine_readable/descriptiles/{CLADE,ECOSYSTEM,STATE,NEUROSYM,PLAYBOOK}.a2ml`,
+`.machine_readable/integrations/{verisimdb,groove}.a2ml`,
+`verification/proofs/*/MANIFEST` and the skeletons they gate, plus
+`git log`, `gh run list`, and one API read of `nextgen-typing`
+`docs/TYPE-CONNECTIONS.adoc` (sha `00036257b3`) and `hyperpolymath/verisimdb`
+`README`.
+
+*Limits, stated before the claims.* (1) The clone is one commit deep, so
+"recent work" is audited as tree state, not as a commit series. (2) No `agda`,
+`just`, `guix` or `nix` exists in this sandbox: I could not re-run
+`scripts/check.sh` or `scripts/minimal-laws.sh`, so the proof-gate status below
+rests on the CI record, not on a local re-check. (3) I made no outward-facing
+change: no issue, comment, PR or push to another repository.
+
+== The audit
+
+=== 1. Central substrate — VeriSimDB as the only shared channel
+
+*Understanding.* `ECHIDNA`, `echidnabot` and `proof-burrower` speak to each
+other only through VeriSimDB via VCL; no system-to-system protocol exists
+between them. VeriSimDB's modality *profile* is the Octad — eight fixed slots,
+while any one subject's modality *set* may be a strict subset.
+
+*STATUS:* ✅ Consistent (with one stale payload-shape finding, F-3).
+
+*ONE-LINE EVIDENCE:* `grep -ri` over the tree finds **zero** occurrences of
+`echidna`, `proof-burrower` or `VCL`; the only VeriSimDB surface is the optional
+template feed `.machine_readable/integrations/verisimdb.a2ml` and the
+`kind = 'verisimdb` evidence sinks in the six contractiles — i.e. one hub, no
+new point-to-point channel.
+
+*ACTION:* none for routing. Correct F-3 (`format = "hexad"`) with the VeriSimDB
+shape, not with a guess.
+
+=== 2. Echo → Resource directionality
+
+*Understanding.* `EchoBridge` proves the bridge runs E→R only and
+`NotResourceInstance` proves Echo is not a resource instance; conversion is
+one-directional and cannot be run backwards.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* no conversion, coercion, marshalling or `instance` code
+exists in the tree; Echo appears only as prose — the `echo-types` neighbour row
+(`docs/secret-types.adoc`), the two-run/one-run separation argument
+(`PROOF-STATUS.adoc` "Separation from siblings"), and the estate map's
+`Secret → (none yet) | OPEN` row.
+
+*ACTION:* none. Boundary to keep: the README's Echo *conjecture* must stay
+worded as "the public observer's Echo fibre does not separate secret inputs" (a
+property of a reading) and must never be restated as an Echo↔Resource
+conversion.
+
+=== 3. No universal adapter
+
+*Understanding.* `hub_ceiling` proves universal interoperability impossible, so
+backend-specific adapters are mandatory; any single unified adapter is a
+category error.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* the only `adapter` strings in the tree are
+`zig-unified-api-adapter` in inherited template files
+(`.machine_readable/descriptiles/PLAYBOOK.a2ml:84`,
+`.machine_readable/integrations/groove.a2ml:4`) plus the CC licence text —
+neither is a proposed interop layer here, and the development imports nothing.
+
+*ACTION:* none.
+
+=== 4. `absolute-zero` status
+
+*Understanding.* `absolute-zero` supplies CNO/OND, has 115 `Qed` against 61
+undischarged axioms, consumes proof infrastructure rather than providing ground
+truth, and leaves OND-6 open by design.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* **zero** occurrences of `absolute-zero` anywhere in the
+tree; this repository depends on nothing from it and re-states none of its
+obligations.
+
+*ACTION:* none now. Standing rule for later: if declassification work ever
+consults CNO, cite it as a consumer with 61 open obligations and never as
+axiom-free truth. This repository's baseline declassifies nothing, which is
+compatible with OND-6 being open by design.
+
+=== 5. K-CUT status
+
+*Understanding.* K-CUT ("grading and transport commute with endpoint
+projection") is an open conjecture; `K-CUT-LOSS` and `K-CUT-WARRANT` are open;
+VCL-UT L8 is blocked until it resolves, so `choreographic-types` is
+research-blocked, not deployable.
+
+*STATUS:* ✅ Consistent here; ⚠️ *hazard flagged in the estate map, which is not
+mine to fix.*
+
+*ONE-LINE EVIDENCE:* this repository borrows choreographic-types' *gate
+patterns* — `scripts/check.sh:3-4` ("Pattern: residual-evidence-types,
+choreographic-types"), `scripts/minimal-laws.sh:4` ("Pattern:
+choreographic-types ... (K-4)"), `.github/workflows/proofs.yml:2` — and never
+its *results*; nothing imports choreographic artefacts, no L8 artefact is
+consumed, and `PROOF-STATUS.adoc` uses choreographic only as a contrast case.
+
+*ACTION:* keep the distinction between "a pattern was copied" (no proof
+dependency) and "a result was consumed" (a dependency) explicit in every future
+mention. Separately, in the `choreographic-types` chat: the live map's row
+`Resource Algebra → Choreographic | PROVEN (fragment) | K-CUT-LOSS parametric`
+is readable as "K-CUT closed", which contradicts the open general result — that
+wording risk is theirs to own.
+
+=== 6. Epistemic model
+
+*Understanding.* `epistemic-types` uses a discrete constructive model
+(`FactiveModality.reflect` = knowledge; `BeliefModality` has no `reflect`), not
+0.0–1.0 confidence; monadic bind and comonadic extract are future commitments,
+not provided.
+
+*STATUS:* ✅ Consistent for the model; ⚠️ one inherited skeleton contradicts it
+in appearance (F-4).
+
+*ONE-LINE EVIDENCE:* `docs/secret-types.adoc` "A security label is also not an
+epistemic availability index (`κ`)"; `PROOF-STATUS.adoc` "a label indexes
+*permission to flow*… Nothing here imports `epistemic-types`, deliberately"; the
+Agda development contains no numeric confidence and no `bind`/`extract`
+assumption. The exception is template residue:
+`verification/proofs/lean4/ApiTypes.lean:34` "Bounded confidence value (0.0 to
+1.0)" and `verification/proofs/agda/Properties.agda:24` "confidence scores,
+trust levels".
+
+*ACTION:* F-4 — mark or remove the template skeletons so no reader infers a
+continuous-confidence model from this repository.
+
+=== 7. `januskey` identity
+
+*Understanding.* `januskey` is reversible file operations with inversion
+metadata (append-only log, SHA-256), part of Valence Shell; it is not a
+cryptographic key system.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* the single occurrence is boilerplate in
+`docs/governance/CRG-AUDIT-TEMPLATE.adoc:278` ("Standing rules (e.g. januskey,
+private-repo exceptions)") — a reference to a standing rule, never to a key
+hierarchy.
+
+*ACTION:* none. `docs/secret-types.adoc` already states that this project makes
+no key-provisioning, rotation or revocation claim.
+
+=== 8. JtV separation
+
+*Understanding.* JtV v2 is a separate reversibility research programme;
+convergence with `januskey` and `absolute-zero` is monitored, not depended on.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* **zero** occurrences of `JtV` or `ReversalToken` in the
+tree.
+
+*ACTION:* none.
+
+=== 9. Ephapax legacy
+
+*Understanding.* Legacy preservation is provably false
+(`Counterexample.v`, 5 `Qed`); the `Admitted` is correct and durable, and the
+negative result must be respected rather than closed.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* **zero** occurrences of `ephapax`; nothing here attempts to
+close, re-open or route around that negative result.
+
+*ACTION:* none.
+
+=== 10. Valence Shell trust boundary
+
+*Understanding.* Valence Shell's trust boundary is the Lean→Rust extraction gap;
+`vsh` proves algorithmic, not thermodynamic, reversibility, and RMO is an
+engineering primitive, not GDPR compliance.
+
+*STATUS:* ✅ Consistent — this repository is the one that *recorded* the
+correction.
+
+*ONE-LINE EVIDENCE:* `docs/secret-types.adoc` marks `valence-shell#92` as "the
+nearest frontier item *by name only*", records that the RMO key-provisioning /
+disclosure fit "appears in valence-shell `docs/THEORY-FEED.adoc` explicitly as
+an inference from the repository name", and lists "no RMO (GDPR/obliteration)
+key-lifecycle or disclosure guarantee" among the non-claims; ADR-0004 §Decision
+3 repeats it.
+
+*ACTION:* none. Do not let any later doc upgrade "nearest by name" into
+"selected consumer"; ADR-0004 §Decision 4 requires a real CI import first.
+
+=== 11. Logtalk removal
+
+*Understanding.* Logtalk was removed; the `.lgt` files are dead artefacts; the
+active rule system is Elixir at `rules/hypatia-elixir/`.
+
+*STATUS:* ⚠️ Uncertain — one live configuration still names it.
+
+*ONE-LINE EVIDENCE:* no `.lgt` file exists here, and no prose treats Logtalk as
+live; but `.machine_readable/descriptiles/NEUROSYM.a2ml:14` sets
+`report-format = "logtalk"`. That line is template-inherited —
+`hyperpolymath/hypatia`'s own `.machine_readable/descriptiles/NEUROSYM.a2ml`
+carries the same key — so it is not evidence that Logtalk is alive, nor that it
+is dead. I did not read `hypatia`'s report-format handling, so I will not guess
+the replacement value.
+
+*ACTION:* F-5. Ask the `hypatia` / `standards` chat what the live value is
+before editing; do not substitute a plausible name (that is exactly the
+name-instead-of-code error). If the field is dead, delete the line rather than
+renaming it.
+
+=== 12. Tropical purity (and the analogous purity here)
+
+*Understanding.* `tropical-types` depends only on Lean `Init`: zero `sorry`,
+zero `Classical.choice`, zero Mathlib; that purity is a constraint to preserve.
+
+*STATUS:* ✅ Consistent for the Agda development; ⚠️ for an ungated sibling tree.
+
+*ONE-LINE EVIDENCE:* `scripts/check.sh` runs every module with
+`--safe --without-K --no-libraries --ignore-interfaces --double-check -W error`
+and refuses any `postulate` under `src/SecretTypes` or `tests`; `grep` finds no
+`Classical.choice` and no Mathlib import in `src/`. The only Mathlib mention is
+a prover-comparison table in template `docs/status/PROOF-NEEDS.adoc:94`, and
+`verification/proofs/agda/Properties.agda:11-14` *does* import
+`Data.Nat`/`Data.List` — stdlib, and outside the gated tree.
+
+*ACTION:* F-4. Never cite `verification/proofs/` as evidence of this project's
+purity; the purity claim is `src/SecretTypes` + `tests` only.
+
+=== 13. Echo identity claim
+
+*Understanding.* `echo-types`' identity claim is open by design (criterion 2
+unmet) and the repository is built to falsify its own claim.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* nothing here asserts `echo-types`' identity; the neighbour
+row quotes the narrower `EchoSecurity` no-section result and calls it "not
+low-observer noninterference".
+
+*ACTION:* none.
+
+=== 14. Residual-evidence status
+
+*Understanding.* `residual-evidence-types` is early research with no stable API;
+the open question is whether it is distinct from echo+epistemic or subsumed.
+
+*STATUS:* ✅ Consistent.
+
+*ONE-LINE EVIDENCE:* it appears exactly once, as a *pattern donor* for the
+accept/reject gate (`scripts/check.sh:3` "Pattern: residual-evidence-types"), with
+no import, no API use and no stability claim.
+
+*ACTION:* none. Pattern borrowing is a design debt at most; keep it labelled as
+such.
+
+=== 15. Name versus code
+
+*Understanding.* Inferring purpose from a repository or file name rather than
+reading code and READMEs is the estate's most persistent error; every claim
+about what a component "does" must be traced to source.
+
+*STATUS:* ⚠️ Three instances of manifest-outrunning-code *inside this tree*,
+none of them in the proof development.
+
+*ONE-LINE EVIDENCE:* (a) `.machine_readable/descriptiles/CLADE.a2ml` declares
+`canonical-name = "rsr-template-repo"`, `uuid = a5ea1382-…` — recomputing
+`UUIDv5(URL, "github.com/hyperpolymath/secret-types")` gives
+`462660d5-8b7e-5bfb-a72c-a942273aa064`, so the repository's identity file
+describes *another repository*; (b) `verification/proofs/*/MANIFEST` say
+`gated` and "Ground-truthed 2026-07-17" while no workflow invokes
+`scripts/check-proofs.sh`; (c) `src/SecretTypes/Lattice/Record.agda:7` and
+`Prelude.agda:67` assert a Lintel relationship that no CI import witnesses.
+
+*ACTION:* F-1, F-4, F-7.
+
+=== 16. Invented connections
+
+*Understanding.* The separation theorems refute Echo↔Resource bidirectionality,
+a universal adapter, and Echo-as-resource; any proposed cross-repo connection
+must survive them.
+
+*STATUS:* ✅ Consistent, with one unmechanised claim to tighten.
+
+*ONE-LINE EVIDENCE:* every connection this repository *claims* is internal; the
+single external proposal (the Echo reading of noninterference) is labelled
+CONJECTURE in `README.adoc` and carried as `OPEN` in the estate map; no
+bidirectional conversion, no universal adapter, no Echo-as-resource appears. The
+outstanding exception is the Lintel claim in (15c), which ADR-0004 §Decision 4
+forbids without a CI import.
+
+*ACTION:* F-7.
+
+== Findings, in severity order
+
+[cols="1,2,3,1",options="header"]
+|===
+| ID | Finding | Evidence | Owner
+
+| F-1
+| *Identity is another repository's.* `CLADE.a2ml`, `ECOSYSTEM.a2ml` and
+  `STATE.a2ml` are unswept `rsr-template-repo` copies: `project =
+  "rsr-template-repo"`, `completion-percentage = 97`, chain
+  `standards → rsr-template-repo → (every estate repo)`, and the arrival pack
+  in `CLAUDE.md` opens "This repo: `rsr-template-repo` · clade
+  `rm-rsr-template-repo`". `CLADE.a2ml`'s own comment lists the confirmed
+  victims of this bug — this repository is *not* among them, so it is a new
+  instance of a documented failure mode. `docs/status/ROADMAP.adoc` ("YOUR
+  Template Repo Roadmap") and `docs/status/READINESS.adoc` (`{{PROJECT_NAME}}`)
+  are still unfilled.
+| uuid recomputed; see
+  `docs/secret-types#2` "un-minted" premise, now half-stale
+| this repo + `rsr-template-repo`
+
+| F-2
+| *The family-map claim is stale in both directions.* `README.adoc` and
+  `docs/secret-types.adoc` say the TYPE-CONNECTIONS row "is proposed in
+  `nextgen-typing`#118"; #118 closed on 2026-10-05T06:39Z and the row is live
+  (map sha `00036257b3`). Conversely the live map's prose still says this
+  project "is specification-stage — no … noninterference theorem exists there
+  yet", which `PROOF-STATUS.adoc` superseded on 2026-10-12 (two-point `tini`)
+  and 2026-10-19 (generic `tini`).
+| API reads of #118 and `TYPE-CONNECTIONS.adoc`
+| `nextgen-typing` (their row) + this repo (our sentence)
+
+| F-3
+| *The VeriSimDB feed describes a six-modal shape.*
+  `.machine_readable/integrations/verisimdb.a2ml:16` sets `format = "hexad"`;
+  `tests/e2e.sh:124-127` (commented) posts to `/api/v1/hexads`. The live
+  `hyperpolymath/verisimdb` README states the modality profile "is the
+  **Octad** — eight fixed modality slots". Octad is the invariant; hexad is a
+  pre-octad vintage left in the template.
+| verisimdb README, read 2026-11-01
+| `verisimdb` + `standards`/template
+
+| F-4
+| *A second, ungated proof tree that is template boilerplate.*
+  `verification/proofs/{agda,coq,lean4,idris2,tlaplus}` hold five
+  "replace with your project's …" skeletons; the `MANIFEST`s claim `gated` and
+  "Ground-truthed 2026-07-17". No workflow runs `scripts/check-proofs.sh` — only
+  `build/just/proofs.just` targets call it — so the gate cannot have run in CI.
+  Two of the skeletons actively mislead about this project's model:
+  `lean4/ApiTypes.lean:34` demonstrates a 0.0–1.0 confidence value, and
+  `agda/Properties.agda` imports the standard library, contradicting the
+  `--no-libraries` discipline of the real development.
+| `grep -rn check-proofs .github` → no hits
+| this repo (sweep) + template
+
+| F-5
+| *A live config line names a removed tool.*
+  `.machine_readable/descriptiles/NEUROSYM.a2ml:14`
+  `report-format = "logtalk"`. Template-inherited (`hypatia` carries the same
+  key), so it is unverified either way.
+| direct read; no `.lgt` files present
+| `hypatia` / `standards`, then this repo
+
+| F-6
+| *Two scheduled workflows are red and unread.* `scorecard.yml` and
+  `hypatia-scan.yml` have failed at startup repeatedly (0s duration, no jobs
+  created; e.g. run `41255739303`). The proof gate itself is green on head.
+| `gh run list`, 2026-11-01
+| `standards`/estate-common (also observed in other repos)
+
+| F-7
+| *An unmechanised consumer claim.* `Lattice/Record.agda:7` says "Lintel's
+  reader-set lattice" is a value of the record and `Prelude.agda:67` says
+  Lintel "drops" its local `Dec` on re-pin; issue `#12` is open "from Lintel".
+  ADR-0004 §Decision 4: an integration may be claimed only after a real import
+  builds in CI.
+| `#12`; comment text
+| this repo + `metadatastician/lintel`
+
+| F-8
+| *Prepared tracking updates are still unposted.*
+  `docs/epistemic-types-transition-review.adoc` holds a prepared `#2` refresh
+  and a prepared `epistemic-types` wording fix, both unposted because that
+  session's token had no issue write. GitHub write access exists in this
+  session, but posting is outward-facing and stays owner-gated.
+| document, plus `gh auth status`
+| owner decision
+|===
+
+== What is intact, in one line each
+
+* The proof development has **not** drifted: `All.agda` imports 14 modules, all
+  `--safe --without-K`, no postulates, builtins only, and the gate is green on
+  head (`f581f82`, 2026-10-27).
+* The separation arguments are load-bearing and present: two-run TINI versus
+  one-run grades, "a label is not an epistemic standpoint", "no consumer and no
+  frontier item selected", "nearest frontier item by name only".
+* No direct system-to-system protocol, no universal adapter, no Echo↔Resource
+  conversion, no confidence number, no key management and no imported ground
+  truth has been introduced.
+
+== Summary
+
+The structural understanding is **intact and, in the places that matter, better
+than intact**: this repository is one of the few that recorded the RMO
+name-inference correction instead of absorbing it. Nothing in active work has
+drifted from the proven invariants.
+
+What *has* drifted is the paper layer around the proofs — and it drifts in the
+characteristic direction: a manifest that says `gated` for a tree no workflow
+checks, a `CLADE.a2ml` that names another repository, a family-map row claimed
+as "proposed" after it landed, a VeriSimDB feed shaped for six modalities after
+the engine became an octad, and a report format naming a removed tool. These
+are F-1, F-2, F-3, F-4, F-5. None of them is a proof error; all of them are the
+"name instead of code" error at document level, which is the failure mode the
+estate has already been burned by.
+
+The estate-level items to send elsewhere are in
+link:estate-handoff-prompts-2026-11-01.adoc[estate-handoff-prompts-2026-11-01].
+
+[[closures]]
+== Closures on 2026-11-01
+
+The same change that lands this audit reconciles the origin records. Findings
+F-2 and F-8 are closed; F-1, F-4 and F-5 remain open, deliberately.
+
+[cols="1,2,2",options="header"]
+|===
+| ID | State after this change | Where
+
+| F-2
+| **Closed on our side.** The two "proposed row" sentences are corrected in
+  `README.adoc` and `docs/secret-types.adoc` (the row landed 2026-10-05, #118
+  closed). The mirror half — the map's note saying no noninterference theorem
+  exists here — is untouched and remains `nextgen-typing`'s to fix.
+| `README.adoc` "Where things belong"; `docs/secret-types.adoc`
+  "Provenance and status"
+
+| F-8
+| **Closed as moot.** `epistemic-types`#32 was closed by the owner on
+  2026-10-05T06:37Z with no transfer, its successor guard #39 closed
+  2026-10-25, and that repository deleted the sentence the prepared wording fix
+  addressed. The two prepared comments should not be posted. The review keeps
+  its 2026-10-05 text as history plus a 2026-11-01 reconciliation addendum.
+| `docs/epistemic-types-transition-review.adoc#reconciliation_2026_11_01`
+
+| F-1, F-4, F-5
+| Open. F-1's *cause* is `rsr-template-repo`'s mint path and belongs there; its
+  *symptom* here is the scaffolding sweep, tracked in `secret-types#2`. F-4's
+  cause is the same template; the local decision (delete or quarantine the
+  skeleton tree) is not taken, because deleting a tree on the strength of "it
+  looks like boilerplate" is exactly the name-versus-code error this audit is
+  about. F-5 needs the live `report-format` value from `hypatia` first.
+| see the findings table
+|===
+
+Two further stale statements were withdrawn in the same change, and both matter
+more than their size suggests:
+
+* `docs/secret-types.adoc` said "This is a specification, not an implementation…
+  There is no … noninterference theorem in this repository" — false since
+  2026-10-12. It also listed the theorem among its non-claims. `epistemic-types`
+  had already named this text, in its 2026-10-25 update, as the outstanding
+  reconciliation item.
+* The same file said the language is "pure, deterministic and total… no
+  divergence". The calculus has `while` with fuel and the theorem is
+  termination-*insensitive* by construction; "total" was true of the 2026-10-04
+  proposal and false of the implementation. Left uncorrected, that sentence would
+  have been the most misleading line in the repository, because it claims to have
+  closed the one channel the theorem names as open.
+
+[[proof-grade-conformance]]
+== Second pass: conformance to the estate's proof-grading policy
+
+The first pass audited *internal* consistency. This pass audits conformance to
+the two documents that actually govern how a proof here is graded, both read on
+2026-11-01:
+
+* `standards/3-practice/PROOF-POLICY.adoc` (owner ruling 2026-10-26, with a
+  §2.1 dated **2026-11-01**) — which prover carries which obligation, the
+  canonical Agda invocation, and the closed status vocabulary.
+* `mathesis/estate-mathematical-architecture` §5/§6 — the grade ladder
+  (Open → Grade 3 → Grade 2i/ii → Grade 1) and the requirement that a receipt
+  name its exact commit.
+
+Also read: `standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc` (proof-debt
+schema), `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 (the Proof Ledger),
+and mathesis's own catalogue, which had already indexed this repository as
+`theory`, `agda 16`, 67 declarations, **0 holes / 0 axioms / 0 unsafe**.
+
+=== What the first pass missed, because it was not the lens
+
+Four findings, all of them paperwork rather than mathematics — which is the same
+class as F-1…F-5 and, in this estate, the class that matters.
+
+[cols="1,2,3",options="header"]
+|===
+| ID | Finding | State
+
+| F-9
+| *No Proof Ledger, while the README claims PROVEN.*
+  `README-EXPLAINME-STANDARD.adoc` §5: the ledger is required when README,
+  EXPLAINME or AFFIRMATION claims anything is proved, and "README never states a
+  proof grade that the ledger does not support". The README claimed a proven
+  core theorem; no ledger existed. `docs/EXPLAINME.adoc` was 118 lines of
+  `rsr-template-repo` boilerplate (session dispatch, Dependabot, Julia
+  packaging) and did not mention a proof.
+| Closed: `docs/EXPLAINME.adoc` retitled, `[[proof-ledger]]` added with 10 rows
+  (five proven, three tested-only, two open), using the closed lowercase tokens.
+
+| F-10
+| *No proof-debt record.* `TRUSTED-BASE-REDUCTION-POLICY.adoc` requires a
+  `docs/proof-debt.md` (or `.adoc`) with dispositions (a)–(d). Absent — so a
+  reader could not distinguish "no escape hatches" from "no audit".
+| Closed: `docs/proof-debt.adoc`, all four dispositions empty **and enforced**
+  (`check.sh` postulate refusal, `--safe`, receipt counts).
+
+| F-11
+| *Gate not at the canonical invocation.* `PROOF-POLICY` §2.1 (dated the same
+  day this audit was written) sets `agda --safe --without-K
+  --cubical-compatible` for first-party theory entrypoints, and says prior
+  `--safe` successes are "historical evidence, not receipts for this new
+  combined profile". Our gate ran `--safe --without-K --no-libraries
+  --ignore-interfaces --double-check -W error`: strictly stronger in four
+  dimensions, missing `--cubical-compatible`.
+| **Attempted, then waived with evidence** (not closed by suppression). Flags now
+  come from one definition, `scripts/proof-flags.sh`. Adopting
+  `--cubical-compatible` turned the gate red three times on 2026-11-01; two
+  causes were fixed (a dead `just-inj`, then `_≟_`'s `suc`-injectivity replaced by
+  a retraction that computes), and the third is structural: every clause matching
+  on the order relation is an indexed match, which Cubical Agda does not support.
+  The flag is absent, the waiver is recorded in `docs/proof-debt.adoc#waivers`
+  with both arms, and the receipt carries `cubical-compatible = "waived"`. The
+  alternative — `-WnoUnsupportedIndexedMatch` — is a green gate over a weakened
+  check and was refused.
+
+| F-12
+| *No receipt, and template prover files that invite a false reading.* mathesis
+  §6 wants the exact commit hash of the verification result; we had none. Worse,
+  the §2 recheck legs (Rocq, Lean) could be "evidenced" by
+  `verification/proofs/{coq,lean4}/*` — template skeletons with `MANIFEST` lines
+  saying `gated`, from F-4.
+| Closed for the confusion, open for the cleanup: the receipt records both legs
+  `unavailable` per row, and `PROOF-STATUS.adoc` states that "a leg that does not
+  exist cannot be evidenced by a file that happens to be present" and names the
+  skeletons as not-legs. F-4's disposition (delete or quarantine) is still open,
+  because deleting a tree on the strength of "it looks like boilerplate" is the
+  name-versus-code error.
+|===
+
+| F-13
+| *A machine record that the estate's own schema rejects.* The first version of
+  the receipt failed the DEED/A2ML validator twice: multi-line quoted values are
+  not A2ML, and every `.a2ml` needs an identity field (`agent-id`, `name` or
+  `project`). Both were mine, both were caught by CI rather than by reading, and
+  both are fixed. Worth recording because the failure mode generalises: a
+  "machine-readable" artefact that only prose can read is prose.
+| Closed: single-line values, `project`/`name` in `[identity]`, DEED gate green on
+  `8e421cc`.
+
+=== The grade this repository now reports
+
+*mathesis Grade 3, and no higher.* Grade 3 is "type-checks in Agda under strict
+flags, not translated to an independent foundational system" — which is exactly
+what exists, and the receipt now says so with the commit, pin, flags, module
+hashes and trust-base counts.
+
+The temptation to overstate here is specific and worth naming: this repository
+has *both* Agda and Coq and Lean files, so a careless reader — or a careless
+agent — could read the presence of `verification/proofs/coq/TypeSafety.v` as the
+Rocq leg of Grade 2i. It is not. It is a template skeleton proving a
+`TyNat`/`TyBool` toy, it has nothing to do with TINI, and no workflow checks it.
+Grade 2i would need the TINI statement itself transported or re-proved, with the
+statement correspondence recorded per `PROOF-POLICY` §2.2 — a real piece of work,
+not a file that exists.
+
+=== Honest edges of this pass
+
+* **The flags changed without a local run.** No Agda exists in this sandbox, so
+  `--cubical-compatible` was adopted from the policy and verified in CI, not
+  before it. If CI rejects it, the flag and the receipt are reverted and F-11
+  reopens as a blocked item — the policy's own rule is that flags are never
+  weakened to make a check green, so a failure is reported, not absorbed.
+* **The receipt is not a proof.** It records which gate produced which result and
+  at which commit; the CI log remains the execution evidence.
+* **Mathesis grades theorems, not checks.** N-4/N-5/N-6 are recorded
+  `below-grade-3` with the token `tested-only` rather than graded, because a
+  refusal fixture and a shell-orchestrated ablation certificate are not theorems.
