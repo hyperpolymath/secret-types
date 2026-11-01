@@ -26,7 +26,27 @@ below is hand-installed magic that a later session cannot repeat.
 | *Zig 0.17.0*
 | `pip install ziglang`
 | `python -m ziglang version`
+
+| *Asciidoctor.js 2.2.9* (Asciidoctor 2.0.23 core)
+| `npm install @asciidoctor/core@2.2.9 @asciidoctor/cli@3.5.0`
+| `scripts/check-adoc-renders.sh` green over all 168 tracked `.adoc`
 |===
+
+The third row is the one that earned its place by failing first, and it is worth
+the paragraph. CI installs the Ruby gem `asciidoctor` 2.0.26; this sandbox
+cannot reach `rubygems.org`, so the first attempt used `@asciidoctor/core@4.1.1`,
+the newest available. That build rendered **all 168 files clean** — and CI then
+failed the very same gate on
+`dropping cells from incomplete row detected end of table` in
+`docs/reports/status/toolchain-and-version-pins-2026-11-01.adoc`: a table where
+one row carried three cells into a four-column layout. Asciidoctor 2.0.x calls
+that an error; 3.x core silently pads the row.
+
+So the rule this repository now applies to its own instruments: **a render check
+is only a check if its parser is the parser the gate uses.** The fix was to pin
+the sandbox parser to the core version the CI parser tracks (2.2.9 is Asciidoctor
+2.0.23, one patch line from 2.0.26), after which the local run reproduces CI
+exactly. `scripts/dev-toolchain.sh docs` installs that one, and says why.
 
 The Agda arrangement is ugly and worth stating plainly: the binding is not
 usable without the data directory, and the wheel does not ship it, while the
@@ -88,12 +108,10 @@ moving one changes every receipt below it.
 | Rocq | `V9.3.0` (2026-09-19) | none | leg `unavailable`
 | Creusot | `v0.14.0` (2026-10-12) | none | not applicable: no first-party Rust here
 | Rust | `1.99.1` (2026-10-16) | none | not provisionable in this sandbox
-| Idris2 | `v0.8.0` (2025-10-31) | template `src/interface/Abi/*.idr` only, ungated
+| Idris2 | `v0.8.0` (2025-10-31) | template `src/interface/Abi/*.idr` only | ungated; no proof leg
 | Lambdapi | `3.0.0` (2025-07-16) | none | the `transported` route is not attempted
 | F* | `v2026.10.25` | none | a §4 exception tool; nothing here needs it
-| Zig | `0.15.1` (GitHub) / `0.17.0` (PyPI wheel) | template `src/interface/ffi` only
-| Two upstream channels disagree, so "latest" is ambiguous for Zig; the wheel is
-  what a sandbox gets.
+| Zig | `0.15.1` (GitHub) / `0.17.0` (PyPI wheel) | template `src/interface/ffi` only | two upstream channels disagree, so "latest" is ambiguous for Zig; the wheel is what a sandbox gets
 |===
 
 Recommendation, labelled: the *elegant* arm is one Agda pin everywhere
