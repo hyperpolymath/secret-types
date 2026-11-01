@@ -20,11 +20,17 @@
 #   --without-K          policy default.  No UIP, no Streicher K.  (Implied by
 #                        --cubical-compatible; kept explicit so the intent
 #                        survives a future flag change.)
-#   --cubical-compatible policy default (2026-11-01).  Every definition must
-#                        remain well-formed under --cubical, i.e. it may only
-#                        use the part of the language that is compatible with
-#                        cubical type theory.  This is NOT --cubical: no cubical
-#                        primitives are assumed.
+#   --cubical-compatible WAIVED, not dropped silently.  PROOF-POLICY §2.1
+#                        (2026-11-01) names it; this development cannot meet it
+#                        yet.  Evidence and the two arms are in
+#                        docs/proof-debt.adoc#waivers and PROOF-STATUS.adoc
+#                        "Grade and the independent-witness legs".  The short
+#                        version: every clause matching on `_⊑_` is an indexed
+#                        match, which Cubical Agda does not support
+#                        (-WUnsupportedIndexedMatch), and -W error makes that
+#                        fatal.  Suppressing the warning would be a green gate
+#                        over a weakened check, so the flag is absent and the
+#                        gap is recorded instead.
 #   --no-libraries       stronger.  Builtins only; no Agda standard library and
 #                        no sibling repository is on the path.  The policy's
 #                        "no Mathlib" rule (PROOF-POLICY §2) is the Lean form of
@@ -51,7 +57,6 @@ proof_flags() {
   printf '%s\n' \
     --safe \
     --without-K \
-    --cubical-compatible \
     --no-libraries \
     --ignore-interfaces \
     --double-check \

@@ -544,9 +544,16 @@ class as F-1…F-5 and, in this estate, the class that matters.
   combined profile". Our gate ran `--safe --without-K --no-libraries
   --ignore-interfaces --double-check -W error`: strictly stronger in four
   dimensions, missing `--cubical-compatible`.
-| Closed: flags now come from one definition, `scripts/proof-flags.sh`, which
-  adds `--cubical-compatible`. Because a new combined profile needs a *new*
-  receipt, the Grade-3 receipt was regenerated under it rather than inherited.
+| **Attempted, then waived with evidence** (not closed by suppression). Flags now
+  come from one definition, `scripts/proof-flags.sh`. Adopting
+  `--cubical-compatible` turned the gate red three times on 2026-11-01; two
+  causes were fixed (a dead `just-inj`, then `_≟_`'s `suc`-injectivity replaced by
+  a retraction that computes), and the third is structural: every clause matching
+  on the order relation is an indexed match, which Cubical Agda does not support.
+  The flag is absent, the waiver is recorded in `docs/proof-debt.adoc#waivers`
+  with both arms, and the receipt carries `cubical-compatible = "waived"`. The
+  alternative — `-WnoUnsupportedIndexedMatch` — is a green gate over a weakened
+  check and was refused.
 
 | F-12
 | *No receipt, and template prover files that invite a false reading.* mathesis

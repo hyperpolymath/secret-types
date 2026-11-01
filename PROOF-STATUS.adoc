@@ -5,8 +5,8 @@
 Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN, with the closed ledger
 tokens of `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 in
 link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger]. Every PROVEN line names
-its module. All modules are `--safe --without-K --cubical-compatible
---no-libraries`, checked with `--double-check` and `-W error` by
+its module. All modules are `--safe --without-K --no-libraries`, checked with
+`--double-check` and `-W error` by
 `scripts/check.sh`, no postulates. The flag set and the Agda pin live in exactly
 one place, `scripts/proof-flags.sh`, so this file, the gate and the receipt
 cannot disagree. CI: TESTED. `.github/workflows/proofs.yml` (Debian 13,
@@ -74,6 +74,27 @@ proposition, assumptions, universe discipline, source revision, compiler and
 library versions, invocation, observed result, and the bridge or statement
 correspondence — *transported* or *re-proved* — and the local statuses
 AGDA-VERIFIED / COQ-CHECKED / LEAN-CHECKED / BRIDGE-PENDING before RECONCILED.
+
+=== What the grade does *not* include: `--cubical-compatible`
+
+`PROOF-POLICY` §2.1 (dated 2026-11-01) names
+`agda --safe --without-K --cubical-compatible` as the canonical invocation. This
+repository meets `--safe` and `--without-K`, is stricter in four other dimensions,
+and **does not** use `--cubical-compatible`. That was tested, not assumed: the
+flag was adopted on 2026-11-01 and the gate refused three times, twice for
+construction-injectivity lemmas (fixed: one deleted as dead code, one replaced by
+a retraction that computes definitionally) and then at `Lattice.agda:46`, where
+every clause matching on `_⊑_` is an *indexed match* — a property of how the
+two-point order is represented, not a stray lemma.
+
+The gap is recorded rather than closed by suppressing the warning: a gate that
+says `-WnoUnsupportedIndexedMatch` would be a green gate over a weakened check.
+Full evidence, the two arms (keep the waiver, or re-represent the order as a
+computed predicate), and what would make the waiver wrong are in
+link:docs/proof-debt.adoc#waivers[`docs/proof-debt.adoc` W-1]; the receipt carries
+`cubical-compatible = "waived"` so it is machine-visible. The grade is unaffected:
+mathesis Grade 3 is "type-checks locally in Agda under strict flags, not
+translated", and this gate is strict on the axes that bear on soundness.
 
 === What the grade is anchored to
 

@@ -87,3 +87,68 @@ that they are not mistaken for either:
 
 A future addition to this file that is not accompanied by a change in those three
 places is a claim the gate does not support.
+
+[[waivers]]
+== Waivers — obligations this repository does not meet
+
+A waiver is not an escape hatch inside a proof and not proof debt. It is an
+obligation the *policy* sets that this repository does not yet satisfy, recorded
+in the place a reader will look. Each one names the obligation, the tool, and why
+the mapped option was not used (`PROOF-POLICY.adoc` §4 asks for exactly that
+shape when a mapped prover is not the right fit).
+
+=== W-1 `--cubical-compatible` (PROOF-POLICY §2.1, dated 2026-11-01)
+
+*Obligation.* `agda --safe --without-K --cubical-compatible <module>` is the
+canonical invocation for first-party Agda theory entrypoints.
+
+*State.* `--safe` and `--without-K` are in the gate. `--cubical-compatible` is
+**not**, and cannot be added without changing the development or weakening the
+check.
+
+*Evidence, from three CI runs on 2026-11-01 that adopted the flag and then had to
+report why it would not stay.* The flag was added, the Agda pin was unchanged
+(`2.6.4.3`, `agda-bin=2.6.4.3-1+b2`), and the gate went red three times:
+
+. `Prelude.agda:43` `just-inj` — *"relies on injectivity of the data constructor
+  `just`, which is not yet supported"*. **Fixed**: the lemma was dead code and
+  was deleted.
+. `Prelude.agda:91` `_≟_` — *"relies on injectivity of the data constructor
+  `suc`"*. **Fixed**: `suc-dec` decides the predecessors and pulls the answer
+  back along `pred`, which computes definitionally, so no injectivity rule is
+  needed.
+. `Lattice.agda:46` `⊑-trans` — the same warning class, this time because every
+  clause that matches on the two-point order is an **indexed match** on `_⊑_`.
+  **Not fixed.** This is not incidental: `_⊑_` is an indexed family with three
+  constructors and no elimination principle other than matching, and `⊑-trans`,
+  `⊔-upper₁`, `⊔-upper₂` and the `principal` observer all match on it. Cubical
+  Agda does not support indexed matching; the warning says so and offers
+  `-W[no]UnsupportedIndexedMatch`.
+
+*Two arms, labelled.*
+
+* *Arm A — keep the flag off and record this waiver (what is implemented).* The
+  gate stays at `--safe --without-K --no-libraries --ignore-interfaces
+  --double-check -W error`: four dimensions stricter than the canonical
+  invocation, one flag absent. The absent flag is the one whose absence cannot
+  hide an unsoundness in this development — it constrains future compatibility
+  with cubical transports, not the truth of the present theorems.
+* *Arm B — re-represent the order so no clause needs index unification* (for
+  example a `Bool`-valued order with a `So`-style predicate, and `⊑`-laws proved
+  by computation). This is the elegant long-term arm and it is **not** attempted
+  here: it rewrites the two-point instance, part of `Typing`'s obligation
+  plumbing and `Noninterference.tini`'s statement, i.e. it is a research change
+  dressed as a flag change. It also may hit the same warning at the `So`
+  boundary. It needs its own spike, its own review, and a new receipt.
+
+*What would make Arm A wrong.* If suppressing `-WUnsupportedIndexedMatch` were
+ever added to the gate, this waiver would become a lie — the flag would be
+nominally on and the check off. The gate does not suppress it, and
+`scripts/proof-flags.sh` is the single place the flags live, so that change
+could not happen by accident.
+
+*Consequence for the grade.* None: mathesis Grade 3 is "type-checks locally in
+Agda under strict flags, not translated", and mathesis's own example flag set is
+`--safe --erasure`, not §2.1's. The grade stays 3. The receipt records
+`cubical-compatible = "waived"` so the gap is machine-visible rather than buried
+here.
