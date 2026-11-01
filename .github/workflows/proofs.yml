@@ -14,6 +14,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Container jobs default to `sh`, not `bash` (measured 2026-11-01: PIPESTATUS and
+# ${var:0:n} are bashisms, and a dash shell exits 2 on both).  Declare it.
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

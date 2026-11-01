@@ -38,9 +38,19 @@ data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- Recover equality of the values inside equal just results.
-just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
-just-inj refl = refl
+-- NOT provided: an injectivity lemma for `just`.  It was here
+-- (`just-inj : just a ≡ just b → a ≡ b`) until 2026-11-01 and nothing used it.
+-- Under the canonical flag set (scripts/proof-flags.sh, which includes
+-- --cubical-compatible per PROOF-POLICY §2.1) it is refused:
+--
+--   warning: -W[no]UnsupportedIndexedMatch
+--   This clause uses pattern-matching features that are not yet supported by
+--   Cubical Agda ... Reason: It relies on injectivity of the data constructor
+--   just, which is not yet supported
+--
+-- Deleting an unused lemma is the honest fix; disabling the warning, or the
+-- flag, would have bought a green gate with a weaker check.  If a later proof
+-- needs it, the way in is a cubical-compatible formulation, not a suppression.
 
 -- Pass a present value to f and return its result; propagate nothing
 -- without applying f when the input is absent.
