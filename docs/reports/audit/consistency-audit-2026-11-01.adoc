@@ -569,6 +569,16 @@ class as F-1…F-5 and, in this estate, the class that matters.
   name-versus-code error.
 |===
 
+| F-13
+| *A machine record that the estate's own schema rejects.* The first version of
+  the receipt failed the DEED/A2ML validator twice: multi-line quoted values are
+  not A2ML, and every `.a2ml` needs an identity field (`agent-id`, `name` or
+  `project`). Both were mine, both were caught by CI rather than by reading, and
+  both are fixed. Worth recording because the failure mode generalises: a
+  "machine-readable" artefact that only prose can read is prose.
+| Closed: single-line values, `project`/`name` in `[identity]`, DEED gate green on
+  `8e421cc`.
+
 === The grade this repository now reports
 
 *mathesis Grade 3, and no higher.* Grade 3 is "type-checks in Agda under strict

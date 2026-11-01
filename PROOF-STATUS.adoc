@@ -108,7 +108,16 @@ intact; a claim added here cannot leave the receipt intact either, in either
 direction.
 
 Proof debt, in the four dispositions the trusted-base policy requires, is
-link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted.
+link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted —
+and that file's `#waivers` section carries the one obligation this repository does
+not meet (`--cubical-compatible`), with its evidence and both arms.
+
+CI: the whole gate — core proofs, expected rejections, the laws certificate, the
+receipt drift check and the receipt emit — is green on `8e421cc`, run
+link:https://github.com/hyperpolymath/secret-types/actions/runs/41327614303[41327614303].
+That run is also the evidence for the two Agda changes the flag attempt forced
+(`just-inj` removed as dead code, `_≟_` re-expressed through `pred`), which is why
+they are recorded rather than quietly folded in.
 
 == Fragment (stated before the claims)
 
