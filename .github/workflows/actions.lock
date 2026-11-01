@@ -31,13 +31,13 @@ workflows:
     '.github/workflows/estate-rules.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/governance.yml':
-        - 'hyperpolymath/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
+        - 'metadatastician/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
     '.github/workflows/groove-check.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/guix-policy.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/hypatia-scan.yml':
-        - 'hyperpolymath/standards@75bd5994470661a099df562d6d5ad2fe744dbd66'
+        - 'metadatastician/standards@75bd5994470661a099df562d6d5ad2fe744dbd66'
     '.github/workflows/k9-validate.yml':
         - 'actions/checkout@v7.0.1'
         - 'hyperpolymath/k9-ecosystem@main'
@@ -47,7 +47,7 @@ workflows:
     '.github/workflows/main-estate-audit.yml':
         - 'hyperpolymath/cicd-suite@55556cf5ba71ba744695861503c13148d3915a5d'
     '.github/workflows/mirror.yml':
-        - 'hyperpolymath/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
+        - 'metadatastician/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
     '.github/workflows/ossf-best-practices.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/pages.yml':
@@ -62,8 +62,8 @@ workflows:
     '.github/workflows/push-email-notify.yml':
         - 'hyperpolymath/smtp-notify-action@v0.5.0'
     '.github/workflows/quality.yml':
-        - 'actions/checkout@v7.0.1'
-        - 'editorconfig-checker/action-editorconfig-checker@v3.0.0'
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
+        - 'editorconfig-checker/action-editorconfig-checker@51f63319f592f97930c73d9c46184d20bd206393'
     '.github/workflows/release.yml':
         - 'actions/attest-build-provenance@v4.2.2'
         - 'actions/checkout@v7.0.1'
@@ -74,11 +74,11 @@ workflows:
     '.github/workflows/runtime-policy.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/rust-ci.yml':
-        - 'hyperpolymath/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
+        - 'metadatastician/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
     '.github/workflows/scorecard.yml':
-        - 'hyperpolymath/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
+        - 'metadatastician/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540'
     '.github/workflows/secret-scanner.yml':
-        - 'hyperpolymath/standards@75bd5994470661a099df562d6d5ad2fe744dbd66'
+        - 'metadatastician/standards@75bd5994470661a099df562d6d5ad2fe744dbd66'
     '.github/workflows/security-policy.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/sonarqube.yml':
@@ -250,7 +250,7 @@ dependencies:
         commit: 'sha1-c1c9fa07992a02c1fd3d67a0dc1b08cccb852aef'
         owner_id: 6759885
         repo_id: 1352485172
-    'hyperpolymath/standards@75bd5994470661a099df562d6d5ad2fe744dbd66':
+    'metadatastician/standards@75bd5994470661a099df562d6d5ad2fe744dbd66':
         ref: '75bd5994470661a099df562d6d5ad2fe744dbd66'
         commit: 'sha1-75bd5994470661a099df562d6d5ad2fe744dbd66'
         owner_id: 6759885
@@ -261,7 +261,7 @@ dependencies:
             - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
             - 'erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124'
             - 'github/codeql-action@b96794f015dfd88f77b49b1c93e0fa7110f94c63'
-    'hyperpolymath/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540':
+    'metadatastician/standards@da2c748aad55c1a1dcba00b60fe4a35017bc6540':
         ref: 'da2c748aad55c1a1dcba00b60fe4a35017bc6540'
         commit: 'sha1-da2c748aad55c1a1dcba00b60fe4a35017bc6540'
         owner_id: 6759885
