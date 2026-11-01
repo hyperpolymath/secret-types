@@ -16,7 +16,7 @@ uuid-note = "uuid5(URL, github.com/hyperpolymath/secret-types). CLADE.a2ml still
              RSR template uuid — finding F-1 in
              docs/reports/audit/consistency-audit-2026-11-01.adoc, open"
 kind = "theory"                # mathesis catalogue class; Agda carries theory here
-source-commit = "c48d2899bbb7"
+source-commit = "70e6f774b8e4"
 
 [prover]
 tool = "agda"
@@ -85,7 +85,7 @@ module = { path = "src/SecretTypes/Lattice/Record.agda", sha256 = "25f4ee821b8e2
 module = { path = "src/SecretTypes/Noninterference.agda", sha256 = "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e" }
 module = { path = "src/SecretTypes/Noninterference/Generic.agda", sha256 = "b57e91faa098eec4136c78fb617c4c6f139ebe175452ffd6dc91547ffe915052" }
 module = { path = "src/SecretTypes/Noninterference/Statement.agda", sha256 = "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45" }
-module = { path = "src/SecretTypes/Prelude.agda", sha256 = "e2c60c9cc23db7ad052d68484694edc1946a05d705b046f448328e21a08239ac" }
+module = { path = "src/SecretTypes/Prelude.agda", sha256 = "9c9b968229ff7fa6c59a673a749bcd389ba5dd6da72eed24c57bf5e09b5f6177" }
 module = { path = "src/SecretTypes/Typing.agda", sha256 = "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42" }
 module = { path = "src/SecretTypes/Typing/Generic.agda", sha256 = "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718" }
 module = { path = "src/SecretTypes/Vars.agda", sha256 = "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422" }
