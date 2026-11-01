@@ -142,6 +142,28 @@ README-EXPLAINME proof-ledger discipline on 2026-11-01.
    gate fails for a reason unrelated to the proof. Suggest the canonical pattern
    compare `--version | head -1`, with a comment saying why.
 
+4. The lockstep job fetches the wrong repository. `.github/workflows/dogfood-gate.yml`
+   (Canon lockstep) compares a repo's `[canon]` pins against `canon.lock`, and to
+   get the profile it fetches
+   `https://raw.githubusercontent.com/hyperpolymath/rsr-template-repo/${HEAD_SHA}/...`,
+   where `HEAD_SHA` is the CONSUMING repo's commit. That commit does not exist in
+   the template repo, so the fetch 404s for every repository except a template on
+   its own commit, and the job reports "no rsr-profile.a2ml — this repo cannot
+   declare a canon pin" whatever the repo declares. It fails identically on
+   secret-types `main` (f581f82). The intended URL would also 404:
+   `rsr-template-repo/.machine_readable/` carries no `rsr-profile.a2ml` at
+   `main`. Two fixes are needed — point the URL at the consuming repo (the event's
+   head sha is already there for exactly that reason), and ship the profile in
+   the template. Until then the pin is unverified in CI, and a repo that keeps
+   its pins honest does it by hand.
+
+5. `canon.lock` contradicts itself about its own release. At the released
+   identity it declares `version = "2.1.3"`, `released = "2026-09-30"` and
+   `tag = "canon-v2.1.2"`. A consumer that resolves the tag to audit 2.1.3 gets
+   2.1.2's tree. Either the tag line is stale or 2.1.3 was never tagged; both are
+   cheap to fix and neither is detectable by a consumer, because no check
+   compares `tag` to `version`.
+
 One offer in the other direction: §2.1 now requires --cubical-compatible, and
 for a development whose order relation is an indexed family the honest answer is
 "not without a re-foundation". We wrote the waiver we would have wanted to see
