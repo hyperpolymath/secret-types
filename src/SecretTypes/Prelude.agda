@@ -87,20 +87,23 @@ pred : Nat → Nat
 pred zero    = zero
 pred (suc k) = k
 
--- Decide an equality of images instead of the underlying equality: decide the
--- preimages, then push the answer along `f`, pulling it back along `g`.
+-- Decide an equality of successors by deciding the predecessors' equality.
 --
 -- This exists because of a real constraint, not for elegance.  Proving
 -- injectivity of `suc` directly — matching `suc m ≡ suc n` and returning `refl` —
 -- asks for constructor injectivity, which Cubical Agda does not support
--- (`-WUnsupportedIndexedMatch`), and the canonical flag set makes that warning
--- fatal.  With `g = pred` the pullback is a retraction, so the same decisions
--- are reachable without the rule: `pred (suc m)` reduces to `m`, so
--- `cong pred q` *is* `m ≡ n`.
-Dec-map : {A B : Set} (f : A → B) (g : B → A) {x y : A}
-        → Dec (x ≡ y) → Dec (f x ≡ f y)
-Dec-map f g (yes p) = yes (cong f p)
-Dec-map f g (no ¬p) = no λ q → ¬p (cong g q)
+-- (`-WUnsupportedIndexedMatch`), and the canonical flag set (scripts/proof-flags.sh)
+-- makes that warning fatal.  Here the pullback is a retraction rather than a
+-- rule: `cong pred q : pred (suc m) ≡ pred (suc n)`, and both sides *reduce* to
+-- `m` and `n`, so the negative case needs no injectivity.
+--
+-- The helper is deliberately concrete rather than a general "map a decision
+-- along a retraction": in the general form `g` is a variable and `g (f x)` does
+-- not reduce to `x`, so the negative case would need the retraction law as a
+-- hypothesis and a transport.  At `suc`/`pred` the computation is definitional.
+suc-dec : {m n : Nat} → Dec (m ≡ n) → Dec (suc m ≡ suc n)
+suc-dec (yes p) = yes (cong suc p)
+suc-dec (no ¬p) = no λ q → ¬p (cong pred q)
 
 -- Decide equality of naturals.
 infix 4 _≟_
@@ -108,7 +111,7 @@ _≟_ : (m n : Nat) → Dec (m ≡ n)
 zero  ≟ zero  = yes refl
 zero  ≟ suc n = no λ ()
 suc m ≟ zero  = no λ ()
-suc m ≟ suc n = Dec-map suc pred (m ≟ n)
+suc m ≟ suc n = suc-dec (m ≟ n)
 
 -- A decidable proposition is stable: double negation can be removed.
 dec-stable : {P : Set} → Dec P → ¬ ¬ P → P
