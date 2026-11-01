@@ -42,6 +42,21 @@ jobs:
       # always reachable (GitHub serves it from a blob host that some agent
       # sandboxes cannot fetch), and a gate nobody can read is a gate that gets
       # admin-overridden. Doctrine: fail loudly.
+      # TEMPORARY DIAGNOSTIC (removed once the cause is known): does the pinned
+      # Agda accept the canonical flag set?  The result is published as an
+      # annotation because this sandbox cannot read job logs.
+      - name: DIAG flag probe
+        run: |
+          set +e
+          mkdir -p /tmp/p
+          printf 'module p where\n' > /tmp/p/p.agda
+          o1="$(agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i /tmp/p /tmp/p/p.agda 2>&1)"
+          r1=$?
+          o2="$(agda --safe --without-K --no-libraries --ignore-interfaces --double-check -W error -i /tmp/p /tmp/p/p.agda 2>&1)"
+          r2=$?
+          printf '::error title=probe canonical rc=%s::%s\n' "$r1" "$(printf '%s' "$o1" | tr '\n' ' ' | cut -c1-900)"
+          printf '::warning title=probe no-cubical rc=%s::%s\n' "$r2" "$(printf '%s' "$o2" | tr '\n' ' ' | cut -c1-900)"
+          exit 0
       - name: Core proofs, countermodels and expected rejections
         run: |
           set +e
