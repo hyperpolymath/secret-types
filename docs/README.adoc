@@ -43,6 +43,7 @@ and CI fails if it goes stale, so prefer it over any hand-written listing.
 * link:governance/SOFTWARE-DEVELOPMENT-APPROACH.adoc[governance/SOFTWARE-DEVELOPMENT-APPROACH.adoc]
 * link:MAINTAINERS.adoc[MAINTAINERS.adoc] — the single maintainer roster.
 * link:GOVERNANCE.adoc[GOVERNANCE.adoc] — the governance model.
+* link:epistemic-types-transition-review.adoc[epistemic-types transition review] — verified cross-references for the 2026-10-04 transition, the ownership split, and the prepared (unposted) issue updates.
 
 [NOTE]
 ====

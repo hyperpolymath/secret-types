@@ -28,7 +28,9 @@
 
 # ─── Baseline: every RSR repo has these ──────────────────────────────────────
 README.adoc
-LICENSE.adoc               # the licence (MPL-2.0); renamed from LICENSE to the estate AsciiDoc format 2026-10-26
+?LICENSE.adoc              # the licence (MPL-2.0) in the estate AsciiDoc format. Optional HERE:
+                           #   renaming LICENSE is a licence edit, which is manual and
+                           #   owner-only (doctrine 6), so the mint left LICENSE as it was.
 ?LICENSE                   # forge-facing copy of LICENSES/MPL-2.0.txt. Optional, not required:
                            #   GitHub (and most forges) only detect LICENSE / LICENSE.md /
                            #   LICENSE.txt to show the licence on the repo page, and readers
@@ -39,7 +41,7 @@ LICENSE.adoc               # the licence (MPL-2.0); renamed from LICENSE to the 
 LICENSES/                  # REUSE licence texts, dual-licence model (code MPL-2.0 / docs CC-BY-SA-4.0)
 CHANGELOG.adoc             # AsciiDoc is the estate-standard documentation format
 CITATION.cff               # citation metadata; GitHub reads it from the root of the default branch only
-rsr-template-repo_chora.deed # the repo deed: universal AI entry point; family-7 allocation manifest + ply tree folded in (standards#837 pilot). Filename carries the repo slug (deed dispatch <stem>_chora.deed), so repo-init renames it at mint
+secret-types_chora.deed # the repo deed: universal AI entry point; family-7 allocation manifest + ply tree folded in (standards#837 pilot). Filename carries the repo slug (deed dispatch <stem>_chora.deed), so repo-init renames it at mint
 CLAUDE.md                  # generated arrival pack; the generator, pre-commit and Claude Code all read it from the ROOT (do not hand-edit; edit the repo deed)
 ?GEMINI.md                # pointer to CLAUDE.md for repos without AGENTS.md yet
 Justfile                   # thin; delegates phases to build/just/*.just
@@ -92,3 +94,7 @@ tests/
 ?REQUIRES_INITIALISATION.md  # written by the minting process, removed once `just repo-init` runs
 ?Project.toml              # julia-library archetype: Pkg reads the package manifest from the package root only
 ?test/                     # julia-library archetype: Pkg.test runs test/runtests.jl, a fixed path (the spine keeps tests/)
+
+# ─── Project-specific root entries ───────────────────────────────────────────
+PROOF-STATUS.adoc          # project theorem evidence and fragment limits, linked from README.adoc
+secret-types.agda-lib      # Agda discovers library descriptors at the project root

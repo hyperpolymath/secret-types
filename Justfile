@@ -22,9 +22,9 @@ import? "build/contractile.just"
 mod provision 'build/just/provision.just'
 
 # Project metadata — customize these
-project := "rsr-template-repo"
+project := "secret-types"
 OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+REPO := "secret-types"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -130,11 +130,14 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run every detected language's tests: `zig build test` covers src/interface/ffi
-# (unit tests in src/main.zig, test/integration_test.zig). It compiles only after
-# `just repo-init` has filled the template tokens, so an un-initialised template
-# fails here loudly instead of reporting a pass over nothing.
-test: provision::test
+# Run the proof gates (the same scripts run in .github/workflows/proofs.yml):
+# core proofs, countermodels and expected rejections (scripts/check.sh), then
+# the laws census (scripts/minimal-laws.sh).
+test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    bash scripts/check.sh
+    bash scripts/minimal-laws.sh
 
 # Run tests with verbose output
 test-verbose: provision::test
@@ -632,7 +635,7 @@ opsm: provision::opsm
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== secret-types Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -647,12 +650,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== secret-types Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/hyperpolymath/secret-types/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 
