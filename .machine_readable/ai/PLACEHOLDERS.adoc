@@ -23,7 +23,7 @@ validates the result, and runs k9-svc checks if available.
 sed -i 's/{{AUTHOR}}/Jane Doe/g' $(grep -rl '{{AUTHOR}}' .)
 sed -i 's/{{AUTHOR_EMAIL}}/jane@example.org/g' $(grep -rl '{{AUTHOR_EMAIL}}' .)
 sed -i 's/{{OWNER}}/my-org/g' $(grep -rl '{{OWNER}}' .)
-sed -i 's/{{PROJECT_NAME}}/my-project/g' $(grep -rl '{{PROJECT_NAME}}' .)
+sed -i 's/{{PROJECT_NAME}}/My Project/g' $(grep -rl '{{PROJECT_NAME}}' .)
 sed -i 's/{{PROJECT}}/MY_PROJECT/g' $(grep -rl '{{PROJECT}}' .)
 sed -i 's/{{project}}/my_project/g' $(grep -rl '{{project}}' .)
 sed -i 's/{{REPO}}/my-project/g' $(grep -rl '{{REPO}}' .)
@@ -45,13 +45,29 @@ sed -i "s/{{CURRENT_DATE}}/$(date +%Y-%m-%d)/g" $(grep -rl '{{CURRENT_DATE}}' .)
 | `{{AUTHOR_LAST}}` | Author surname (for citations) | `Doe` | docs/CITATIONS.adoc |
 | `{{AUTHOR_FIRST}}` | Author first name (for citations) | `Jane` | docs/CITATIONS.adoc |
 | `{{AUTHOR_INITIALS}}` | Author initials (for citations) | `J.` | docs/CITATIONS.adoc |
+| `{{AUTHOR_ORCID}}` | Author ORCID iD, bare form; blank drops the line (default: `git config user.orcid`) | `0000-0002-1825-0097` | CITATION.cff |
 
 ### Project Identity
 
+Three DIFFERENT things are named "the project" and they are three different
+tokens. Conflating them is how a repository ends up with a display name where an
+identifier belongs:
+
+* `{{PROJECT_NAME}}` — what a human reads: spaces, capitals, punctuation.
+* `{{PROJECT}}` / `{{project}}` — what a compiler reads: an identifier, so no
+  spaces and no hyphens. `{{PROJECT}}` is the uppercase form (Idris2 modules, C
+  macros); `{{project}}` is the lowercase form (C symbols, file names, crate
+  and module names).
+* `{{REPO}}` — what a forge reads: the repository slug.
+
+They may look alike today (`My Project` / `MY_PROJECT` / `my_project` /
+`my-project`) and they are still four tokens, because each is filled from a
+different answer in `just repo-init`. A file that needs all four needs all four.
+
 | Placeholder | Description | Example | Files |
 |---|---|---|---|
-| `{{PROJECT_NAME}}` | Human-readable project name | `My Project` | SECURITY.md, CODE_OF_CONDUCT.md, TOPOLOGY.md, STATE.a2ml, Justfile, GOVERNANCE.md, MAINTAINERS.md, devcontainer.json |
-| `{{PROJECT_DESCRIPTION}}` | One-line description | `A tool for X` | README.adoc, build/container/Containerfile |
+| `{{PROJECT_NAME}}` | Human-readable project name | `My Project` | SECURITY.md, CODE_OF_CONDUCT.md, TOPOLOGY.md, docs/status/ROADMAP.adoc (via build/templates/ROADMAP.adoc.in), Justfile, GOVERNANCE.md, MAINTAINERS.md, devcontainer.json |
+| `{{PROJECT_DESCRIPTION}}` | One-line description | `A tool for X` | README.adoc, CITATION.cff, the repo deed |
 | `{{PROJECT}}` | Uppercase identifier (for Idris2 modules, C macros) | `MY_PROJECT` | ABI-FFI-README.md, src/interface/abi/*.idr, src/interface/ffi/*.zig |
 | `{{project}}` | Lowercase identifier (for C symbols, filenames) | `my_project` | ABI-FFI-README.md, src/interface/ffi/*.zig |
 | `{{REPO}}` | Repository name (slug) | `my-project` | CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md, cliff.toml |
@@ -63,7 +79,7 @@ sed -i "s/{{CURRENT_DATE}}/$(date +%Y-%m-%d)/g" $(grep -rl '{{CURRENT_DATE}}' .)
 | Placeholder | Description | Example | Files |
 |---|---|---|---|
 | `{{CURRENT_YEAR}}` | Current year | `2026` | SPDX headers (all files), GOVERNANCE.md, MAINTAINERS.md |
-| `{{CURRENT_DATE}}` | Current date (ISO) | `2026-02-14` | STATE.a2ml, MAINTAINERS.md |
+| `{{CURRENT_DATE}}` | Current date (ISO) | `2026-02-14` | `*_chora.deed` (via build/templates/identity.deed.in), MAINTAINERS.md |
 | `{{DATE}}` | Last updated date | `2026-02-14` | TOPOLOGY.md, THREAT-MODEL.md |
 
 ### Contact & Security
@@ -89,7 +105,7 @@ sed -i "s/{{CURRENT_DATE}}/$(date +%Y-%m-%d)/g" $(grep -rl '{{CURRENT_DATE}}' .)
 | Placeholder | Description | Example | Files |
 |---|---|---|---|
 | `{{LICENSE}}` | License name | `MPL-2.0` | ABI-FFI-README.md |
-| `{{PROJECT_PURPOSE}}` | One-line project description | `FFI bridges between languages` | STATE.a2ml |
+| `{{PROJECT_PURPOSE}}` | One-line project description | `FFI bridges between languages` | `*_chora.deed` `(anchor (identity))` :one-sentence (set from `{{PROJECT_DESCRIPTION}}` by `just repo-init`) |
 | `{{OPENSSF_BP_ID}}` | OpenSSF Best Practices numeric project ID (from registering at bestpractices.dev). Optional — leave blank until registered; `just repo-init` then surfaces it in the post-init "remaining placeholders" notice as a reminder. | `1234` | README.adoc (OpenSSF Best Practices badge) |
 
 ### Project Content & Onboarding (manual-fill, post-init)
@@ -110,12 +126,12 @@ surfaces any left unfilled.
 | `{{BUILD_OUTPUT_PATH}}` | Build artefact output path | `build/` | docs/onboarding/QUICKSTART-MAINTAINER.adoc |
 | `{{DEPS}}` | Project dependencies summary | `Idris2 0.7, Zig 0.13` | docs/onboarding/QUICKSTART-MAINTAINER.adoc |
 | `{{MUST_INVARIANTS}}` | Required project invariants | `no believe_me; totality on` | docs/onboarding/QUICKSTART-DEV.adoc |
-| `{{MAIN_FUNCTION}}` | Primary function / purpose | `FFI bridge generation` | machine-readable-design/canonical-directory-structure/Intentfile.a2ml |
-| `{{TARGET_AUDIENCE}}` | Intended audience | `library authors` | machine-readable-design/canonical-directory-structure/Intentfile.a2ml |
-| `{{EXPECTED_AUTHOR}}` | Expected author identity (trust anchor) | `hyperpolymath` | machine-readable-design/canonical-directory-structure/Trustfile.a2ml |
-| `{{PROJECT_UNIQUE_STRENGTH}}` | What this project does better than alternatives | `proof-carrying FFI` | .machine_readable/bot_directives/methodology.a2ml |
-| `{{PROJECT_KIND}}` | Project kind / category | `library` | .machine_readable/descriptiles/anchors/ANCHOR.a2ml |
-| `{{PROJECT_DOMAIN}}` | Project domain | `formal-methods` | .machine_readable/descriptiles/anchors/ANCHOR.a2ml |
+| `{{MAIN_FUNCTION}}` | Primary function / purpose | `FFI bridge generation` | no file in this template (the retired Intentfile is now `.machine_readable/contractiles/intend/intend.k9.ncl`, which does not carry the token) |
+| `{{TARGET_AUDIENCE}}` | Intended audience | `library authors` | no file in this template (the retired Intentfile is now `.machine_readable/contractiles/intend/intend.k9.ncl`, which does not carry the token) |
+| `{{EXPECTED_AUTHOR}}` | Expected author identity (trust anchor) | `hyperpolymath` | no file in this template (the retired Trustfile is now `.machine_readable/contractiles/trust/trust.k9.ncl`, which does not carry the token) |
+| `{{PROJECT_UNIQUE_STRENGTH}}` | What this project does better than alternatives | `proof-carrying FFI` | `*_chora.deed` `(bot-directives (methodology (methodology (unique-strength))))` :description |
+| `{{PROJECT_KIND}}` | Project kind / category | `library` | `*_chora.deed` `(anchor (identity))` :kind |
+| `{{PROJECT_DOMAIN}}` | Project domain | `formal-methods` | `*_chora.deed` `(anchor (identity))` :domain |
 | `{{OPENSSF_PROJECT_ID}}` | OpenSSF Best Practices project ID (same value as `{{OPENSSF_BP_ID}}`) | `1234` | docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc |
 
 ### Repo deed (folded family-7 allocation manifest)
@@ -125,7 +141,7 @@ surfaces any left unfilled.
 | `[YOUR-REPO-NAME]` | Repository name | `my-project` | `*_chora.deed` (repo deed) |
 | `[YOUR-NAME/ORG]` | Maintainer name | `hyperpolymath` | `*_chora.deed` (repo deed) |
 
-(`[DATE]` was listed here for 0-AI-MANIFEST.a2ml but no file ever carried the
+(`[DATE]` was listed here for the root AI manifest but no file ever carried the
 literal token — row removed with the fold; standards#837 pilot.)
 
 ### AI Installation Guide
@@ -162,7 +178,7 @@ Some files contain deletion instructions:
 After replacing all placeholders, verify none remain:
 
 ```bash
-grep -rn '{{' . --include='*.md' --include='*.adoc' --include='*.a2ml' \
+grep -rn '{{' . --include='*.md' --include='*.adoc' --include='*.deed' \
   --include='*.scm' --include='*.idr' --include='*.zig' --include='*.res' \
   --include='Justfile' --include='*.nix' --include='*.toml' --include='*.yml' \
   --include='*.yaml' --include='*.hs' --include='*.ncl' --include='*.txt' \

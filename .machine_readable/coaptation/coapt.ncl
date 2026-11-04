@@ -6,7 +6,7 @@
 # Pure evaluation, no side effects (k9 'Yard): imports the atomised clauses
 # (normative obligations) and facts (descriptive evidence), runs the witness map
 # (Coverage), grades per verb, aggregates to a band, and renders the coaptation
-# receipt as deterministic a2ml text (exported with `nickel export --format raw`).
+# receipt as deterministic TOML text (exported with `nickel export --format raw`).
 #
 # This is the Nickel prototype of the comparator. The dependent-typed sound core
 # (Idris2 `Witnesses`/`Coverage`, where an unwitnessed Must is a COMPILE-TIME
@@ -120,7 +120,7 @@ let amber = !posture_ok || !intend_ok in
 let band = if red then "red" else if amber then "amber" else "green" in
 let action =
   if band == "red" then
-    "ASSEMBLE re-anchor basis — a hard obligation is refuted/unmeasured or a recognised break is active. The anchor DROP is a human authority act; coapt only assembles the basis. ANCHOR.a2ml has no drift/ledger schema yet, so the drop cannot be recorded mechanically."
+    "ASSEMBLE re-anchor basis — a hard obligation is refuted/unmeasured or a recognised break is active. The anchor DROP is a human authority act; coapt only assembles the basis. The deed's (anchor) clause has no drift/ledger schema yet, so the drop cannot be recorded mechanically."
   else if band == "amber" then
     "advisory — soft drift within bands (posture/intend). Open an advisory issue; no re-anchor."
   else
@@ -128,14 +128,14 @@ let action =
 in
 
 # --- render ------------------------------------------------------------------
-let clause_lines = std.string.join "\n" (std.array.map (fun e => e.id ++ " = " ++ e.status) evals) in
+let clause_lines = std.string.join "\n" (std.array.map (fun e => e.id ++ " = \"" ++ e.status ++ "\"") evals) in
 
 let cp = clauses_doc.provenance in
 let fp = facts_doc.provenance in
 let contractile_prov = "intend@%{cp.intend} must@%{cp.must} trust@%{cp.trust} adjust@%{cp.adjust} dust@%{cp.dust} bust@%{cp.bust}" in
-let descriptile_prov = "clade@%{fp.clade} state@%{fp.state} ecosystem@%{fp.ecosystem} agentic@%{fp.agentic} anchor@%{fp.anchor}" in
+let descriptile_prov = "deed@%{fp.deed} anchor@%{fp.anchor}" in
 
-# repo name comes from the CLADE descriptile, not a hardcoded literal — this
+# repo name comes from the repo deed, not a hardcoded literal — this
 # script is shared verbatim by every repo instantiated from rsr-template-repo,
 # so a literal "rsr-template-repo" here would misreport every one of them.
 let repo_name = (lookup "clade.canonical-name").value in

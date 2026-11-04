@@ -2,13 +2,14 @@
 # CODEOWNERS - Define code review assignments
 # See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
-# Repository owner: hyperpolymath
+# Replace {{OWNER}} with your GitHub username or team
 
 # Default owners for everything
-* @hyperpolymath
+* @{{OWNER}}
 
 # Security-sensitive files require explicit review
-SECURITY.md @hyperpolymath
-.github/workflows/ @hyperpolymath
-Trustfile.a2ml @hyperpolymath
-.machine_readable/ @hyperpolymath
+SECURITY.md @{{OWNER}}
+.github/workflows/ @{{OWNER}}
+.machine_readable/contractiles/trust/ @{{OWNER}}
+*_chora.deed @{{OWNER}}
+.machine_readable/ @{{OWNER}}
