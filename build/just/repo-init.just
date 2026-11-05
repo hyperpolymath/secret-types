@@ -14,11 +14,123 @@ repo-init archetype="":
     #!/usr/bin/env bash
     set -euo pipefail
 
-    # Non-interactive support: if RSR_NON_INTERACTIVE is set, dummy-out 'read'.
-    # This prevents blocking on input and seamlessly uses environment variables.
-    if [ -n "${RSR_NON_INTERACTIVE:-}" ]; then
-        read() { return 0; }
+    # ask PROMPT VAR — every prompt below goes through this, never through a
+    # bare `read`. Interactive: read VAR from the terminal. Non-interactive
+    # (RSR_NON_INTERACTIVE set, the scaffoldia / CI path): touch no stdin and
+    # keep VAR's value from the environment, or empty when it has none.
+    #
+    # This replaced `read() { return 0; }`, which shadowed the builtin for the
+    # WHOLE recipe. Measured 2026-10-14 minting resource-algebra:
+    #   * a prompt the environment did not answer left its variable unset, so
+    #     `set -u` killed the mint at OPENSSF_BP_ID, after docs/ had already
+    #     been overwritten by the seed;
+    #   * every `while read -r` loop below inherited the no-op, which succeeds
+    #     without reading, so the substitution pass spun forever on an unbound
+    #     `file`.
+    # The non-interactive mint could therefore never complete, and the e2e test
+    # drove only the interactive path, so nothing noticed.
+    ask() {
+        if [ -n "${RSR_NON_INTERACTIVE:-}" ]; then
+            printf -v "$2" '%s' "${!2:-}"
+        else
+            read -rp "$1" "$2"
+        fi
+    }
+
+    # The mint edits only what belongs to the repository, so it needs git to
+    # say what that is (see mint_files below). Checked first: nothing is
+    # asked, fetched or written for a tree that cannot be minted.
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "Error: repo-init must run inside a git work tree (run 'git init' first)."
+        exit 1
     fi
+
+    # --- The template's own identity ---------------------------------------
+    # repo-init is carried into every minted repo UNCHANGED (it is listed in
+    # .machine_readable/mint-verbatim.txt: it is the generator, not generated
+    # content), so it cannot assume it is running in rsr-template-repo. By the
+    # second generation the deed on disk is <parent>_chora.deed, the literal to
+    # rewrite is <parent>, and the provenance parent is <parent-owner>/<parent>.
+    # Hardcoding the original template made a mint from a minted repo rename
+    # nothing, rewrite nothing, and abort at the identity step. Measured on
+    # metadatastician/lintel 2026-10-19; first fixed there in lintel#9 (not
+    # merged), ported here, where the generator lives.
+    #
+    # Derived, never asked: these are facts about the checkout, not choices.
+    # The root Justfile comes first because its OWNER/REPO lines are also the
+    # literals written through the tree, so they are exactly what the rewrite
+    # has to match, and they are still the TEMPLATE's in a repository created
+    # with "Use this template" (whose git remote is already the child's). The
+    # remote is second, for a Justfile that no longer declares them. The
+    # original template is last, so a bare export still mints something valid.
+    TEMPLATE_OWNER=""
+    TEMPLATE_REPO=""
+    if [ -f Justfile ]; then
+        TEMPLATE_REPO="$(sed -n -E 's/^REPO[[:space:]]*:=[[:space:]]*"([^"]+)".*/\1/p' Justfile | head -1)"
+        TEMPLATE_OWNER="$(sed -n -E 's/^OWNER[[:space:]]*:=[[:space:]]*"([^"]+)".*/\1/p' Justfile | head -1)"
+    fi
+    if [ -z "$TEMPLATE_REPO" ] || [ -z "$TEMPLATE_OWNER" ]; then
+        _origin="$(git config --get remote.origin.url 2>/dev/null || true)"
+        if [ -n "$_origin" ]; then
+            _origin="${_origin%.git}"
+            _origin="${_origin%/}"
+            [ -n "$TEMPLATE_REPO" ] || TEMPLATE_REPO="${_origin##*[/:]}"
+            _origin="${_origin%/*}"
+            [ -n "$TEMPLATE_OWNER" ] || TEMPLATE_OWNER="${_origin##*[/:]}"
+        fi
+    fi
+    TEMPLATE_REPO="${TEMPLATE_REPO:-rsr-template-repo}"
+    TEMPLATE_OWNER="${TEMPLATE_OWNER:-hyperpolymath}"
+    TEMPLATE_SLUG="${TEMPLATE_OWNER}/${TEMPLATE_REPO}"
+
+    # --- What the mint may edit ---------------------------------------------
+    # mint_files prints, one per line, every regular file that belongs to the
+    # repository: tracked, or untracked and not ignored (what `git add -A`
+    # would commit), minus the files .machine_readable/mint-verbatim.txt says
+    # the mint carries unchanged. Every rewrite pass and every completeness
+    # check below reads this list, and nothing else.
+    #
+    # The passes used to `find .` the whole directory. That walked git-ignored
+    # caches: minting lintel, the instruction-block pass edited the pinned
+    # sibling checkouts under _build/dependencies/, which broke those pins. It
+    # also rewrote template machinery whose fixtures must keep the template's
+    # literal name, so tests/workflows/self_name_pass_test.sh failed in the
+    # child, and stripped the very fixture blocks the leftover check below
+    # exempts. "Untracked and not ignored" is included so that a copy which
+    # was never committed (tests/e2e/template_instantiation_test.sh) still
+    # mints; in a repository created from the template every file is tracked.
+    #
+    # Paths are printed relative and without "./"; symlinks are skipped, as
+    # `find -type f` skipped them.
+    VERBATIM_LIST=".machine_readable/mint-verbatim.txt"
+    [ -f "$VERBATIM_LIST" ] || { echo "Error: $VERBATIM_LIST is missing; the mint cannot tell machinery from content."; exit 1; }
+    mapfile -t MINT_VERBATIM < <(sed -e 's/#.*//' -e 's/[[:space:]]*$//' "$VERBATIM_LIST" | grep -v '^$')
+    for _v in "${MINT_VERBATIM[@]}"; do
+        [ -f "$_v" ] || { echo "Error: $VERBATIM_LIST names $_v, which does not exist (stale entry)."; exit 1; }
+    done
+
+    # ── Can the template be minted at all? ──────────────────────────────────
+    # A brace token the recipe below has no answer for is a file that cannot be
+    # minted: it either survives into the child as a literal (measured: five
+    # files in every Julia repo minted before 2026-10-30) or trips the
+    # placeholder gate at the END of a mint that has already written the tree.
+    # Both are cheaper to refuse here, before a single byte is written.
+    if [ -f scripts/check-mint-tokens.sh ]; then
+        if ! bash scripts/check-mint-tokens.sh; then
+            echo "ERROR: mint aborted before writing anything — the template ships a"
+            echo "       token this recipe cannot fill. See the findings above."
+            exit 1
+        fi
+    fi
+    mint_files() {
+        git ls-files -z --cached --others --exclude-standard \
+            | while IFS= read -r -d '' _f; do
+                [ -f "$_f" ] && [ ! -L "$_f" ] || continue
+                printf '%s\n' "$_f"
+            done \
+            | grep -vxF -f <(printf '%s\n' "${MINT_VERBATIM[@]}") \
+            | sort -u || true
+    }
 
     echo "═══════════════════════════════════════════════════"
     echo "  RSR Project Bootstrap"
@@ -30,13 +142,13 @@ repo-init archetype="":
     ARCH_FILE=""
     ARCH_PRESET=""
     if [ -n "$ARCHETYPE" ]; then
-        ARCH_FILE="archetypes/${ARCHETYPE}/ARCHETYPE.a2ml"
+        ARCH_FILE="archetypes/${ARCHETYPE}/${ARCHETYPE}_praxis.deed"
         if [ ! -f "$ARCH_FILE" ]; then
             echo "Error: unknown archetype '${ARCHETYPE}'. Available:"
             ls -1 archetypes 2>/dev/null | grep -v 'README' || echo "  (none)"
             exit 1
         fi
-        ARCH_PRESET=$(sed -n 's/^preset = "\(.*\)"$/\1/p' "$ARCH_FILE" | head -1)
+        ARCH_PRESET=$(bash scripts/deed-field.sh "$ARCH_FILE" capability preset || true)
         echo "Archetype: ${ARCHETYPE}${ARCH_PRESET:+  (capability preset: $ARCH_PRESET)}"
         echo ""
     fi
@@ -44,6 +156,7 @@ repo-init archetype="":
     # --- Load defaults from config (if exists) ---
     # Create yours: ~/.config/rsr/defaults
     # Format: OWNER=myorg  AUTHOR="My Name"  AUTHOR_EMAIL=me@example.org ...
+    #         AUTHOR_ORCID=0000-0002-1825-0097 (optional)
     DEFAULTS="${XDG_CONFIG_HOME:-$HOME/.config}/rsr/defaults"
     if [ -f "$DEFAULTS" ]; then
         echo "Loading defaults from $DEFAULTS"
@@ -53,73 +166,114 @@ repo-init archetype="":
     fi
 
     # --- Required values (pre-filled from defaults if available) ---
-    read -rp "Project name (human-readable, e.g. My Project): " PROJECT_NAME
+    ask "Project name (human-readable, e.g. My Project): " PROJECT_NAME
     [ -z "$PROJECT_NAME" ] && echo "Error: project name required" && exit 1
 
-    read -rp "Repository slug (e.g. my-project): " REPO
+    ask "Repository slug (e.g. my-project): " REPO
     [ -z "$REPO" ] && echo "Error: repo slug required" && exit 1
-    if [[ ! "$REPO" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    # A Julia package repo is named after its package: `<Name>.jl`, where
+    # <Name> is the package's own identifier (UpperCamelCase by Julia
+    # convention). The julia-library archetype accepts that form as well as
+    # the estate slug; every other mint takes the estate slug only.
+    if [[ "$ARCHETYPE" = "julia-library" && "$REPO" =~ ^[A-Z][A-Za-z0-9]*\.jl$ ]]; then
+        :
+    elif [[ ! "$REPO" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
         echo "Error: repo slug must be lowercase alphanumeric words separated by single hyphens"
+        [ "$ARCHETYPE" = "julia-library" ] && echo "       (or, for a Julia package, <Name>.jl with <Name> in UpperCamelCase)"
         exit 1
     fi
 
-    read -rp "Owner [${OWNER:-}]: " _OWNER
+    ask "Owner [${OWNER:-}]: " _OWNER
     OWNER="${_OWNER:-${OWNER:-}}"
     [ -z "$OWNER" ] && echo "Error: owner required" && exit 1
 
-    read -rp "Author full name [${AUTHOR:-}]: " _AUTHOR
+    ask "Author full name [${AUTHOR:-}]: " _AUTHOR
     AUTHOR="${_AUTHOR:-${AUTHOR:-}}"
     [ -z "$AUTHOR" ] && echo "Error: author name required" && exit 1
 
-    read -rp "Author email [${AUTHOR_EMAIL:-}]: " _AUTHOR_EMAIL
+    ask "Author email [${AUTHOR_EMAIL:-}]: " _AUTHOR_EMAIL
     AUTHOR_EMAIL="${_AUTHOR_EMAIL:-${AUTHOR_EMAIL:-}}"
     [ -z "$AUTHOR_EMAIL" ] && echo "Error: email required" && exit 1
 
     # --- Optional values (pre-filled from defaults if available) ---
-    read -rp "Author organization [${AUTHOR_ORG:-none}]: " _AUTHOR_ORG
+    ask "Author organization [${AUTHOR_ORG:-none}]: " _AUTHOR_ORG
     AUTHOR_ORG="${_AUTHOR_ORG:-${AUTHOR_ORG:-}}"
 
-    read -rp "Previous/alt email [${AUTHOR_EMAIL_ALT:-none}]: " _AUTHOR_EMAIL_ALT
+    ask "Previous/alt email [${AUTHOR_EMAIL_ALT:-none}]: " _AUTHOR_EMAIL_ALT
     AUTHOR_EMAIL_ALT="${_AUTHOR_EMAIL_ALT:-${AUTHOR_EMAIL_ALT:-}}"
 
-    read -rp "Project description []: " PROJECT_DESCRIPTION
+    # ORCID iD for CITATION.cff. Defaults from AUTHOR_ORCID in the defaults
+    # file, then `git config user.orcid`, so an author sets it once:
+    #     git config --global user.orcid 0000-0002-1825-0097
+    # Blank drops the orcid line below. An all-zeros placeholder is worse than
+    # no line: citation tools resolve it and attribute the work to nobody.
+    AUTHOR_ORCID="${AUTHOR_ORCID:-$(git config --get user.orcid 2>/dev/null || true)}"
+    ask "Author ORCID iD [${AUTHOR_ORCID:-none}]: " _AUTHOR_ORCID
+    AUTHOR_ORCID="${_AUTHOR_ORCID:-${AUTHOR_ORCID:-}}"
+    AUTHOR_ORCID="${AUTHOR_ORCID#http*://orcid.org/}"
+    if [ -n "$AUTHOR_ORCID" ]; then
+        if [[ ! "$AUTHOR_ORCID" =~ ^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$ ]]; then
+            echo "Error: ORCID iD must look like 0000-0002-1825-0097 (got '${AUTHOR_ORCID}')"
+            exit 1
+        fi
+        # ISO 7064 MOD 11-2 check digit, as ORCID specifies: a transposed
+        # digit is a valid-looking iD that belongs to someone else.
+        _orcid_digits="${AUTHOR_ORCID//-/}"
+        _orcid_total=0
+        for ((i = 0; i < 15; i++)); do
+            _orcid_total=$(( (_orcid_total + ${_orcid_digits:i:1}) * 2 ))
+        done
+        _orcid_check=$(( (12 - _orcid_total % 11) % 11 ))
+        [ "$_orcid_check" = 10 ] && _orcid_check=X
+        if [ "$_orcid_check" != "${_orcid_digits:15:1}" ]; then
+            echo "Error: ORCID iD ${AUTHOR_ORCID} fails its check digit (expected ${_orcid_check})"
+            exit 1
+        fi
+    fi
 
-    read -rp "Forge domain [${FORGE:-github.com}]: " _FORGE
+    ask "Project description []: " PROJECT_DESCRIPTION
+
+    ask "Forge domain [${FORGE:-github.com}]: " _FORGE
     FORGE="${_FORGE:-${FORGE:-github.com}}"
 
-    read -rp "Security contact email [${SECURITY_EMAIL:-$AUTHOR_EMAIL}]: " _SECURITY_EMAIL
+    ask "Security contact email [${SECURITY_EMAIL:-$AUTHOR_EMAIL}]: " _SECURITY_EMAIL
     SECURITY_EMAIL="${_SECURITY_EMAIL:-${SECURITY_EMAIL:-$AUTHOR_EMAIL}}"
 
-    read -rp "Conduct contact email [${CONDUCT_EMAIL:-$AUTHOR_EMAIL}]: " _CONDUCT_EMAIL
+    ask "Conduct contact email [${CONDUCT_EMAIL:-$AUTHOR_EMAIL}]: " _CONDUCT_EMAIL
     CONDUCT_EMAIL="${_CONDUCT_EMAIL:-${CONDUCT_EMAIL:-$AUTHOR_EMAIL}}"
 
-    read -rp "Project type (library|binary|monorepo|service|website) [library]: " PROJECT_TYPE
+    ask "Project type (library|binary|monorepo|service|website) [library]: " PROJECT_TYPE
     PROJECT_TYPE="${PROJECT_TYPE:-library}"
 
-    read -rp "Website URL [https://${FORGE}/${OWNER}/${REPO}]: " WEBSITE
+    ask "Website URL [https://${FORGE}/${OWNER}/${REPO}]: " WEBSITE
     WEBSITE="${WEBSITE:-https://${FORGE}/${OWNER}/${REPO}}"
 
-    read -rp "OpenSSF Best Practices project ID (blank if not yet registered) []: " OPENSSF_BP_ID
+    ask "OpenSSF Best Practices project ID (blank if not yet registered) []: " OPENSSF_BP_ID
 
     # --- Container values (optional — only relevant if build/container/ exists) ---
+    # The default service name is the slug in lower case: an OCI image name
+    # may not contain capitals, and a Julia slug (`<Name>.jl`) has them.
     if [ -d "build/container" ]; then
         echo ""
         echo "── Container configuration (optional) ─────────"
-        read -rp "Service name [${REPO}]: " _SERVICE_NAME
-        SERVICE_NAME="${_SERVICE_NAME:-${REPO}}"
-        read -rp "Primary port [8080]: " _PORT
-        PORT="${_PORT:-8080}"
-        read -rp "Container registry [ghcr.io/${OWNER}]: " _REGISTRY
-        REGISTRY="${_REGISTRY:-ghcr.io/${OWNER}}"
+        ask "Service name [${SERVICE_NAME:-${REPO,,}}]: " _SERVICE_NAME
+        SERVICE_NAME="${_SERVICE_NAME:-${SERVICE_NAME:-${REPO,,}}}"
+        ask "Primary port [${PORT:-8080}]: " _PORT
+        PORT="${_PORT:-${PORT:-8080}}"
+        ask "Container registry [${REGISTRY:-ghcr.io/${OWNER}}]: " _REGISTRY
+        REGISTRY="${_REGISTRY:-${REGISTRY:-ghcr.io/${OWNER}}}"
     else
-        SERVICE_NAME="${REPO}"
-        PORT="8080"
-        REGISTRY="ghcr.io/${OWNER}"
+        SERVICE_NAME="${SERVICE_NAME:-${REPO,,}}"
+        PORT="${PORT:-8080}"
+        REGISTRY="${REGISTRY:-ghcr.io/${OWNER}}"
     fi
 
     # --- Derived values ---
-    PROJECT_UPPER=$(echo "$REPO" | tr '[:lower:]-' '[:upper:]_')
-    PROJECT_LOWER=$(echo "$REPO" | tr '[:upper:]-' '[:lower:]_')
+    # The PROJECT and project tokens land in identifiers (Zig, Idris, C macros),
+    # so every character an identifier cannot hold maps to an underscore: the
+    # hyphens of a slug and the dot of a Julia slug alike.
+    PROJECT_UPPER=$(echo "$REPO" | tr '[:lower:]-.' '[:upper:]__')
+    PROJECT_LOWER=$(echo "$REPO" | tr '[:upper:]-.' '[:lower:]__')
     CURRENT_YEAR=$(date +%Y)
     CURRENT_DATE=$(date +%Y-%m-%d)
     VERSION="0.1.0"
@@ -154,21 +308,97 @@ repo-init archetype="":
     echo "  Owner:       $OWNER"
     echo "  Author:      $AUTHOR <$AUTHOR_EMAIL>"
     [ -n "$AUTHOR_ORG" ] && echo "  Organization: $AUTHOR_ORG"
+    [ -n "$AUTHOR_ORCID" ] && echo "  ORCID:       $AUTHOR_ORCID"
     echo "  Forge:       $FORGE"
     echo "  Year:        $CURRENT_YEAR"
     echo "────────────────────────────────────────────────"
     echo ""
-    read -rp "Proceed? [Y/n] " CONFIRM
+    ask "Proceed? [Y/n] " CONFIRM
     [[ "${CONFIRM:-Y}" =~ ^[Nn] ]] && echo "Aborted." && exit 0
+
+    # Template-only paths this recipe deletes, as they stand before it runs.
+    # Recorded in the (variant) clause's (paths :removed …) below, so the
+    # record says what the mint took away instead of leaving the drift gate to
+    # report each file as an undeclared removal (18 lines on a fresh mint).
+    MINT_REMOVES=()
+    for _d in archetypes build/docs-seed build/templates; do
+        [ -d "$_d" ] && MINT_REMOVES+=("$_d/")
+    done
+
+    # --- Which template commit is in hand (provenance) ---------------------
+    # Resolved BEFORE anything is written, so an unresolvable parent stops the
+    # mint with the tree untouched instead of half-minted. The child's own HEAD
+    # is never recorded as the template's: in a repository created with "Use
+    # this template" it is a commit of the child (lintel recorded its own
+    # claude/mint-lintel tip, 2026-10-14). scripts/resolve-template-pin.sh owns
+    # the rule and says why; tests/workflows/resolve_template_pin_test.sh
+    # holds its controls.
+    #   RSR_TEMPLATE_URL     read the template's history from here instead
+    #   RSR_TEMPLATE_COMMIT  assert the template commit (verified to exist)
+    #   RSR_ALLOW_UNPINNED=1 record UNASSIGNED instead of aborting (offline)
+    PIN_ARGS=(--slug "$TEMPLATE_SLUG")
+    [ -z "${RSR_TEMPLATE_URL:-}" ] || PIN_ARGS+=(--url "$RSR_TEMPLATE_URL")
+    [ -z "${RSR_TEMPLATE_COMMIT:-}" ] || PIN_ARGS+=(--commit "$RSR_TEMPLATE_COMMIT")
+    if PIN_OUT="$(bash scripts/resolve-template-pin.sh "${PIN_ARGS[@]}")"; then
+        PARENT_BRANCH="$(sed -n 's/^branch=//p' <<<"$PIN_OUT")"
+        PARENT_PIN="$(sed -n 's/^commit=//p' <<<"$PIN_OUT")"
+        PARENT_TREE="$(sed -n 's/^tree=//p' <<<"$PIN_OUT")"
+        echo "Template: ${TEMPLATE_SLUG}@${PARENT_PIN:0:12} ($(sed -n 's/^source=//p' <<<"$PIN_OUT"))"
+    elif [ "${RSR_ALLOW_UNPINNED:-0}" = "1" ]; then
+        PARENT_BRANCH=UNASSIGNED PARENT_PIN=UNASSIGNED PARENT_TREE=UNASSIGNED
+        echo "WARNING: template commit UNASSIGNED (RSR_ALLOW_UNPINNED=1)."
+        echo "         scripts/check-template-conformance.sh fails until it is filled."
+    else
+        echo "ERROR: mint aborted before writing anything — the template commit this"
+        echo "       tree came from cannot be named (reason above). Re-run with"
+        echo "       RSR_ALLOW_UNPINNED=1 only if an unpinned mint is genuinely wanted."
+        exit 1
+    fi
 
     echo ""
     echo "Replacing placeholders..."
 
     # Apply archetype overlay files (if any) BEFORE substitution, so overlay
     # files are rendered along with the rest of the tree.
+    #
+    # The overlay's file list is recorded first: the .in rename below must touch
+    # ONLY the files this archetype added. The spine ships .in templates of its
+    # own (build/templates/, the k9 examples) whose .in suffix is meaningful and
+    # must survive, and a blanket `find . -name '*.in' -exec mv` would rename
+    # them into broken files.
+    OVERLAY_FILES=()
     if [ -n "$ARCHETYPE" ] && [ -d "archetypes/${ARCHETYPE}/overlay" ]; then
+        mapfile -t OVERLAY_FILES < <(
+            cd "archetypes/${ARCHETYPE}/overlay" && find . -type f ! -name '*.orig' \
+                | sed 's|^\./||' | sort
+        )
         cp -a "archetypes/${ARCHETYPE}/overlay/." .
-        echo "  applied overlay: archetypes/${ARCHETYPE}/overlay/"
+        echo "  applied overlay: archetypes/${ARCHETYPE}/overlay/ (${#OVERLAY_FILES[@]} file(s))"
+    fi
+
+    # An archetype's workflows bring their lock records as a fragment beside
+    # the overlay, never as an overlay file: an overlay actions.lock REPLACES
+    # the spine's lock, and every spine workflow then dies at startup with no
+    # record. Merge the fragment in; a conflicting record stops the mint.
+    if [ -n "$ARCHETYPE" ] && [ -f "archetypes/${ARCHETYPE}/actions.lock" ]; then
+        bash scripts/rust-tool.sh merge-actions-lock \
+            .github/workflows/actions.lock "archetypes/${ARCHETYPE}/actions.lock"
+    fi
+
+    # ── Archetype prune (ADR-0003) ───────────────────────────────────────────
+    # The spine is polyglot on purpose: it carries the container module and the
+    # dev container so that SOME child can use them. A child carrying a module
+    # whose capability its preset does not declare is drift, and one of those
+    # modules is not harmless: `build/container/` is a DEPLOYED artifact, so a
+    # Julia package shipped it and failed `container-images-pinned` from birth
+    # over a container it does not need. The archetype says what it drops in
+    # archetypes/<name>/prune.txt; the removals are recorded in the child's
+    # (variant (paths :removed …)) so the drift gate does not report them.
+    if [ -n "$ARCHETYPE" ] && [ -f "archetypes/${ARCHETYPE}/prune.txt" ]; then
+        while IFS= read -r _pruned; do
+            [ -n "$_pruned" ] && MINT_REMOVES+=("$_pruned")
+        done < <(bash scripts/prune-archetype-modules.sh "archetypes/${ARCHETYPE}" .)
+        echo "  pruned: archetypes/${ARCHETYPE}/prune.txt applied"
     fi
 
     # Seed docs/ from the documentation seed, BEFORE substitution so the seed's
@@ -234,6 +464,7 @@ repo-init archetype="":
         -e "s|${LB}DESCRIPTION${RB}|${PROJECT_DESCRIPTION}|g"
     )
     [ -n "$AUTHOR_EMAIL_ALT" ] && SED_ARGS+=(-e "s|${LB}AUTHOR_EMAIL_ALT${RB}|${AUTHOR_EMAIL_ALT}|g")
+    [ -n "$AUTHOR_ORCID" ] && SED_ARGS+=(-e "s|${LB}AUTHOR_ORCID${RB}|${AUTHOR_ORCID}|g")
     [ -n "$OPENSSF_BP_ID" ] && SED_ARGS+=(-e "s|${LB}OPENSSF_BP_ID${RB}|${OPENSSF_BP_ID}|g")
     [ -n "$OPENSSF_BP_ID" ] && SED_ARGS+=(-e "s|${LB}OPENSSF_PROJECT_ID${RB}|${OPENSSF_BP_ID}|g")
 
@@ -242,21 +473,23 @@ repo-init archetype="":
     # below — sed applies expressions in order, so a token the archetype
     # answers never reaches the fallback, and one it omits still fails loudly.
     if [ -n "$ARCH_FILE" ]; then
-        while IFS= read -r arch_line; do
-            arch_tok="${arch_line%%=*}"; arch_tok="${arch_tok// /}"
-            arch_val=$(printf '%s' "$arch_line" | sed -n 's/^[^=]*= *"\(.*\)" *$/\1/p')
+        # The archetype's (tokens) clause: every :KEY "value" pair, read through
+        # deed-field.sh so string escapes are decoded by the one reader.
+        while IFS= read -r arch_tok; do
+            arch_val=$(bash scripts/deed-field.sh "$ARCH_FILE" tokens "$arch_tok" || true)
             { [ -n "$arch_tok" ] && [ -n "$arch_val" ]; } || continue
             case "$arch_val" in *'|'*)
                 echo "WARN: archetype token $arch_tok contains '|' (the sed delimiter) — skipped, stays UNASSIGNED"
                 continue ;;
             esac
             SED_ARGS+=(-e "s|${LB}${arch_tok}${RB}|${arch_val}|g")
-        done < <(awk '$0=="[tokens]"{f=1;next} /^\[/{f=0} f && !/^[[:space:]]*#/ && NF' "$ARCH_FILE")
+        done < <(bash scripts/deed-field.sh --clause "$ARCH_FILE" tokens \
+                   | awk 'prev ~ /^A:/ && /^S/ { print substr(prev, 3) } { prev = $0 }')
     fi
 
     # Tokens only the author can answer. init cannot know a project's unique
     # strength or its language stack, and guessing would write fiction into
-    # ANCHOR.a2ml — the file the estate treats as semantic authority. They
+    # the deed's (anchor) clause — the estate's semantic authority. They
     # become UNASSIGNED, the same marker `just repo-init` already writes for an
     # unchosen clade: honest, greppable, and obviously unfinished, whereas a
     # leftover brace token just looks like the template broke.
@@ -269,18 +502,32 @@ repo-init archetype="":
         SED_ARGS+=(-e "s|${LB}${tok}${RB}|UNASSIGNED|g")
     done
 
-    # julia-library archetype: derive the package uuid at mint (owner ruling
-    # 2026-09-19: generate at mint). Same DERIVABLE class as the REPO uuid
-    # above - computed, never guessed. Namespace = the repo's own derived
-    # uuid, name = julia:<repo>: stable across re-mints of the same repo,
-    # never collides with the repo uuid. No uuidgen AND no python3 on the
-    # operator machine -> UNASSIGNED (the honest fallback at :437); Pkg
-    # then refuses the package loudly until the owner assigns one.
+    # julia-library archetype: mint the package uuid as UUIDv8 profile C
+    # (ADR-008 amendment: the strict UUIDv8 gate rejects the UUIDv5 mint,
+    # and D320 requires unregistered packages at v8). Profile C is
+    # DETERMINISTIC: bytes 0..15 of SHA-256("julia-package-identity" ":"
+    # "github.com/<owner>/<name>"), version nibble 8, variant 10 -- stable
+    # across re-mints of the same repo, derivable by any operator machine
+    # with python3 (or bun over standards' scripts/uuid-v8.js), never
+    # colliding with the repo uuid. The domain is REGISTERED in standards'
+    # ADR-008-profile-c-domains.json. No python3 and no bun -> UNASSIGNED
+    # (the honest fallback at :437); Pkg then refuses the package loudly
+    # until the owner assigns one.
     if [ "$ARCHETYPE" = "julia-library" ]; then
-        if command -v uuidgen >/dev/null 2>&1; then
-            PACKAGE_UUID=$(uuidgen --sha1 --namespace "${REPO_UUID}" --name "julia:${REPO}")
+        # GitHub owner logins are case-insensitive; canonicalize to lowercase
+        # before the preimage so owner casing cannot fork the UUID.
+        OWNER_LC=$(printf '%s' "${OWNER}" | tr '[:upper:]' '[:lower:]')
+        if command -v bun >/dev/null 2>&1 && [ -f "${STANDARDS_UUID_V8_JS:-}" ]; then
+            PACKAGE_UUID=$(bun "${STANDARDS_UUID_V8_JS}" c julia-package-identity "github.com/${OWNER_LC}/${REPO}")
         elif command -v python3 >/dev/null 2>&1; then
-            PACKAGE_UUID=$(python3 -c "import uuid; print(uuid.uuid5(uuid.UUID('${REPO_UUID}'), 'julia:${REPO}'))")
+            PACKAGE_UUID=$(python3 -c '
+    import hashlib, sys
+    pre = ("julia-package-identity:github.com/%s/%s" % (sys.argv[1], sys.argv[2])).encode()
+    b = bytearray(hashlib.sha256(pre).digest()[:16])
+    b[6] = (b[6] & 0x0F) | 0x80   # version 8
+    b[8] = (b[8] & 0x3F) | 0x80   # variant 10
+    h = b.hex()
+    print(f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}")' "${OWNER_LC}" "${REPO}")
         else
             PACKAGE_UUID=UNASSIGNED
         fi
@@ -294,9 +541,21 @@ repo-init archetype="":
     # in the new repo's README, and it trips the placeholder gate on every
     # subsequent push, which trains people to ignore a red CI. No id yet means
     # no badge yet; add it when you register at bestpractices.dev.
+    #
+    # Line deletion is only safe where the line is the whole construct. It
+    # used to run on docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc too, where
+    # the token's line is one CELL of a six-column table row: deleting it
+    # left an incomplete row, asciidoctor reported "dropping cells from
+    # incomplete row", and Estate Rules' render gate failed in every child
+    # minted without an OpenSSF id (measured 2026-10-14 on resource-algebra).
+    # That document names the README's tokens rather than using them, so it
+    # now spells them as plain names and needs no pass here.
     if [ -z "$OPENSSF_BP_ID" ]; then
         sed -i "/bestpractices\.dev\/projects\/${LB}OPENSSF_BP_ID${RB}/d" README.adoc 2>/dev/null || true
-        sed -i "/${LB}OPENSSF_PROJECT_ID${RB}/d" docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc 2>/dev/null || true
+    fi
+    # Same rule for the ORCID iD: CFF makes `orcid` optional, a wrong one is not.
+    if [ -z "$AUTHOR_ORCID" ]; then
+        sed -i "/orcid\.org\/${LB}AUTHOR_ORCID${RB}/d" CITATION.cff 2>/dev/null || true
     fi
     # A .mailmap exists to map an alternate address onto the canonical one.
     # With no alternate address there is nothing to map, and the sole entry
@@ -310,21 +569,45 @@ repo-init archetype="":
     fi
 
     # Replace in all text files (skip .git, LICENSE text, and binaries)
-    find . -type f \
-        -not -path './.git/*' \
-        -not -name 'MPL-2.0.txt' \
-        -not -name '*.png' -not -name '*.jpg' -not -name '*.gif' \
-        -not -name '*.woff' -not -name '*.woff2' \
-        | while read -r file; do
-        if file --brief "$file" | grep -qi 'text\|ascii\|utf'; then
+    #
+    # Skip just files too. In a Justfile or *.just module, double braces are
+    # just's OWN interpolation syntax, never a template token: every one in
+    # the template is a just variable or parameter. The lowercase project
+    # token is spelled exactly like just's interpolation of the `project`
+    # variable, so this pass used to freeze it into the identifier form.
+    # Measured 2026-10-14 minting resource-algebra: 7 Justfile lines, the
+    # contractile Justfile copy and container.just's image tag all became the
+    # literal `resource_algebra` instead of following `project :=
+    # "resource-algebra"` (docs/man/resource_algebra.1, an image tagged with
+    # the underscored name). The self-name pass below still rewrites the
+    # template literal in these files; that is the edit they actually need.
+    # Return success when $1 is classified as text, using a byte-content probe
+    # (which accepts empty files) when the file command is unavailable.
+    is_text_file() {
+        if command -v file >/dev/null 2>&1; then
+            file --brief "$1" | grep -qi 'text\|ascii\|utf'
+        else
+            [ ! -s "$1" ] || LC_ALL=C grep -Iq . "$1"
+        fi
+    }
+
+    mint_files | while IFS= read -r file; do
+        case "${file##*/}" in
+            MPL-2.0.txt|Justfile|*.just|*.png|*.jpg|*.gif|*.woff|*.woff2) continue ;;
+        esac
+        if is_text_file "$file"; then
             sed -i "${SED_ARGS[@]}" "$file"
         fi
     done
 
-    # Also replace [YOUR-REPO-NAME] and [YOUR-NAME/ORG] in the repo deed
-    # (the family-7 allocation manifest folded into it — standards#837 pilot).
-    sed -i "s|\[YOUR-REPO-NAME\]|${PROJECT_NAME}|g" rsr-template-repo_chora.deed 2>/dev/null || true
-    sed -i "s|\[YOUR-NAME/ORG\]|${OWNER}|g" rsr-template-repo_chora.deed 2>/dev/null || true
+    # [YOUR-REPO-NAME] and [YOUR-NAME/ORG] (the family-7 allocation manifest
+    # folded into the deed — standards#837 pilot) are replaced in the deed,
+    # found by its shape rather than by the original template's file name: in
+    # a repository minted from a minted one it is <parent>_chora.deed, and the
+    # two seds that named rsr-template-repo_chora.deed silently no-opped there.
+    DEED_IN="$(bash scripts/deed-field.sh --find .)" \
+        || { echo "Error: the tree must carry exactly one *_chora.deed at its root."; exit 1; }
+    sed -i -e "s|\[YOUR-REPO-NAME\]|${PROJECT_NAME}|g" -e "s|\[YOUR-NAME/ORG\]|${OWNER}|g" "$DEED_IN"
 
     # --- Instruction-block pass --------------------------------------------
     # Delete the "TEMPLATE INSTRUCTIONS (delete this block before publishing)"
@@ -342,7 +625,7 @@ repo-init archetype="":
     if [ "$REPO" != "${REPO%-template-repo}" ]; then
         echo "  instruction blocks: skipped (this IS a template repo)"
     else
-        bash scripts/rust-tool.sh strip-instruction-blocks .
+        mint_files | bash scripts/rust-tool.sh strip-instruction-blocks -
     fi
 
     # --- Dependabot ecosystem pass -----------------------------------------
@@ -366,10 +649,10 @@ repo-init archetype="":
     #     Justfile:                project := "rsr-template-repo"
     #     Justfile:                REPO    := "rsr-template-repo"
     #     sonar-project.properties sonar.projectKey=hyperpolymath_rsr-template-repo
-    #     STATE.a2ml / ECOSYSTEM.a2ml  project = "rsr-template-repo"
+    #     the deed's (status) / (ecosystem) project = "rsr-template-repo"
     # i.e. it declared that it WAS the template, and would have reported its
     # code analysis into the TEMPLATE's SonarCloud project. This is the same
-    # failure the CLADE.a2ml block below fixes for the uuid/canonical-name;
+    # failure the repo-identity splice below fixes for the uuid/canonical-name;
     # nothing generalised it to the rest of the tree. Confirmed in the wild:
     # hyperpolymath/cargo-zigbuild still carries both Justfile lines.
     #
@@ -378,287 +661,357 @@ repo-init archetype="":
     # (ADRs, its changelog, its own audit, and this recipe itself — which
     # holds PARENT_SLUG) are skipped wholesale, and within every other file
     # any line that names the parent AS a parent is left byte-for-byte alone.
-    if [ "$REPO" != "rsr-template-repo" ]; then
-        SELF_PROV='instantiated-from|parent|upstream|chain =|lineage|minted from|created from|Template: '
-        find . -type f \
-            -not -path './.git/*' \
-            -not -path './build/just/repo-init.just' \
-            -not -path './docs/decisions/*' \
-            -not -path './.machine_readable/descriptiles/CLADE.a2ml' \
-            -not -path './.machine_readable/descriptiles/VARIANT.a2ml' \
-            -not -name 'CHANGELOG.md' \
-            -not -name 'TEMPLATE-STANDARDS-AUDIT.adoc' \
-            -not -name 'TEMPLATE-LINEAGE-AUDIT.adoc' \
-            -not -name '*.png' -not -name '*.jpg' -not -name '*.gif' \
-            -not -name '*.woff' -not -name '*.woff2' \
-            | while read -r file; do
-            grep -q 'rsr-template-repo' "$file" 2>/dev/null || continue
-            file --brief "$file" | grep -qi 'text\|ascii\|utf' || continue
+    #
+    # A line that names the template as something to DETECT is protected too:
+    # the deed's state-validation `:reject-if-contains ("rsr-template-repo")`
+    # flags state files still carrying template text. Rewritten to the child's
+    # own slug it rejected every legitimate state file of the child (measured
+    # 2026-10-14 on resource-algebra) - the same "detector eaten by the
+    # filling" defect the :reject-if-matches comment in the deed records for
+    # tokens.
+    #
+    # An issue or PR reference `rsr-template-repo#N` names the TEMPLATE's own
+    # issue, and stays so. Rewritten it pointed at an issue of the child that
+    # does not exist, or worse, an unrelated one: resource-algebra carried 20
+    # such references (`resource-algebra#209` for the deed-clause migration)
+    # after its mint on 2026-10-14. tests/workflows/self_name_pass_test.sh
+    # runs these two lines on fixtures.
+    if [ "$REPO" != "$TEMPLATE_REPO" ]; then
+        SELF_PROV='instantiated-from|parent|upstream|chain =|lineage|minted from|created from|Template: |reject-if-contains'
+        # The template's name and slug are LITERAL text, not patterns: a Julia
+        # mint's parent may be <Name>.jl, and `.` in a sed pattern matches any
+        # character. Escaped inline so self_name_pass_test.sh can evaluate this
+        # one assignment exactly as the recipe defines it.
+        SELF_NAME_SED="/${SELF_PROV}/!{s|${TEMPLATE_REPO//./\\.}#([0-9])|__TEMPLATE_ISSUE__\\1|g;s|${TEMPLATE_SLUG//./\\.}|${OWNER}/${REPO}|g;s|${TEMPLATE_REPO//./\\.}|${REPO}|g;s|__TEMPLATE_ISSUE__|${TEMPLATE_REPO}#|g;}"
+        # Paths that are ABOUT the template keep its name wholesale: its ADRs,
+        # changelog and audits. Template machinery (this recipe, the tests whose
+        # fixtures must stay the template's literal name) is not in mint_files
+        # at all; it is listed in .machine_readable/mint-verbatim.txt.
+        mint_files | while IFS= read -r file; do
+            case "$file" in
+                docs/decisions/*|CHANGELOG.md|*/CHANGELOG.md) continue ;;
+                TEMPLATE-STANDARDS-AUDIT.adoc|*/TEMPLATE-STANDARDS-AUDIT.adoc) continue ;;
+                TEMPLATE-LINEAGE-AUDIT.adoc|*/TEMPLATE-LINEAGE-AUDIT.adoc) continue ;;
+                *.png|*.jpg|*.gif|*.woff|*.woff2) continue ;;
+            esac
+            grep -qF -- "$TEMPLATE_REPO" "$file" 2>/dev/null || continue
+            is_text_file "$file" || continue
             # sed -i preserves the mode bit; rewriting via a temp file would not.
-            sed -i -E "/${SELF_PROV}/!{s|hyperpolymath/rsr-template-repo|${OWNER}/${REPO}|g;s|rsr-template-repo|${REPO}|g;}" "$file"
+            sed -i -E "$SELF_NAME_SED" "$file"
         done
-        echo "  self-name: rewrote template literal -> ${REPO} (provenance lines preserved)"
+        echo "  self-name: rewrote ${TEMPLATE_REPO} -> ${REPO} (provenance lines preserved)"
 
         # The repo deed's FILENAME carries the repo slug (deed dispatch:
         # <stem>_chora.deed — deed.abnf v1.0.0). The self-name pass rewrote
         # the slug inside the file; the file itself is renamed here. Plain mv:
         # mint runs before the new repo's first commit. Renames (not tokens)
-        # are how filenames change — a {{REPO}} token in a FILENAME is the
+        # are how filenames change — a REPO token in a FILENAME is the
         # brace-collapse hazard class repo-init has already been burnt by.
-        if [ -f rsr-template-repo_chora.deed ]; then
-            mv rsr-template-repo_chora.deed "${REPO}_chora.deed"
-            echo "  repo deed: renamed rsr-template-repo_chora.deed -> ${REPO}_chora.deed"
-        fi
-
-        # ── self-OWNER pass ──────────────────────────────────────────────────
-        #
-        # Same class as the self-name leak above, and missed by it: the
-        # template's own OWNER is a plain literal, so nothing rewrote it. A repo
-        # minted under a different owner shipped:
-        #
-        #     Justfile                 OWNER := "hyperpolymath"
-        #     sonar-project.properties sonar.projectKey=hyperpolymath_<repo>
-        #
-        # i.e. it declared the wrong owner and reported its code analysis into
-        # the wrong SonarCloud project. Measured on a metadatastician mint.
-        #
-        # This pass is deliberately NARROW — three exact, identity-bearing
-        # lines. A blanket `hyperpolymath` -> ${OWNER} rewrite would be WRONG:
-        # `hyperpolymath/standards`, `hyperpolymath/proven` and the other estate
-        # dependencies are real repos every child genuinely points at, and
-        # rewriting those would break the child's canon, CI and badges.
-        if [ "$OWNER" != "hyperpolymath" ]; then
-            sed -i -E 's|^(OWNER[[:space:]]*:=[[:space:]]*)"hyperpolymath"|\1"'"${OWNER}"'"|' Justfile
-            sed -i -E 's|^sonar\.organization=hyperpolymath$|sonar.organization='"${OWNER}"'|' sonar-project.properties
-            sed -i -E 's|^sonar\.projectKey=hyperpolymath_|sonar.projectKey='"${OWNER}"'_|' sonar-project.properties
-            echo "  self-owner: rewrote owner literal -> ${OWNER} (estate dependency paths preserved)"
-            echo "  NOTE: confirm the SonarCloud ORG is really '${OWNER}' before provisioning —"
-            echo "        the GitHub owner and the SonarCloud org are not always the same."
+        # The deed was found by shape above (DEED_IN), never by the original
+        # template's name, so a mint from a minted repo renames it too.
+        if [ "${DEED_IN#./}" != "${REPO}_chora.deed" ]; then
+            mv -- "$DEED_IN" "${REPO}_chora.deed"
+            echo "  repo deed: renamed ${DEED_IN#./} -> ${REPO}_chora.deed"
         fi
     fi
 
-    echo ""
-    echo "── Identity (CLADE.a2ml) ────────────────────────"
+    # ── self-OWNER pass ──────────────────────────────────────────────────────
+    #
+    # Same class as the self-name leak above, and missed by it: the template's
+    # own OWNER is a plain literal, so nothing rewrote it. A repo minted under a
+    # different owner shipped:
+    #
+    #     Justfile                 OWNER := "hyperpolymath"
+    #     sonar-project.properties sonar.projectKey=hyperpolymath_<repo>
+    #
+    # i.e. it declared the wrong owner and reported its code analysis into the
+    # wrong SonarCloud project. Measured on a metadatastician mint. The owner
+    # compared against is the TEMPLATE's (derived above), so a repo minted from
+    # a metadatastician child is handled the same way.
+    #
+    # This pass is deliberately NARROW — three exact, identity-bearing lines. A
+    # blanket owner rewrite would be WRONG: `hyperpolymath/standards`,
+    # `hyperpolymath/proven` and the other estate dependencies are real repos
+    # every child genuinely points at, and rewriting those would break the
+    # child's canon, CI and badges.
+    if [ "$OWNER" != "$TEMPLATE_OWNER" ]; then
+        sed -i -E 's|^(OWNER[[:space:]]*:=[[:space:]]*)"'"${TEMPLATE_OWNER}"'"|\1"'"${OWNER}"'"|' Justfile
+        sed -i -E 's|^sonar\.organization='"${TEMPLATE_OWNER}"'$|sonar.organization='"${OWNER}"'|' sonar-project.properties
+        sed -i -E 's|^sonar\.projectKey='"${TEMPLATE_OWNER}"'_|sonar.projectKey='"${OWNER}"'_|' sonar-project.properties
+        echo "  self-owner: rewrote ${TEMPLATE_OWNER} -> ${OWNER} (estate dependency paths preserved)"
+        echo "  NOTE: confirm the SonarCloud ORG is really '${OWNER}' before provisioning —"
+        echo "        the GitHub owner and the SonarCloud org are not always the same."
+    fi
 
-    # Install THIS repo's CLADE.a2ml, replacing rsr-template-repo's own.
+    echo ""
+    echo "── Identity (repo deed) ─────────────────────────"
+
+    # Write THIS repo's identity into its deed, replacing rsr-template-repo's own.
     #
-    # The CLADE.a2ml shipped in the template is the TEMPLATE's real identity — a
-    # real uuid for a real repo. Nothing in SED_ARGS ever touched it, so every
-    # repo created from this template inherited uuid a5ea1382-… and
-    # canonical-name "rsr-template-repo" verbatim, and told every arriving agent
-    # it WAS the template. Nothing caught it: each value was individually valid.
-    # chronicles-of-slavia and scaffoldia were corrected for exactly this on
-    # 2026-07-16; paint-type, cargo-zigbuild, email-octad-experiment, llm-grace
-    # and rsr-template-how-to still carry it.
+    # The template ships its REAL identity — clade rm, the canonical-name
+    # rsr-template-repo, a production maturity, its own ecosystem relations —
+    # between the `>>> repo-identity` / `<<< repo-identity` markers of the deed.
+    # Before #209 the same facts sat in descriptiles/CLADE.a2ml, which nothing
+    # in SED_ARGS touched, so every repo created from this template inherited
+    # uuid a5ea1382-… and canonical-name "rsr-template-repo" verbatim and told
+    # every arriving agent it WAS the template. chronicles-of-slavia and
+    # scaffoldia were corrected for exactly this on 2026-07-16.
     #
-    # build/templates/CLADE.a2ml.in has already had its brace tokens filled by
-    # the substitution loop above (including the UUID one, derived earlier).
-    # NB: literal double-brace tokens cannot be written in this recipe body —
-    # just interpolates them, which is why LB/RB are built with printf above.
+    # build/templates/identity.deed.in has already had its brace tokens filled
+    # by the substitution loop above. It uses only tokens whose values cannot
+    # break a deed string (slug, owner, forge, date); free text such as the
+    # description stays UNASSIGNED for the author.
     # The split is the whole point:
-    #   DERIVABLE -> computed, never guessed  (uuid, owner, canonical-name)
+    #   DERIVABLE -> computed, never guessed  (uuid name, owner, canonical-name)
     #   JUDGEMENT -> left UNASSIGNED, fails loudly until a human chooses (clade)
-    CLADE_IN="build/templates/CLADE.a2ml.in"
-    CLADE_OUT=".machine_readable/descriptiles/CLADE.a2ml"
-    if [ -f "$CLADE_IN" ]; then
-        mkdir -p "$(dirname "$CLADE_OUT")"
-        cp "$CLADE_IN" "$CLADE_OUT"
+    ID_IN="build/templates/identity.deed.in"
+    # Whatever one deed is present (renamed for the child above, or already
+    # named for it): never a hardcoded template file name.
+    DEED="$(bash scripts/deed-field.sh --find .)" \
+        || { echo "Error: the tree must carry exactly one *_chora.deed at its root."; exit 1; }
+    if [ -f "$ID_IN" ] && [ -f "$DEED" ]; then
+        if [ "$(grep -c '^  ; >>> repo-identity' "$DEED")" != 1 ] \
+           || [ "$(grep -c '^  ; <<< repo-identity' "$DEED")" != 1 ]; then
+            echo "Error: $DEED must hold exactly one repo-identity marker pair."
+            exit 1
+        fi
+        awk -v frag="$ID_IN" '
+            /^  ; >>> repo-identity/ { while ((getline l < frag) > 0) print l; skip = 1; next }
+            /^  ; <<< repo-identity/ { skip = 0; next }
+            !skip
+        ' "$DEED" > "$DEED.splice"
+        cat "$DEED.splice" > "$DEED"     # keeps the file's mode
+        rm -f "$DEED.splice"
+        # The uuid5 name. The self-name pass already rewrote owner and slug in
+        # it; the forge domain is set here, because nothing else knows it.
+        sed -i -E 's|^(  :repo-uuid #u5")[^"]*"|\1'"${FORGE}/${OWNER}/${REPO}"'"|' "$DEED"
+        # The template's journal is not the child's: install the stub.
+        mkdir -p docs/status
+        cp build/templates/ROADMAP.adoc.in docs/status/ROADMAP.adoc
         rm -rf build/templates          # template-only; not part of your repo
         if [ "$REPO_UUID" = "UNASSIGNED" ]; then
             echo "  uuid:  UNASSIGNED — uuidgen not found."
-            echo "         Install util-linux (uuid-runtime), then run:"
+            echo "         Install util-linux (uuid-runtime), then check it with:"
             echo "           uuidgen --sha1 --namespace @url --name \"${FORGE}/${OWNER}/${REPO}\""
-            echo "         and put the result in $CLADE_OUT."
         else
             echo "  uuid:  $REPO_UUID"
-            echo "         (uuid5 of ${FORGE}/${OWNER}/${REPO} — derived, recomputable, not invented)"
+            echo "         (uuid5 of ${FORGE}/${OWNER}/${REPO} — derived from the deed's"
+            echo "          :repo-uuid name, recomputable, not stored, not invented)"
         fi
         echo "  clade: UNASSIGNED — a human must choose one of the 12."
-        echo "         CLADE-003/006 FAIL until you do. That is deliberate:"
+        echo "         just validate-rsr FAILS until you do. That is deliberate:"
         echo "         an unchosen clade must not look like a chosen one."
-        echo "         The taxonomy is listed in $CLADE_OUT."
+        echo "         The taxonomy is listed in the (clade …) comment of $DEED."
     fi
 
-    echo ""
     echo "── Profile & provenance (ADR-0003) ──────────────"
 
-    # The template's own rsr-profile.a2ml is deliberately MAXIMAL (it is the
-    # dogfood target). A minted repo must NOT inherit it: declaring
+    # The template deed's own (rsr-profile) clause is deliberately MAXIMAL (it
+    # is the dogfood target). A minted repo must NOT inherit it: declaring
     # capabilities the tree lacks makes the oracle score modules that are
-    # absent (na-honesty, RSR-SPEC-v2 §scoring). Rewrite it minimally.
-    PROFILE_OUT=".machine_readable/rsr-profile.a2ml"
+    # absent (na-honesty, RSR-SPEC-v2 §scoring). Replace it minimally, below.
 
     # ── Canon pin (bind the canon) ──────────────────────────────────────────
-    # Read the canon identity from the template's [canon] block BEFORE that
-    # block is overwritten below. A minted repo must record WHICH canon release
-    # it was cut from; without it "which repos are on canon 1.x?" is a campaign
-    # across the whole estate instead of a grep.
+    # Read the canon identity from the template deed's `(canon …)` clause. A
+    # minted repo must record WHICH canon release it was cut from; without it
+    # "which repos are on canon 1.x?" is a campaign across the whole estate
+    # instead of a grep.
+    #
+    # The pin lives only in the deed (#215 moved it there from the retired
+    # profile file, whose copy could not follow canon 2.1.2).
+    # The deed was renamed to ${REPO}_chora.deed by the self-name pass above,
+    # and its (canon …) clause is carried into the child unchanged, so the
+    # child's deed and its PROVENANCE agree at mint.
     #
     # Count rather than guessed: a value here that silently became empty is the
     # same class of defect as an UNASSIGNED placeholder, and would let a repo
     # claim conformance to nothing.
-    # Section reader: `canon_key <key> <file>` prints the value of <key> from
-    # the [canon] section, or nothing.
     #
-    # Deliberately escape-free: the first attempt spelled the section-header
-    # test as /^\[/ , which reached awk as a DOUBLE backslash followed by an
-    # unterminated bracket expression. awk does not error on that - it parses a
-    # character class that swallows the rest of the program and then matches
-    # nothing, so the pin came out silently EMPTY rather than failing loudly.
-    # `substr($0,1,1)=="["` cannot be mis-escaped. This is the same class of
-    # defect as an UNASSIGNED placeholder: a value that looks computed but is
-    # empty would let a minted repo claim conformance to nothing.
-    canon_key() {
-        awk -v want="[canon]" -v key="$1" '
-            substr($0,1,1)=="[" { f = ($0==want) ? 1 : 0; next }
-            f && $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
-                sub(/^[^=]*=[[:space:]]*/, "")
-                gsub(/^["[:space:]]+|["[:space:]]+$/, "")
-                print; exit
-            }
-        ' "$2"
+    # Deliberately backslash-free. The previous TOML reader first spelled its
+    # section test as /^\[/ , which reached awk as a DOUBLE backslash followed
+    # by an unterminated bracket expression; awk parsed a character class that
+    # swallowed the rest of the program, matched nothing, and the pin came out
+    # silently EMPTY. Bracket classes such as [(] cannot be mis-escaped.
+    #
+    # deed_canon <key> <deed-file>: print the value of :<key> from the
+    # deed's one (canon …) clause, or nothing when the clause or key is
+    # absent or the clause is not unique. A ";" outside a string starts a
+    # comment that runs to line-end (deed.abnf), whole-line or inline. The SAME function is in
+    # .github/workflows/dogfood-gate.yml and standards
+    # scripts/check-canon-lockstep.sh; keep the three identical.
+    deed_canon() {
+        _clauses="$(awk 'BEGIN { bs = sprintf("%c", 92); dq = sprintf("%c", 34) } { o = ""; q = 0; for (i = 1; i <= length($0); i++) { c = substr($0, i, 1); if (q && c == bs) { o = o c substr($0, i + 1, 1); i++; continue } if (c == dq) q = !q; else if (!q && c == ";") break; o = o c } printf "%s ", o }' "$2" | grep -oE '[(]canon[[:space:]][^()]*[)]')" || true
+        _n="$(echo "$_clauses" | grep -c '(canon' || true)"
+        if [ "$_n" != "1" ]; then
+            echo "deed_canon: $2 carries ${_n:-0} (canon …) clauses, need exactly 1" >&2
+            return 0
+        fi
+        echo "$_clauses" | grep -oE ':'"$1"'[[:space:]]+"[^"]*"' | head -1 | sed -E 's/^[^"]*"//; s/"$//' || true
     }
 
+    DEED_OUT="${REPO}_chora.deed"
     CANON_VERSION=""
     CANON_CRITERIA_SHA=""
     CANON_GATES_SHA=""
-    if [ -f "$PROFILE_OUT" ]; then
-        CANON_VERSION="$(canon_key version "$PROFILE_OUT")"
-        CANON_CRITERIA_SHA="$(canon_key criteria_sha256 "$PROFILE_OUT")"
-        CANON_GATES_SHA="$(canon_key gates_sha256 "$PROFILE_OUT")"
+    if [ -f "$DEED_OUT" ]; then
+        CANON_VERSION="$(deed_canon version "$DEED_OUT")"
+        CANON_CRITERIA_SHA="$(deed_canon criteria-sha256 "$DEED_OUT")"
+        CANON_GATES_SHA="$(deed_canon gates-sha256 "$DEED_OUT")"
     fi
     CANON_VERSION="${CANON_VERSION:-UNASSIGNED}"
     CANON_CRITERIA_SHA="${CANON_CRITERIA_SHA:-UNASSIGNED}"
     CANON_GATES_SHA="${CANON_GATES_SHA:-UNASSIGNED}"
-    {
-        echo "# SPDX-License-Identifier: MPL-2.0"
-        echo "#"
-        echo "# rsr-profile.a2ml — this repo's declared RSR v2.0 capabilities."
-        echo "# Generated by just repo-init on ${CURRENT_DATE}. The template's maximal"
-        echo "# profile was removed at mint: declare only what this tree carries."
-        echo ""
-        echo "[rsr-profile]"
-        echo "version = \"1.0.0\""
-        echo "spec = \"rsr-criteria-v2\""
-        echo "declares-against = \"2.0.0-draft\""
-        if [ -n "$ARCH_PRESET" ]; then
-            echo "preset = \"${ARCH_PRESET}\""
+    if [ ! -f "$DEED_OUT" ]; then
+        echo "Error: $DEED_OUT not found after the self-name pass — cannot write the" >&2
+        echo "       child's (rsr-profile) / (variant) / (provenance) clauses." >&2
+        exit 1
+    fi
+
+    # put_clause NAME — write the clause read from stdin as the deed's
+    # top-level (NAME …) clause: replace it when present, append it otherwise,
+    # so a re-run of repo-init never leaves two.
+    put_clause() {
+        if bash scripts/deed-field.sh --has "$DEED_OUT" "$1"; then
+            bash scripts/deed-clause.sh replace "$DEED_OUT" "$1" -
         else
-            echo "# UNASSIGNED: declare capabilities (or a preset) — see standards"
-            echo "# .machine_readable/template-capability-gates.toml"
-            echo "capabilities = []"
+            bash scripts/deed-clause.sh append "$DEED_OUT" "" -
         fi
-    } > "$PROFILE_OUT"
-    echo "  profile:    $PROFILE_OUT${ARCH_PRESET:+  (preset $ARCH_PRESET)}"
+    }
+
+    DECLARES_AGAINST=$(bash scripts/deed-field.sh "$DEED_OUT" rsr-profile declares-against 2>/dev/null || true)
+    {
+        echo "  ; rsr-profile — this repo's declared RSR v2.0 capabilities."
+        echo "  ; Written by just repo-init on ${CURRENT_DATE}. The template's maximal"
+        echo "  ; profile was replaced at mint: declare only what this tree carries."
+        echo "  (rsr-profile"
+        echo "    :version \"1.0.0\""
+        echo "    :spec \"rsr-criteria-v2\""
+        echo "    :declares-against \"${DECLARES_AGAINST:-2.0.0-draft}\""
+        if [ -n "$ARCH_PRESET" ]; then
+            echo "    :preset \"${ARCH_PRESET}\")"
+        else
+            echo "    ; UNASSIGNED: declare capabilities (or a preset) — see standards"
+            echo "    ; .machine_readable/template-capability-gates.toml"
+            echo "    :capabilities ())"
+        fi
+    } | bash scripts/deed-clause.sh replace "$DEED_OUT" rsr-profile -
+    echo "  profile:    $DEED_OUT (rsr-profile)${ARCH_PRESET:+  (preset $ARCH_PRESET)}"
 
     # Provenance — the estate's answer-file (ADR-0002 contract shape, used
-    # per ADR-0003 with direction=generated-from-core). parent-pin resolves
-    # from the live template tip: correct for a fresh mint, UNASSIGNED when
-    # offline — honest, never guessed.
-    PARENT_SLUG="hyperpolymath/rsr-template-repo"
-    PARENT_PIN=$(git ls-remote "https://github.com/${PARENT_SLUG}.git" HEAD 2>/dev/null | cut -f1 || true)
+    # per ADR-0003 with direction=generated-from-core).
+    #
+    # PARENT_BRANCH / PARENT_PIN / PARENT_TREE were resolved before the first
+    # write (see "Which template commit is in hand" above). Reading the live
+    # remote tip recorded where the remote is NOW, not the tree in hand (#203);
+    # reading local HEAD recorded the CHILD's own commit whenever the repo was
+    # created with "Use this template" (lintel, 2026-10-14). Tree equality
+    # against the template's history is the rule that is right in both cases.
+    PARENT_SLUG="$TEMPLATE_SLUG"
+
+    # Shape, not presence: a value that is not a 40-hex object name is not a pin.
+    [[ "$PARENT_PIN" =~ ^[0-9a-f]{40}$ ]] || PARENT_PIN=""
+    [[ "$PARENT_TREE" =~ ^[0-9a-f]{40}$ ]] || PARENT_TREE=""
+    [ "$PARENT_BRANCH" != "HEAD" ] || PARENT_BRANCH=""
+    PARENT_BRANCH="${PARENT_BRANCH:-UNASSIGNED}"
     PARENT_PIN="${PARENT_PIN:-UNASSIGNED}"
-    VARIANT_OUT=".machine_readable/descriptiles/VARIANT.a2ml"
-    mkdir -p "$(dirname "$VARIANT_OUT")"
+    PARENT_TREE="${PARENT_TREE:-UNASSIGNED}"
+
+    # Recorded in the (provenance) clause. Non-interactive mints are the automated
+    # path (scaffoldia / CI); interactive ones are a human at a prompt. The
+    # distinction matters because #201 found a hand-minted instance whose
+    # generated identity was stale, and nothing recorded which path ran.
+    if [ -n "${RSR_NON_INTERACTIVE:-}" ]; then
+        MINT_MODE="non-interactive"
+    else
+        MINT_MODE="interactive"
+    fi
+
     {
-        echo "# SPDX-License-Identifier: MPL-2.0"
-        echo "#"
-        echo "# VARIANT.a2ml — provenance contract (ADR-0002 shape; ADR-0003 use)."
-        echo "# Records what this repo was minted from so the drift gate"
-        echo "# (scripts/check-variant-drift.sh <parent-checkout>) and future"
-        echo "# re-templating tooling have a defined input."
-        echo "#"
-        echo "# NOTE: placeholder rendering means many files differ from the"
-        echo "# parent by design; folding rendered answers into [normalise] is"
-        echo "# future work (ADR-0003), so the gate is informational for minted"
-        echo "# repos until then."
-        echo ""
-        echo "[metadata]"
-        echo "project = \"${REPO}\""
-        echo "schema_version = \"0.1.0\""
-        echo "last-updated = \"${CURRENT_DATE}\""
-        echo ""
-        echo "[variant]"
-        echo "parent = \"${PARENT_SLUG}\""
-        echo "parent-pin = \"${PARENT_PIN}\"  # template tip at mint"
-        echo "role = \"minted-repo\""
-        echo "stack = \"${ARCHETYPE:-unspecified}\""
-        echo "direction = \"generated-from-core\""
-        echo ""
-        echo "[normalise]"
-        echo "rules = \"action-pins self-name\""
-        echo ""
-        echo "[paths.added]"
-        echo "paths = []"
-        echo ""
-        echo "[paths.removed]"
-        echo "paths = []"
-        echo ""
-        echo "[paths.diverged]"
-        echo "# Files a minted repo owns from birth."
-        echo "paths = ["
-        echo "  \".machine_readable/descriptiles/CLADE.a2ml\","
-        echo "  \".machine_readable/descriptiles/VARIANT.a2ml\","
-        echo "  \".machine_readable/rsr-profile.a2ml\","
-        echo "]"
-    } > "$VARIANT_OUT"
+        echo "  ; variant — provenance contract (ADR-0002 shape; ADR-0003 use)."
+        echo "  ; Records what this repo was minted from, for re-templating tooling and"
+        echo "  ; the drift gate (scripts/check-variant-drift.sh). The mint renders"
+        echo "  ; tokens and rewrites files, so most spine files differ from the parent"
+        echo "  ; by design, and (normalise) does not yet fold the mint's answers"
+        echo "  ; (ADR-0003): the gate is not armed for a minted repo. Measured on a"
+        echo "  ; fresh mint (2026-10-20): 101 rendered files differ. The template pin"
+        echo "  ; is checked by scripts/check-template-conformance.sh instead."
+        echo "  (variant"
+        echo "    :project \"${REPO}\""
+        echo "    :schema-version \"0.1.0\""
+        echo "    :last-updated \"${CURRENT_DATE}\""
+        echo "    :parent \"${PARENT_SLUG}\""
+        echo "    ; template tip at mint"
+        echo "    :parent-pin \"${PARENT_PIN}\""
+        echo "    :role \"minted-repo\""
+        echo "    :stack \"${ARCHETYPE:-unspecified}\""
+        echo "    :direction \"generated-from-core\""
+        echo "    (normalise :rules \"action-pins self-name\")"
+        echo "    ; Files a minted repo owns from birth are (paths :diverged …)."
+        echo "    (paths"
+        echo "      :added ()"
+        _removed=("${MINT_REMOVES[@]}")
+        [ "${DEED_IN#./}" = "${REPO}_chora.deed" ] || _removed+=("${DEED_IN#./}")
+        printf '      :removed ('; _sep=""
+        for _p in "${_removed[@]}"; do printf '%s"%s"' "$_sep" "$_p"; _sep=" "; done
+        printf ')\n'
+        echo "      :diverged (\"${REPO}_chora.deed\" \"docs/status/ROADMAP.adoc\")))"
+    } | put_clause variant
     if [ "$PARENT_PIN" = "UNASSIGNED" ]; then
-        echo "  provenance: $VARIANT_OUT — parent-pin UNASSIGNED (offline?)"
+        echo "  provenance: $DEED_OUT (variant) — parent-pin UNASSIGNED (offline?)"
         echo "              Set it to the template commit you minted from:"
         echo "              git ls-remote https://github.com/${PARENT_SLUG}.git HEAD"
     else
-        echo "  provenance: $VARIANT_OUT  (parent-pin ${PARENT_PIN:0:12})"
+        echo "  provenance: $DEED_OUT (variant)  (parent-pin ${PARENT_PIN:0:12})"
     fi
 
-    # ── PROVENANCE.a2ml — the answer-file for the canon binding ─────────────
+    # ── (provenance) — the answer-file for the canon binding ─────────────────
     # ADR-0003 named this the single highest-leverage gap: "a minted repo does
     # not know which template commit it came from, so template improvements
     # cannot be propagated and drift cannot be detected." Copier/Cruft solved
     # it with an answer-file + update + check; this estate hand-simulated it as
     # recurring standardisation-PR campaigns. This is the answer-file.
     #
-    # VARIANT.a2ml above records the TEMPLATE dimension (diffing against the
+    # (variant) above records the TEMPLATE dimension (diffing against the
     # parent). This records the CANON dimension (which law the repo was cut
     # under). They are different questions and both are needed.
-    PROVENANCE_OUT=".machine_readable/PROVENANCE.a2ml"
+    # Flat keys only: a nested form headed "canon" would be counted by
+    # deed_canon above and empty the pin.
     {
-        echo "# SPDX-License-Identifier: MPL-2.0"
-        echo "#"
-        echo "# PROVENANCE.a2ml — what this repo was minted FROM."
-        echo "# Written once, at mint, by build/just/repo-init.just. Not a hand-edited"
-        echo "# file: tools that want \"what is this repo\" read STATE.a2ml; tools that"
-        echo "# want \"where did this repo come from\" read this."
-        echo ""
-        echo "[provenance]"
-        echo "minted_at          = \"${CURRENT_DATE}\""
-        echo ""
-        echo "template_repo      = \"${PARENT_SLUG}\""
-        echo "template_commit    = \"${PARENT_PIN}\""
-        echo ""
-        echo "canon_version      = \"${CANON_VERSION}\""
-        echo "criteria_sha256    = \"${CANON_CRITERIA_SHA}\""
-        echo "gates_sha256       = \"${CANON_GATES_SHA}\""
-        echo ""
-        echo "archetype          = \"${ARCHETYPE:-}\""
-        echo "minted_by          = \"hand\""
-        echo ""
-        echo "[substitutions]"
-        echo "# ADR-0003 records the old state honestly: \"renders 34 substitutions and"
-        echo "# derives identity, but leaves 12 tokens UNASSIGNED\". Listing them here"
-        echo "# converts that from a known defect into a QUERYABLE one: a non-empty"
-        echo "# list means the mint did not fully render, and the validation step"
-        echo "# below already fails on a leftover token."
-        echo "rendered   = 34"
-        echo "unassigned = []"
-    } > "$PROVENANCE_OUT"
+        echo "  ; provenance — what this repo was minted FROM. Written once, at mint,"
+        echo "  ; by build/just/repo-init.just. Tools that want \"what is this repo\" read"
+        echo "  ; the rest of the deed; tools that want \"where did it come from\" read this."
+        echo "  (provenance"
+        echo "    :minted-at \"${CURRENT_DATE}\""
+        echo "    :template-repo \"${PARENT_SLUG}\""
+        echo "    :template-branch \"${PARENT_BRANCH}\""
+        echo "    :template-commit \"${PARENT_PIN}\""
+        echo "    :template-tree \"${PARENT_TREE}\""
+        echo "    ; Contract: branches this repo is EXPECTED to carry beyond the default."
+        echo "    ; Empty means default-only. A mint must never inherit template work"
+        echo "    ; branches (coderabbit/, chore/, bot-task or stale branches) — that is"
+        echo "    ; how knot-knot received a byte-identical copy of a template work branch"
+        echo "    ; with no common ancestor (#203). Enforced by"
+        echo "    ; scripts/check-template-conformance.sh."
+        echo "    :extra-branches ()"
+        echo "    :canon-version \"${CANON_VERSION}\""
+        echo "    :criteria-sha256 \"${CANON_CRITERIA_SHA}\""
+        echo "    :gates-sha256 \"${CANON_GATES_SHA}\""
+        echo "    :archetype \"${ARCHETYPE:-}\""
+        echo "    ; Which minting path actually ran (#201/#203 needed this signal)."
+        echo "    :minted-by \"repo-init\""
+        echo "    :mint-mode \"${MINT_MODE}\""
+        echo "    ; A non-empty :unassigned list means the mint did not fully render;"
+        echo "    ; the validation step below already fails on a leftover token."
+        echo "    (substitutions :rendered 34 :unassigned ()))"
+    } | put_clause provenance
 
     if [ "$CANON_VERSION" = "UNASSIGNED" ]; then
-        echo "  provenance: $PROVENANCE_OUT — canon pin UNASSIGNED"
-        echo "              The template carried no [canon] block, so this repo"
+        echo "  provenance: $DEED_OUT (provenance) — canon pin UNASSIGNED"
+        echo "              The template deed carried no (canon …) clause, so this repo"
         echo "              cannot state which canon it conforms to. Fix by minting"
         echo "              from a template commit that has one."
     else
-        echo "  provenance: $PROVENANCE_OUT  (canon v${CANON_VERSION} ${CANON_CRITERIA_SHA:0:12})"
+        echo "  provenance: $DEED_OUT (provenance)  (canon v${CANON_VERSION} ${CANON_CRITERIA_SHA:0:12})"
     fi
 
     # archetypes/ is template-only overlay data, not part of your repo
@@ -666,17 +1019,25 @@ repo-init archetype="":
     rm -rf archetypes
     rm -rf build/docs-seed          # template-only; its content now lives in docs/
 
-    # Overlay .in rule (julia-library archetype; the convention any future
-    # overlay can adopt): the overlay ships content templates as *.in so a
-    # substitution token never survives in a file with a final name. Rename
-    # the known set now that substitution has rendered them, before the
-    # placeholder gate below.
-    if [ "$ARCHETYPE" = "julia-library" ]; then
-        # the name is read from Project.toml.in until the loop below renames
-        # it - order matters.
+    # Overlay .in rule (every archetype): an overlay ships content templates as
+    # *.in so a substitution token never survives in a file whose final name is
+    # already the real one — a half-rendered `Project.toml` is a file `Pkg`
+    # reads, while a half-rendered `Project.toml.in` is obviously unfinished.
+    # Only files THIS overlay added are renamed: the spine's own .in templates
+    # (build/templates/, the k9 examples) keep their suffix.
+    #
+    # src/PACKAGE.jl.in is the one exception, handled after the loop: the Julia
+    # convention names the module file after the package, and the package name
+    # is only known once Project.toml.in has been rendered and renamed.
+    for _of in "${OVERLAY_FILES[@]}"; do
+        case "$_of" in
+            src/PACKAGE.jl.in) continue ;;
+            *.in) [ -f "$_of" ] && { mv "$_of" "${_of%.in}"; echo "  overlay: ${_of%.in}"; } ;;
+        esac
+    done
+    if [ "$ARCHETYPE" = "julia-library" ] && [ -f src/PACKAGE.jl.in ]; then
         TOML_FILE=Project.toml
-        [ -f "$TOML_FILE" ] || TOML_FILE=Project.toml.in
-        if [ -f src/PACKAGE.jl.in ] && [ -f "$TOML_FILE" ]; then
+        if [ -f "$TOML_FILE" ]; then
             PKG_NAME=$(sed -n 's/^name = "\([^"]*\)".*/\1/p' "$TOML_FILE" | head -1)
             if [ -n "$PKG_NAME" ] && [ "$PKG_NAME" != "UNASSIGNED" ]; then
                 mv "src/PACKAGE.jl.in" "src/${PKG_NAME}.jl"
@@ -687,11 +1048,78 @@ repo-init archetype="":
                 echo "      mv src/PACKAGE.jl.in src/<PackageName>.jl"
             fi
         fi
-        for f in Project.toml.in \
-                 .github/workflows/julia-ci.yml.in \
-                 .github/workflows/julia-docs.yml.in; do
-            [ -f "$f" ] && { mv "$f" "${f%.in}"; echo "  overlay: ${f%.in}"; }
-        done
+    fi
+
+    # ── www/ site-operations bundle (issue #53, stage 5) ──────────────────
+    #
+    # A repository minted from this template already carries www/.well-known/
+    # as the canonical location and has no root .well-known/, so in the
+    # ordinary case the migration below does nothing at all. It exists for the
+    # case that is not ordinary: repo-init run over a tree that predates #53
+    # and still has a root .well-known/. The migrator moves it — quarantining
+    # anything divergent rather than overwriting it — and the bundle's own
+    # suite (under Validation) then proves the result. It runs HERE, before the
+    # map and the arrival pack are regenerated, because it moves files: the map
+    # must be the last thing written, or it describes a tree that no longer
+    # exists (lintel shipped a stale map and Estate Rules failed until lintel#8).
+    #
+    # #106 described this wiring as already present. It was not: nothing
+    # invoked the migrator or the suite at mint, which is why the estate
+    # still carries root .well-known/ directories years into the convention.
+    if [ -d .well-known ] && [ -f scripts/migrate-wellknown-to-www.sh ]; then
+        echo ""
+        echo "Migrating legacy root .well-known/ into www/.well-known/..."
+        bash scripts/migrate-wellknown-to-www.sh
+    fi
+
+    # ── Toolchain (mise.toml) ───────────────────────────────────────────────
+    # The provisioning standard says mise.toml is MINTED per repository (canon's
+    # mise.toml.tmpl carries __MISE_TOOLS_TOML__ for exactly that). Until now the
+    # mint copied the spine's file verbatim, so every child declared the
+    # TEMPLATE's toolchain: the spine once declared nine runtimes (python, node,
+    # rust, go, zig, java, bun, denojs, npm, pip, cargo, black, ruff, pytest …)
+    # and a minted Julia package therefore installed Python — banned estate-wide
+    # — declared no Julia, and ran `cargo build` from `just build`.
+    #
+    # Rendered here, after the overlay's manifests have their final names (so
+    # detection can see Project.toml / Cargo.toml) and after the archetype prune
+    # (so a dropped module does not keep its toolchain).
+    if [ -f scripts/render-mise.sh ]; then
+        echo ""
+        echo "── Toolchain ────────────────────────────────────"
+        bash scripts/render-mise.sh --root . || {
+            echo "ERROR: mise.toml could not be rendered from this tree's languages."
+            exit 1
+        }
+    fi
+
+    # ── Regenerate what is DERIVED from the deed and the tree ───────────────
+    # CLAUDE.md's arrival pack and the repository map are generated files, and
+    # until now the mint left both describing the TEMPLATE. The self-name pass
+    # swaps the slug inside them, which is worse than leaving them alone: the
+    # pack then states the template's uuid and clade, maturity `production`,
+    # and pipeline position `foundation` with chain "standards -> <this repo>
+    # -> (every estate repo)", under the child's name. Measured 2026-10-14 on
+    # resource-algebra. The map also kept the archetypes/ root entry,
+    # which this recipe deletes, so Estate Rules' map-freshness step failed in
+    # every minted child. Both are regenerated here, after every deed clause
+    # above is written and every template-only path is gone. Fail-closed: a
+    # generator that cannot run (no nickel on PATH) stops the mint rather than
+    # shipping a pack that names the wrong repository.
+    #
+    # This is the LAST step that writes the tree; everything after it only
+    # checks (tests/e2e/use_template_mint_test.sh commits the result and runs
+    # the freshness check on it). The map is read from the work tree
+    # (--worktree), not the index: the mint runs before the first commit, so
+    # the index still lists archetypes/ and the template's deed name, which is
+    # how lintel shipped a map that failed Estate Rules from birth.
+    if [ -f .machine_readable/arrival-pack/generate.sh ]; then
+        bash .machine_readable/arrival-pack/generate.sh
+        echo "  arrival pack: CLAUDE.md regenerated from ${DEED_OUT}"
+    fi
+    if [ -f scripts/gen-repo-map.sh ]; then
+        bash scripts/gen-repo-map.sh --worktree . >/dev/null
+        echo "  repo map:     docs/architecture/REPOSITORY-MAP.adoc regenerated"
     fi
 
     echo ""
@@ -727,17 +1155,24 @@ repo-init archetype="":
     # gate sensibly exempting metasyntax must let the block through. The two
     # checks here are therefore complementary, not redundant — the block can
     # only be caught by name, which the check below does.
-    # The four allowlisted paths are copied verbatim from
-    # scripts/check-no-placeholders.sh so the two gates cannot drift apart.
-    # Each legitimately names tokens: the token vocabulary itself, prose
-    # explaining that tokens exist, the checker's own pattern, and the e2e
-    # test's answer list.
+    # The allowlisted paths are copied from scripts/check-no-placeholders.sh so
+    # the two gates cannot drift apart. Each legitimately names tokens: the
+    # token vocabulary itself, prose explaining that tokens exist, and the
+    # checker's own pattern. Template machinery that names tokens in its
+    # fixtures (the e2e answer list, the Julia UUID test) is in
+    # .machine_readable/mint-verbatim.txt, so mint_files never lists it, and
+    # the checker reads the same manifest.
     PATTERN="${LB}[A-Z_]*${RB}"
     META='PLACEHOLDER|ANYTHING|TOKEN|UPPER_SNAKE'
-    REMAINING=$(grep -rl "$PATTERN" . --include='*.md' --include='*.adoc' --include='*.yml' --include='*.yaml' --include='*.a2ml' --include='*.toml' --include='*.scm' --include='*.ncl' --include='*.nix' --include='*.json' --include='*.sh' 2>/dev/null | grep -v '.git/' | while IFS= read -r f; do
-        case "${f#./}" in
-            .machine_readable/ai/PLACEHOLDERS.adoc|EXPLAINME.adoc|scripts/check-no-placeholders.sh|tests/e2e/template_instantiation_test.sh) continue ;;
+    REMAINING=$(mint_files | while IFS= read -r f; do
+        case "$f" in
+            *.md|*.adoc|*.yml|*.yaml|*.deed|*.toml|*.scm|*.ncl|*.nix|*.json|*.sh) ;;
+            *) continue ;;
         esac
+        case "$f" in
+            .machine_readable/ai/PLACEHOLDERS.adoc|EXPLAINME.adoc|scripts/check-no-placeholders.sh) continue ;;
+        esac
+        grep -q "$PATTERN" "$f" 2>/dev/null || continue
         # Bracketed [{]{2} rather than a doubled brace written literally, for
         # two independent reasons. First, `grep -E` is ugrep on some estate
         # machines and rejects a bare doubled brace as an "empty
@@ -771,15 +1206,17 @@ repo-init archetype="":
     # token, and once its literal metasyntax is the only doubled-brace text left
     # the check above cannot distinguish the two. Fail on it by name.
     #
-    # The strip pass, this recipe and the e2e test are excluded because they
-    # necessarily NAME the marker in order to describe or assert on it — the fix
-    # for the defect would otherwise be flagged by the check for the defect, and
-    # so would the test that guards the fix, and the cleanup test whose
-        # fixture prose must keep the phrase to prove prose is not collateral.
-        # All four are tooling, not
+    # Read over mint_files, so the files that necessarily NAME the marker in
+    # order to describe or assert on it (the strip tool, this recipe, the e2e
+    # test, the cleanup test whose fixture must keep the phrase) are exempt by
+    # the same manifest that kept the strip pass out of them: they are listed
+    # in .machine_readable/mint-verbatim.txt. Before, this list exempted them
+    # here while the strip pass rewrote them anyway. All are tooling, not
     # community-health documents, so a mention in them cannot mislead a reader
     # about what this project's Code of Conduct says.
-    LEFTOVER_BLOCKS=$(grep -rl 'TEMPLATE INSTRUCTIONS' . --exclude-dir=.git 2>/dev/null | grep -vE '^\./(scripts/strip-instruction-blocks\.rs|build/just/repo-init\.just|tests/e2e/template_instantiation_test\.sh|tests/workflows/mint_cleanup_test\.sh)$' || true)
+    LEFTOVER_BLOCKS=$(mint_files | while IFS= read -r f; do
+        grep -q 'TEMPLATE INSTRUCTIONS' "$f" 2>/dev/null && echo "$f"
+    done || true)
     if [ -n "$LEFTOVER_BLOCKS" ]; then
         echo ""
         echo "Un-deleted TEMPLATE INSTRUCTIONS block in:"
@@ -788,23 +1225,37 @@ repo-init archetype="":
         exit 1
     fi
 
-    # ── www/ site-operations bundle (issue #53, stage 5) ──────────────────
-    #
-    # A repository minted from this template already carries www/.well-known/
-    # as the canonical location and has no root .well-known/, so in the
-    # ordinary case both steps below do nothing at all. They exist for the
-    # case that is not ordinary: repo-init run over a tree that predates #53
-    # and still has a root .well-known/. The migrator moves it — quarantining
-    # anything divergent rather than overwriting it — and the bundle's own
-    # suite then proves the result.
-    #
-    # #106 described this wiring as already present. It was not: nothing
-    # invoked the migrator or the suite at mint, which is why the estate
-    # still carries root .well-known/ directories years into the convention.
-    if [ -d .well-known ] && [ -f scripts/migrate-wellknown-to-www.sh ]; then
+    # ── The gates the template enforces on children, run on the child ────────
+    # Each of these was once a check the template shipped that could not fail:
+    #   * the SPDX check globbed one language's extensions, so in a Julia repo it
+    #     examined nothing and reported PASS;
+    #   * the container check asked "is cgr.dev named anywhere" and passed on a
+    #     floating :latest, so a template shipping two of them passed itself;
+    #   * the toolchain check did not exist, and the spine's mise.toml declared
+    #     nine runtimes for repositories that use none of them.
+    # Running them HERE means a mint that would fail them fails at mint, in the
+    # template's own CI, instead of in N children after the fact.
+    echo ""
+    echo "── Language, licence and container gates ────────"
+    GATE_FAIL=0
+    for _gate in check-spdx-headers check-mise-language check-container-pins; do
+        [ -f "scripts/${_gate}.sh" ] || continue
         echo ""
-        echo "Migrating legacy root .well-known/ into www/.well-known/..."
-        bash scripts/migrate-wellknown-to-www.sh
+        echo "  ${_gate}.sh"
+        if bash "scripts/${_gate}.sh" --root .; then
+            echo "  ${_gate}: OK"
+        else
+            echo "  ${_gate}: FAILED"
+            GATE_FAIL=1
+        fi
+    done
+    if [ "$GATE_FAIL" -ne 0 ]; then
+        echo ""
+        echo "ERROR: the minted tree fails a gate this template enforces on children."
+        echo "       The tree above is complete but not conforming; fix it before"
+        echo "       committing. (A mint that ships a failing tree teaches the child"
+        echo "       that the gate is noise.)"
+        exit 1
     fi
 
     # Fail-closed, like `just verify` below: the suite tolerates unminted
@@ -853,5 +1304,8 @@ repo-init archetype="":
         echo "     must be set to ci/.gitlab-ci.yml, or GitLab CI silently never"
         echo "     runs - no pipeline and no error. See ci/README.adoc."
     fi
-    echo "  8. HARNESS — arm the drift gate against your recorded parent-pin:"
-    echo "       scripts/check-variant-drift.sh <parent-checkout-dir>"
+    echo "  8. HARNESS — check the recorded template pin (provenance):"
+    echo "       scripts/check-template-conformance.sh [--template <template-checkout>]"
+    echo "     scripts/check-variant-drift.sh is not for a minted repo yet: the mint"
+    echo "     renders most spine files, so they differ from the parent by design"
+    echo "     until (normalise) folds the mint's answers (ADR-0003)."

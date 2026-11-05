@@ -3,7 +3,7 @@
 # SonarQube Cloud (SonarCloud) static analysis. Analysis scope + exclusions live
 # in sonar-project.properties. Requires the SONAR_TOKEN repository secret
 # (Settings -> Secrets and variables -> Actions) and a SonarCloud project:
-# https://sonarcloud.io/project/overview?id=hyperpolymath_rsr-template-repo
+# https://sonarcloud.io/project/overview?id=hyperpolymath_secret-types
 # Mirrors the boj-server arrangement.
 #
 # WHY THE TOKEN GUARD (added 2026-07-28)
@@ -36,7 +36,7 @@ permissions:
 jobs:
   sonarqube:
     name: SonarQube
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Secrets cannot be referenced from a job-level `if:`, so the presence test
     # is carried through an env var set at job scope and read in a first step.
@@ -64,6 +64,6 @@ jobs:
 
       - name: SonarQube Scan
         if: steps.cfg.outputs.configured == 'true'
-        uses: SonarSource/sonarqube-scan-action@v8.4.0
+        uses: SonarSource/sonarqube-scan-action@v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

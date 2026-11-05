@@ -22,25 +22,21 @@
 # declarative. Keep this list HONEST: only assert a witness you can defend — the
 # whole point is to make boundary-erosion visible, not to manufacture green.
 {
-  # --- MUST: presence obligations attested by the fact that we parsed the file ---
-  "must.machine-readable-dir" = {
-    kind = "descriptile",
-    witnesses = [{ fact = "state.status", op = 'present }],
-    note = "descriptiles parse ⇒ .machine_readable/ exists and is populated",
-  },
-  "must.six-directory-present" = {
-    kind = "descriptile",
-    witnesses = [
-      { fact = "state.phase", op = 'present },
-      { fact = "ecosystem.type", op = 'present },
-    ],
-    note = "STATE.a2ml + ECOSYSTEM.a2ml were read from .machine_readable/descriptiles/",
-  },
-  "must.anchors-directory" = {
+  # --- MUST: presence obligations ---
+  # must.machine-readable-dir has NO descriptile witness any more. It was
+  # attested by "anchor.authority is present", which held because that fact was
+  # read from descriptiles/anchors/ANCHOR.a2ml. The anchor now lives in the root
+  # deed's (anchor …) clause, so the fact says nothing about the directory;
+  # keeping the witness would manufacture green. It is probe-deferred to Hunt.
+  "must.anchor-clause" = {
     kind = "descriptile",
     witnesses = [{ fact = "anchor.authority", op = 'present }],
-    note = "ANCHOR.a2ml was read from .machine_readable/descriptiles/anchors/",
+    note = "anchor.authority is read from the deed's (anchor) clause, so its presence IS the clause's presence",
   },
+  # must.six-directory-present has NO descriptile witness. Its probe needs
+  # descriptiles/PLAYBOOK + NEUROSYM and exactly one deed, and no fact here
+  # attests that: state and ecosystem are deed clauses since rsr-template-repo#209,
+  # and the anchor facts come from the deed. It is probe-deferred to the Hunt tier.
 
   # --- TRUST: deliberately NO descriptile witness. ---
   # Every Trust obligation here (no-secrets / no-private-keys / author-correct /
@@ -56,33 +52,23 @@
   "intend.repo-initialization" = {
     kind = "descriptile",
     witnesses = [{ fact = "ecosystem.type", op = 'equals, arg = "repository-template" }],
-    note = "ECOSYSTEM declares this repo IS a template ⇒ the init intent is realised",
+    note = "the deed (ecosystem :position-type) declares this repo IS a template ⇒ the init intent is realised",
   },
 
   # --- ADJUST: accessibility/hygiene posture (advisory; never gates) ---
-  # The ANCHOR identity block still carries {{PROJECT_NAME}}; for the template
+  # The ANCHOR identity block still carries secret-types; for the template
   # itself that is expected, but it is honestly a posture dip worth surfacing.
   "adjust.placeholder-drift" = {
     kind = "descriptile",
     witnesses = [{ fact = "anchor.project", op = 'not_contains, arg = "{{" }],
-    note = "ANCHOR.identity.project is un-substituted ({{PROJECT_NAME}}) ⇒ posture dip",
+    note = "deed (anchor (identity :project)) is un-substituted (secret-types) ⇒ posture dip",
   },
 
-  # --- BUST: recognised break. For bust, a HOLDING witness means ALARM (active
-  #     failure), not satisfaction. open-failures/last-result are the live signal. ---
-  "bust.template-substitution-failure" = {
-    kind = "descriptile",
-    witnesses = [{ fact = "state.open-failures", op = 'nonzero }],
-    note = "alarm iff STATE records open failures; else latent (declared, not active)",
-  },
-  "bust.sync-drift-between-repos" = {
-    kind = "descriptile",
-    witnesses = [{ fact = "state.open-failures", op = 'nonzero }],
-    note = "alarm iff STATE records open failures; else latent",
-  },
-  "bust.contractile-parse-error" = {
-    kind = "descriptile",
-    witnesses = [{ fact = "state.last-result", op = 'equals, arg = "fail" }],
-    note = "alarm iff the last maintenance run failed; else latent",
-  },
+  # --- BUST: deliberately NO descriptile witness since rsr-template-repo#209. ---
+  # The bust entries used to read STATE.a2ml open-failures / last-result. Those
+  # were hand-written values ("0", "unknown") that no maintenance run ever
+  # updated, and the deed has no such field, so there is no descriptive evidence
+  # of an active break to witness. A bust clause without a witness reads
+  # "latent", the same as a witnessed non-alarm: the receipt cannot tell the two
+  # apart, so do not read "latent" as "checked".
 }

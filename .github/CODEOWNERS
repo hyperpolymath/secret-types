@@ -10,5 +10,6 @@
 # Security-sensitive files require explicit review
 SECURITY.md @hyperpolymath
 .github/workflows/ @hyperpolymath
-Trustfile.a2ml @hyperpolymath
+.machine_readable/contractiles/trust/ @hyperpolymath
+*_chora.deed @hyperpolymath
 .machine_readable/ @hyperpolymath
