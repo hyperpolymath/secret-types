@@ -28,3 +28,8 @@ permissions:
 jobs:
   hypatia:
     uses: metadatastician/standards/.github/workflows/hypatia-scan-reusable.yml@46ee18323305d5b36e2eef936e47dd54c39ea736
+    with:
+      # The scanner the verdict grid names (fork-governance.yml and
+      # verdict-grid-publish.yml, --hypatia-ref). Without it the reusable runs
+      # its own default (adb2f41 at 46ee183), not the commit the grid claims.
+      hypatia-ref: be98f74ce93df200752f3798efa1305bfa3e0e10
