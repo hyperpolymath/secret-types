@@ -73,9 +73,11 @@ that they are not mistaken for either:
   link:../PROOF-STATUS.adoc[`PROOF-STATUS.adoc`]. An absent recheck is not an
   escape hatch in a proof — the proof has no hole — but it does bound the grade
   at 3, and that bound is recorded rather than glossed.
-* *Termination-sensitive noninterference.* An open research question, not debt:
-  a blocked obligation is only debt if something claims it is discharged.
-  Nothing here claims TSNI.
+* *Termination-sensitive noninterference.*
+  `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI
+  for the current typing rules when finishing versus non-finishing is public.
+  Designing and proving a stronger discipline, or specifying a different
+  observer, remains an open research obligation rather than proof debt.
 
 == Who checks this file
 

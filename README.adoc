@@ -63,6 +63,14 @@ semantics over any variables with decidable equality (two, `lo` and `hi`,
 in the two-point development); see link:PROOF-STATUS.adoc[]. Termination is
 the channel the theorem leaves open, by name.
 
+The explicit public-outcome model in
+`src/SecretTypes/Noninterference/OutcomeVisibility.agda` makes finishing versus
+non-finishing observable. It proves that termination-sensitive
+noninterference is false for the current typing rules, using the existing
+well-typed secret loop with equal fuel on two low-equivalent stores. This
+does not change the finishing-runs-only TINI theorem or decide which stronger
+typing discipline a future termination-sensitive language should adopt.
+
 Conjecture (not claimed): for a well-typed program, the public observer's
 Echo fibre over its outputs does not separate secret inputs — the Echo
 reading of noninterference, and the first candidate connection
