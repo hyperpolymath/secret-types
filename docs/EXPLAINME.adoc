@@ -90,6 +90,16 @@ only tested or still open. Tokens are the standard's closed vocabulary.
 | Necessity *for this statement*; not a claim that the laws are independent or
   minimal for any other theorem.
 
+| *N-9* Termination-sensitive noninterference fails for the current typing
+  rules when the observer sees finishing versus non-finishing
+| proven
+| `bash scripts/check.sh` (core theorem and a rejected equality fixture)
+| `src/SecretTypes/Noninterference/OutcomeVisibility.agda:termination-sensitive-fails`,
+  `tests/reject/TerminationSensitiveNI.agda`
+| The observation is `Maybe Nat`: `nothing` for non-finishing and `just`
+  the public result for finishing. This refutes the current rules, not every
+  possible termination-sensitive typing discipline.
+
 | Independent recheck in Rocq and in Lean (PROOF-POLICY §2)
 | open
 | —
@@ -99,12 +109,12 @@ only tested or still open. Tokens are the standard's closed vocabulary.
   row above is Grade 3 and no higher. The template skeletons under
   `verification/proofs/{coq,lean4}` are *not* these legs and prove nothing here.
 
-| Termination-sensitive noninterference
+| Strengthened termination-sensitive typing discipline
 | open
 | —
 | `PROOF-STATUS.adoc` "Open"
-| Needs a stronger `while` rule on secret guards; `N-5` is its pre-registered
-  falsifier.
+| Needs a stronger `while` rule on secret guards or a revised observer; N-9
+  refutes the current rules for the explicit public-outcome observation.
 
 | Declassification at audited points (D154)
 | open

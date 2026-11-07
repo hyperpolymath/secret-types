@@ -26,7 +26,7 @@ foundational system".
 |===
 | Claim | Grade | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8 | *Grade 3* | No Rocq leg and no Lean leg exists. Under
+| N-1, N-2, N-3, N-7, N-8, N-9 | *Grade 3* | No Rocq leg and no Lean leg exists. Under
   `standards/3-practice/PROOF-POLICY.adoc` §2 both are required for Grade 2i/ii,
   and `transported`/`re-proved` is the only vocabulary either leg may use.
 
@@ -35,8 +35,9 @@ foundational system".
   not theorems. Mathesis grades theorems; recording these as Grade 3 would grade
   the wrong object.
 
-| Termination-sensitive noninterference, declassification | OPEN | Not started.
-  `N-5` is the pre-registered falsifier for the first.
+| Termination-sensitive noninterference under the current typing rules | REFUTED | N-9
+  formalizes the N-5 counterexample when finishing versus non-finishing is
+  observable. A stronger typing discipline remains open. Declassification is OPEN.
 |===
 
 === The two legs, recorded honestly
@@ -158,6 +159,7 @@ channel the theorem names as open.
 | N-6 | Laws census: generic TINI uses exactly `⊔-upper₁`, `⊔-upper₂` and the observer's down-closure; principal observers add `⊑-trans`, which is what makes "flows to `o`" down-closed. It uses no decidability (of `⊑` or of observers), no `⊥ ⊑ x` (`⊥ₗ` labels literals and needs no law), no reflexivity, antisymmetry, leastness of `⊔` or top | TESTED (`scripts/minimal-laws.sh`: `Noninterference.Generic` checks against `tests/minimal-laws`, a record with only those three laws; removing any one of them is refused; prints `PASS: minimal-laws certificate (3 laws, each needed)`)
 | N-7 | *TINI over the record*: for every set of variables with decidable equality, `Lattice`, labelling `label` and down-closed observer `V`, two finishing runs of a well-typed command from stores agreeing on what `V` sees end agreeing on it, fuels independent. Of the variables the proof uses only decidable equality, to tell the written variable from the rest | PROVEN (`Noninterference.Generic.tini : (V : Observer 𝓛) → TINI (Observer.sees V)`, module parameters `𝓥 : Vars`, `𝓛`, `label`; statement `Noninterference.Statement.TINI`); the rules at three variables refuse a flow into a third (`tests/reject/ThirdVariable`, TESTED)
 | N-8 | Each census law is necessary: dropping `⊔-upper₁`, `⊔-upper₂` or observer down-closure, with the others kept and the typing rules unchanged, admits a well-typed program that leaks. `⊑-trans` is necessary for principal observers: without it "flows to `o`" can fail to be down-closed, and TINI fails for that observer | PROVEN (`Countermodels.NoUpper₁.refutes`, `NoUpper₂.refutes`, `NoDownClosure.refutes`; `NoTrans.refutes` for the principal observer; each `¬ TINI _`)
+| N-9 | If an observer sees `nothing` versus `just` as well as the low result of a finishing run, termination-sensitive noninterference is false for the current typing rules, even with equal fuel. The well-typed secret loop produces distinct public outcomes from low-equivalent stores | PROVEN (`Noninterference.OutcomeVisibility.termination-sensitive-fails : ¬ TSNI`); the attempted equality is refused (`tests/reject/TerminationSensitiveNI.agda`)
 |===
 
 N-6 supersedes its 2026-10-12 reading (ASSUMED by inspection: `⊔-L₁`, `⊔-L₂`,
@@ -188,9 +190,11 @@ double negation.
 
 == Open
 
-* Termination-sensitive noninterference (close the named channel): needs a
-  stronger typing rule for `while` on secret guards. Pre-registered:
-  the falsifier is `secret-loop` above, which TSNI must refuse.
+* Termination-sensitive noninterference (close the named channel): N-9 refutes
+  it for the current typing rules and the explicit `Maybe` outcome observer.
+  A stronger typing rule for `while` on secret guards or a revised observation
+  model is a separate design. The existing `secret-loop` must be refused by
+  any proposed termination-sensitive typing discipline.
 * Coalition observers: a union of down-closed observers is down-closed, so
   N-7 already covers it, but no union combinator or coalition instance is
   stated here. In a reader-set lattice a coalition is not a principal
