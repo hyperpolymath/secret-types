@@ -84,7 +84,7 @@ Consequence, stated as a policy consequence rather than an excuse: **the Grade-2
 legs cannot be produced in this sandbox**, and a leg that cannot run must not be
 reported as passing (`PROOF-POLICY` §6 says exactly this). Anything Coq- or
 Lean-shaped written here would be unverified text, so none was written; see
-`PROOF-STATUS.adoc` and `verification/receipts/agda-grade3.a2ml`, which record
+`PROOF-STATUS.adoc` and `verification/receipts/agda-grade3_praxis.deed`, which record
 both legs as `unavailable`.
 
 == Version pins, resolved on 2026-11-01

@@ -83,7 +83,7 @@ foundational system. The Rocq and Lean recheck legs that `PROOF-POLICY.adoc` §2
 requires for Grade 2 do not exist; they are recorded `unavailable`, not skipped
 silently. Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof
 Ledger], the machine record is
-link:verification/receipts/agda-grade3.a2ml[`verification/receipts/agda-grade3.a2ml`]
+link:verification/receipts/agda-grade3_praxis.deed[`verification/receipts/agda-grade3_praxis.deed`]
 (checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
 dispositions. This paragraph states no grade the ledger does not support.
 

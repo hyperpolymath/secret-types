@@ -18,7 +18,7 @@ empty, and that emptiness is *enforced* rather than asserted. `scripts/check.sh`
 refuses the build if any `.agda` file under `src/SecretTypes` or `tests`
 contains `postulate`, and the same tree is compiled with `--safe`, which
 independently refuses `postulate`, `{-# TERMINATING #-}`, `{-# NON_TERMINATING #-}`
-and `--type-in-type`. `verification/receipts/agda-grade3.a2ml` records the
+and `--type-in-type`. `verification/receipts/agda-grade3_praxis.deed` records the
 counts (`postulates = 0`, `escape-hatches = 0`) *derived from the tree*, and CI
 fails if they move.
 

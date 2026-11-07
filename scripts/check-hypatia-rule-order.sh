@@ -167,14 +167,44 @@ done < <(jq -r '.observed_modules[] | [.module, .layer] | @tsv' "$POLICY")
 
 # ── pins must agree with the files that use them ────────────────────────────
 policy_hypatia="$(jq -r '.scanner.commit' "$POLICY")"
-# sed -nE, not grep: under `set -e`, a grep that finds no pin terminates the
-# script before the diagnostic below, which would turn a missing pin into a
-# silent non-zero rather than a stated one.
-wf_hypatia="$(sed -nE "s/.*HYPATIA_SHA: *'?([0-9a-f]{40})'?.*/\1/p" "$HYPATIA_WF" | head -n1)"
+# Recognize only literal scalar keys in this workflow, not comments or a key
+# that merely contains the pin name. Reject duplicate or malformed declarations
+# before comparing to policy; the first matching line is not authoritative.
+# This is the workflow-edge pin check, not a general YAML evaluator.
+pin_value() {
+  local value="${1#*:}"
+  value="$(printf '%s\n' "$value" | sed -E 's/^[[:space:]]*//; s/[[:space:]]+#.*$//; s/[[:space:]]+$//')"
+  if [[ ${#value} -eq 42 ]]; then
+    if [[ ( ${value:0:1} == "'" && ${value: -1} == "'" ) ||
+          ( ${value:0:1} == '"' && ${value: -1} == '"' ) ]]; then
+      value="${value:1:40}"
+    fi
+  fi
+  [[ "$value" =~ ^[0-9a-f]{40}$ ]] || return 1
+  printf '%s' "$value"
+}
+
+mapfile -t sha_rows < <(sed -nE '/^[[:space:]]*HYPATIA_SHA[[:space:]]*:/p' "$HYPATIA_WF")
+mapfile -t ref_rows < <(sed -nE '/^[[:space:]]*hypatia-ref[[:space:]]*:/p' "$HYPATIA_WF")
+wf_sha=; wf_ref=
+if (( ${#sha_rows[@]} > 1 )); then
+  fail "hypatia-scan.yml declares HYPATIA_SHA more than once"
+elif (( ${#sha_rows[@]} == 1 )); then
+  wf_sha="$(pin_value "${sha_rows[0]}")" || fail "hypatia-scan.yml has a malformed HYPATIA_SHA scanner pin"
+fi
+if (( ${#ref_rows[@]} > 1 )); then
+  fail "hypatia-scan.yml passes hypatia-ref more than once"
+elif (( ${#ref_rows[@]} == 1 )); then
+  wf_ref="$(pin_value "${ref_rows[0]}")" || fail "hypatia-scan.yml has a malformed hypatia-ref scanner pin"
+fi
+wf_hypatia="${wf_sha:-$wf_ref}"
+wf_pin_name="HYPATIA_SHA"; [ -n "$wf_sha" ] || wf_pin_name="the hypatia-ref input"
 if [ -z "$wf_hypatia" ]; then
-  fail "hypatia-scan.yml declares no HYPATIA_SHA; the policy's scanner.commit cannot be verified"
+  fail "hypatia-scan.yml declares no HYPATIA_SHA and passes no hypatia-ref input; the policy's scanner.commit cannot be verified"
+elif [ -n "$wf_sha" ] && [ -n "$wf_ref" ] && [ "$wf_sha" != "$wf_ref" ]; then
+  fail "hypatia-scan.yml pins the scanner twice and disagrees: HYPATIA_SHA ${wf_sha:0:12}, hypatia-ref ${wf_ref:0:12}"
 elif [ "$policy_hypatia" != "$wf_hypatia" ]; then
-  fail "policy scanner.commit (${policy_hypatia:0:12}) does not match HYPATIA_SHA in hypatia-scan.yml (${wf_hypatia:0:12})"
+  fail "policy scanner.commit (${policy_hypatia:0:12}) does not match ${wf_pin_name} in hypatia-scan.yml (${wf_hypatia:0:12})"
 fi
 
 policy_grid="$(jq -r '.grid.commit' "$POLICY")"

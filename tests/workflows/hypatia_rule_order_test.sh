@@ -37,6 +37,9 @@ fresh() {
     cp "$REPO_DIR/.github/workflows/verdict-grid-publish.yml" "$WORK/repo/.github/workflows/"
     cp "$REPO_DIR/scripts/verdict-grid-lane.sh" "$WORK/repo/scripts/"
     cp "$REPO_DIR/.hypatia-ignore" "$WORK/repo/.hypatia-ignore"
+    local pin
+    pin="$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")"
+    printf 'name: Hypatia Security Scan\njobs:\n  scan:\n    env:\n      HYPATIA_SHA: %s\n' "$pin" > "$WORK/repo/.github/workflows/hypatia-scan.yml"
 }
 
 run() { bash "$CHECK" "$WORK/repo" >"$WORK/out" 2>&1; }
@@ -59,6 +62,7 @@ edit_policy() {
 
 echo "=== 1. The repository as it ships ==="
 fresh
+cp "$REPO_DIR/.github/workflows/hypatia-scan.yml" "$WORK/repo/.github/workflows/hypatia-scan.yml"
 expect_rc 0 "the shipped policy is ordered, complete and consistent"
 says "the summary counts what it checked" "layer(s) ordered"
 
@@ -149,6 +153,91 @@ fresh
 sed -i "s/^      HYPATIA_SHA: .*/      HYPATIA_SHA: ''/" "$WORK/repo/.github/workflows/hypatia-scan.yml"
 expect_rc 1 "a workflow with no pin cannot validate the policy"
 says "the missing-pin failure says so" "declares no HYPATIA_SHA"
+
+# A caller of the shared reusable pins the scanner with its hypatia-ref input,
+# not an env var: that pin is read and checked like HYPATIA_SHA.
+caller_wf() {
+    local pin="$1"
+    cat > "$WORK/repo/.github/workflows/hypatia-scan.yml" <<YML
+name: Hypatia Security Scan
+on: [push]
+permissions:
+  contents: read
+jobs:
+  scan:
+    uses: metadatastician/standards/.github/workflows/hypatia-scan-reusable.yml@46ee18323305d5b36e2eef936e47dd54c39ea736
+    with:
+      hypatia-ref: ${pin}
+YML
+}
+fresh; caller_wf "$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")"
+expect_rc 0 "a reusable caller whose hypatia-ref matches the policy is accepted"
+
+fresh; caller_wf 4444444444444444444444444444444444444444
+expect_rc 1 "a reusable caller whose hypatia-ref disagrees with the policy is refused"
+says "the caller-pin failure names the input" "hypatia-ref input in hypatia-scan.yml"
+
+fresh; caller_wf ''
+expect_rc 1 "a reusable caller that passes no hypatia-ref cannot validate the policy"
+says "the missing caller pin is stated" "passes no hypatia-ref input"
+
+# Two pins for one scanner that disagree are refused even when one matches.
+fresh
+printf '      hypatia-ref: 5555555555555555555555555555555555555555\n' >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "HYPATIA_SHA and a disagreeing hypatia-ref in one workflow are refused"
+says "the double-pin failure names both" "pins the scanner twice"
+
+
+# Malformed refs must not masquerade as immutable scanner pins.
+for invalid in main be98f74ce93d 4444444444444444444444444444444444444444-extra; do
+    fresh; caller_wf "$invalid"
+    expect_rc 1 "a malformed reusable scanner pin $invalid is refused"
+done
+
+# A second declaration of the same kind is ambiguous even when the values
+# agree: YAML consumers can disagree about duplicate-key handling.
+fresh
+printf '      HYPATIA_SHA: %s\n' "$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")" >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "duplicate identical HYPATIA_SHA declarations are refused"
+says "the duplicate SHA diagnostic names the key" "declares HYPATIA_SHA more than once"
+
+fresh
+printf '      HYPATIA_SHA: 4444444444444444444444444444444444444444\n' >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "conflicting HYPATIA_SHA declarations are refused"
+
+fresh; caller_wf "$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")"
+printf '      hypatia-ref: %s\n' "$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")" >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "duplicate identical hypatia-ref declarations are refused"
+says "the duplicate input diagnostic names the key" "passes hypatia-ref more than once"
+
+fresh; caller_wf "$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")"
+printf '      hypatia-ref: 4444444444444444444444444444444444444444\n' >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "conflicting hypatia-ref declarations are refused"
+
+# Comments and similarly named keys cannot stand in for a scanner pin.
+fresh
+sed -i 's/^      HYPATIA_SHA: /      # HYPATIA_SHA: /' "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "a commented scanner pin is not accepted"
+
+fresh
+sed -i 's/^      HYPATIA_SHA: /      NOT_HYPATIA_SHA: /' "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "an unrelated key containing HYPATIA_SHA is not accepted"
+
+# A 40-hex prefix is not a pin when the scalar has an extra suffix.
+fresh
+sed -i '/^      HYPATIA_SHA: /s/$/-extra/' "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "a HYPATIA_SHA with a suffix is refused"
+says "the malformed SHA diagnostic names the key" "malformed HYPATIA_SHA scanner pin"
+
+# A valid SHA cannot mask a malformed declaration of the other pin kind.
+fresh
+printf '      hypatia-ref: main\n' >> "$WORK/repo/.github/workflows/hypatia-scan.yml"
+expect_rc 1 "a malformed hypatia-ref beside valid HYPATIA_SHA is refused"
+says "the malformed input diagnostic names the key" "malformed hypatia-ref scanner pin"
+
+# Quoted scalar pins with trailing YAML comments remain valid.
+fresh; caller_wf "'$(jq -r '.scanner.commit' "$WORK/repo/.machine_readable/policies/hypatia-rule-order.json")' # scanner revision"
+expect_rc 0 "a quoted hypatia-ref with a comment is accepted"
 
 echo "=== 7. Setup errors ==="
 bash "$CHECK" "$WORK/nowhere" >"$WORK/out" 2>&1

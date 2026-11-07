@@ -408,9 +408,9 @@ the confirmed-victims list in that file's own comment.
 
 1. Identity. .machine_readable/descriptiles/CLADE.a2ml in secret-types declares
    canonical-name "rsr-template-repo", prefixed-name "rm-rsr-template-repo",
-   uuid a5ea1382-a34c-5334-8a46-a2ebe904c810, and clade primary "rm".
+   uuid #u5"github.com/hyperpolymath/rsr-template-repo", and clade primary "rm".
    UUIDv5(URL, "github.com/hyperpolymath/secret-types") is
-   462660d5-8b7e-5bfb-a72c-a942273aa064. ECOSYSTEM.a2ml and STATE.a2ml are
+   #u5"github.com/hyperpolymath/secret-types". ECOSYSTEM.a2ml and STATE.a2ml are
    likewise template self-descriptions (project = "rsr-template-repo",
    completion-percentage = 97, chain "standards → rsr-template-repo → (every
    estate repo)"), and the generated arrival pack in CLAUDE.md therefore opens
