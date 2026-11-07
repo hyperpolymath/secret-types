@@ -534,7 +534,7 @@ Status refresh for the 2026-10-25 "still stale elsewhere" list, from
    2026-10-05 and nextgen-typing#118 closed. `secret-types#2` stays open only for
    the RSR scaffolding sweep, which is evidenced: `.machine_readable/
    descriptiles/CLADE.a2ml` still declares `rsr-template-repo`'s name and UUID
-   (the correct UUIDv5 for this repo is 462660d5-8b7e-5bfb-a72c-a942273aa064).
+   (the correct UUIDv5 for this repo is #u5"github.com/hyperpolymath/secret-types").
 2. Our "specification only" status text is withdrawn, and the review checklist
    now records per-item what the implementation evidences. The items are not
    marked accepted — that remains an owner decision, and evidencing is not

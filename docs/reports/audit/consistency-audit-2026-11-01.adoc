@@ -294,7 +294,7 @@ none of them in the proof development.
 *ONE-LINE EVIDENCE:* (a) `.machine_readable/descriptiles/CLADE.a2ml` declares
 `canonical-name = "rsr-template-repo"`, `uuid = a5ea1382-…` — recomputing
 `UUIDv5(URL, "github.com/hyperpolymath/secret-types")` gives
-`462660d5-8b7e-5bfb-a72c-a942273aa064`, so the repository's identity file
+`#u5"github.com/hyperpolymath/secret-types"`, so the repository's identity file
 describes *another repository*; (b) `verification/proofs/*/MANIFEST` say
 `gated` and "Ground-truthed 2026-07-17" while no workflow invokes
 `scripts/check-proofs.sh`; (c) `src/SecretTypes/Lattice/Record.agda:7` and

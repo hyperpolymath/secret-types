@@ -80,4 +80,4 @@ jobs:
       - name: Emit the receipt for this commit
         run: |
           bash scripts/grade-receipt.sh --write --commit "$(git rev-parse --short=12 HEAD)"
-          sed -n '1,80p' verification/receipts/agda-grade3.a2ml
+          sed -n '1,80p' verification/receipts/agda-grade3_praxis.deed
