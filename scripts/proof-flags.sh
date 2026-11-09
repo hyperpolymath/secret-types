@@ -20,17 +20,15 @@
 #   --without-K          policy default.  No UIP, no Streicher K.  (Implied by
 #                        --cubical-compatible; kept explicit so the intent
 #                        survives a future flag change.)
-#   --cubical-compatible WAIVED, not dropped silently.  PROOF-POLICY §2.1
-#                        (2026-11-01) names it; this development cannot meet it
-#                        yet.  Evidence and the two arms are in
-#                        docs/proof-debt.adoc#waivers and PROOF-STATUS.adoc
-#                        "Grade and the independent-witness legs".  The short
-#                        version: every clause matching on `_⊑_` is an indexed
-#                        match, which Cubical Agda does not support
-#                        (-WUnsupportedIndexedMatch), and -W error makes that
-#                        fatal.  Suppressing the warning would be a green gate
-#                        over a weakened check, so the flag is absent and the
-#                        gap is recorded instead.
+#   --cubical-compatible policy default.  Waived from 2026-11-01 (W-1) until
+#                        the last indexed matches were re-represented: the
+#                        order is a computed predicate, and `just`-injectivity
+#                        goes through `cong` of a total projection
+#                        (Prelude.just-inj), never a match on
+#                        `refl : just s ≡ just t`.  -W error makes any
+#                        -WUnsupportedIndexedMatch fatal, so a later indexed
+#                        match fails the gate rather than weakening it.
+#                        History: docs/proof-debt.adoc#waivers.
 #   --no-libraries       stronger.  Builtins only; no Agda standard library and
 #                        no sibling repository is on the path.  The policy's
 #                        "no Mathlib" rule (PROOF-POLICY §2) is the Lean form of
@@ -58,6 +56,7 @@ proof_flags() {
   printf '%s\n' \
     --safe \
     --without-K \
+    --cubical-compatible \
     --no-libraries \
     --ignore-interfaces \
     --double-check \

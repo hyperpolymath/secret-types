@@ -99,14 +99,16 @@ in the place a reader will look. Each one names the obligation, the tool, and wh
 the mapped option was not used (`PROOF-POLICY.adoc` §4 asks for exactly that
 shape when a mapped prover is not the right fit).
 
-=== W-1 `--cubical-compatible` (PROOF-POLICY §2.1, dated 2026-11-01)
+=== W-1 `--cubical-compatible` (PROOF-POLICY §2.1, dated 2026-11-01) — RETIRED 2026-11-09
 
 *Obligation.* `agda --safe --without-K --cubical-compatible <module>` is the
 canonical invocation for first-party Agda theory entrypoints.
 
-*State.* `--safe` and `--without-K` are in the gate. `--cubical-compatible` is
-**not**, and cannot be added without changing the development or weakening the
-check.
+*State.* **Met.** Since 2026-11-09 the gate (`scripts/proof-flags.sh`) runs the
+canonical invocation with `--no-libraries --ignore-interfaces --double-check
+-W error`, so a new `UnsupportedIndexedMatch` fails the gate rather than being
+waived. The record below is kept as the history of the waiver: what was
+measured, which arm was taken, and what closed it (*Closed*, after the arms).
 
 *Evidence, from three CI runs on 2026-11-01 that adopted the flag and then had to
 report why it would not stay.* The flag was added, the Agda pin was unchanged
@@ -165,14 +167,27 @@ report why it would not stay.* The flag was added, the Agda pin was unchanged
     derivation, so N-5 would need a new non-derivability argument. It also
     changes the shape of N-1/N-7. That is an owner decision about the statement
     of the theorem, not a refactor to slip into a flag change.
-*What would make the waiver wrong.* If `-WUnsupportedIndexedMatch` were ever
-suppressed in the gate, this waiver would become a lie — the flag would be
-nominally on and the check off. The gate does not suppress it, and
-`scripts/proof-flags.sh` is the single place the flags live, so that change
-could not happen by accident.
 
-*Consequence for the grade.* None: mathesis Grade 3 is "type-checks locally in
-Agda under strict flags, not translated", and mathesis's own example flag set is
-`--safe --erasure`, not §2.1's. The grade stays 3. The receipt records
-`cubical-compatible = "waived"` so the gap is machine-visible rather than buried
-here.
+*Closed, 2026-11-09: B2 without the relational semantics.* The 13 warnings did
+not need the change B2 described. Each came from a clause that matched
+`refl : just s ≡ just t`. Those clauses now take the equation as a variable and
+apply `Prelude.just-inj`, defined as `cong (from-just a)` for a total projection
+`from-just`. `cong` matches `refl` only against a variable, so no clause asks
+for the injectivity of `just`. Agreement then follows by `subst`/`subst₂`, or
+from a store equality (`≈-from-≡`). No theorem statement changed, the fuel
+semantics is untouched, and N-5 keeps its `nothing`-returning witness. B2's
+"threading the result as a variable" probe failed because the clauses still
+matched `refl` on two constructor terms inside; the projection is what removes
+that match. With all 13 warnings gone, the flag joined the gate: `SecretTypes.All`
+checks under the canonical invocation with `--double-check -W error`, and the
+receipt records `cubical-compatible = "met"`.
+
+*What would have made the waiver wrong.* Suppressing `-WUnsupportedIndexedMatch`
+in the gate would have made the flag nominally on and the check off. The gate
+never did, and it now keeps `-W error` with the flag on, so the same rule now
+guards the met obligation.
+
+*Consequence for the grade.* None at the time. mathesis Grade 3 was "type-checks
+locally in Agda under strict flags, not translated", so the waiver did not lower
+it. Under PROOF-POLICY §8 the grade is derived from the receipt, which now
+records the §2.1 invocation in full.
