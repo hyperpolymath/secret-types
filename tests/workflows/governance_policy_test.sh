@@ -4,7 +4,9 @@
 # PR #244 configuration regressions: the retired runtime policy must not ship,
 # and governance must run for pull requests targeting any branch with a locked
 # checkout of metadatastician/standards at a full 40-hex SHA.
-# PR #257 adds the proof-policy mapping and adopts canon 2.1.3. Since that
+# PR #257 adds the proof-policy mapping and adopts canon 2.1.3; canon 2.1.5 (a
+# PATCH: the gate table 0.3.1 and the applicability policy changed, the
+# criteria did not) is adopted here, after 2.1.4 (editorial). Since that
 # change is documentation and configuration only, check its published contract
 # here without invoking any proof compiler or making network requests.
 # Usage: bash tests/workflows/governance_policy_test.sh
@@ -191,9 +193,9 @@ console.log("PASS: new proof instructions require needs, verification, rechecks 
 const field = (key) => execFileSync("bash", [resolve(root, "scripts/deed-field.sh"),
   resolve(root, "secret-types_chora.deed"), "canon", key], { encoding: "utf8" }).trim();
 assert.deepEqual([field("version"), field("criteria-sha256"), field("gates-sha256")], [
-  "2.1.3",
+  "2.1.5",
   "6a5aa8857bd0d0d58ef48827938ca17c251b6b854dacf59d306388d61694d82a",
-  "2f31f46d4753432e0aa8c9c28f339e18e062c98dc6e6ef4ecbb76993cf37638b",
-], "canon 2.1.3 must retain the criteria identity and adopt the new gates identity");
-console.log("PASS: the deed adopts the complete canon 2.1.3 identity");
+  "5c510bba025be718deebb12d0333bfe7db2da43c66578b728b1a334df65290b1",
+], "canon 2.1.5 keeps the criteria identity and adopts the gate table 0.3.1 identity");
+console.log("PASS: the deed adopts the complete canon 2.1.5 identity");
 JS
