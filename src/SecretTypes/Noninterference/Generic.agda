@@ -44,6 +44,10 @@ module _ (V : Observer 𝓛) where
     _≈_ : Store → Store → Set
     s ≈ s' = s ≈[ sees ] s'
 
+    -- Equal stores agree for V.
+    ≈-from-≡ : ∀ {s s'} → s ≡ s' → s ≈ s'
+    ≈-from-≡ refl _ _ = refl
+
     -- Reverse agreement for V, without requiring the stores to be equal.
     ≈-sym : ∀ {s s'} → s ≈ s' → s' ≈ s
     ≈-sym p x v = sym (p x v)
@@ -95,8 +99,8 @@ module _ (V : Observer 𝓛) where
   confineL  : ∀ {ℓ e c} fuel {s t} → ¬ sees ℓ → ℓ ⊢ c
             → exec fuel (while e c) s ≡ just t → t ≈ s
 
-  confine fuel np skip refl _ _ = refl
-  confine fuel {s} np (assign {x = x} {e = e} ok) refl = confine-assign x e (eval s e) s np ok
+  confine fuel np skip e = ≈-from-≡ (sym (just-inj e))
+  confine fuel {s} np (assign {x = x} {e = e} ok) r = subst (λ u → u ≈ s) (just-inj r) (confine-assign x e (eval s e) s np ok)
   confine fuel np (seq t₁ t₂) e with bind-just _ _ e
   ... | s₁ , (e₁ , e₂) = ≈-trans (confine fuel np t₂ e₂) (confine fuel np t₁ e₁)
   confine fuel np (ifz {e = g} t₁ t₂) e = confineIf fuel (eval _ g) (unseen-⊔ (lab g) np) t₁ t₂ e
@@ -108,7 +112,7 @@ module _ (V : Observer 𝓛) where
 
   confineW fuel zero np t e with bind-just _ _ e
   ... | s₁ , (e₁ , e₂) = ≈-trans (confineL fuel np t e₂) (confine fuel np t e₁)
-  confineW fuel (suc _) np t refl _ _ = refl
+  confineW fuel (suc _) np t e = ≈-from-≡ (sym (just-inj e))
 
   confineL           zero       np t ()
   confineL {e = g} (suc fuel) {s} np t e = confineW fuel (eval s g) np t e
@@ -140,8 +144,8 @@ module _ (V : Observer 𝓛) where
          → (pc ⊔ lab e) ⊢ c → s ≈ s'
          → execWhile fuel (eval s e) e c s ≡ just t → execWhile fuel' (eval s' e) e c s' ≡ just t' → t ≈ t'
 
-  tini fuel fuel' skip eq refl refl = eq
-  tini fuel fuel' (assign {x = x} {e = g} ok) eq refl refl = tini-assign x g ok eq
+  tini fuel fuel' skip eq e e' = subst₂ _≈_ (just-inj e) (just-inj e') eq
+  tini fuel fuel' (assign {x = x} {e = g} ok) eq e e' = subst₂ _≈_ (just-inj e) (just-inj e') (tini-assign x g ok eq)
   tini fuel fuel' (seq t₁ t₂) eq e e' with bind-just _ _ e | bind-just _ _ e'
   ... | s₁ , (e₁ , e₂) | s₁' , (e₁' , e₂') = tini fuel fuel' t₂ (tini fuel fuel' t₁ eq e₁ e₁') e₂ e₂'
   tini fuel fuel' (ifz {pc} {g} t₁ t₂) eq e e' =
@@ -170,6 +174,6 @@ module _ (V : Observer 𝓛) where
     go : ∀ n {m} → n ≡ m → execWhile fuel n g c s ≡ just t → execWhile fuel' m g c s' ≡ just t' → t ≈ t'
     go zero    refl e e' with bind-just _ _ e | bind-just _ _ e'
     ... | s₁ , (e₁ , e₂) | s₁' , (e₁' , e₂') = tini fuel fuel' (while tc) (tini fuel fuel' tc eq e₁ e₁') e₂ e₂'
-    go (suc n) refl refl refl = eq
+    go (suc n) refl e e' = subst₂ _≈_ (just-inj e) (just-inj e') eq
   tiniW {pc} {g} fuel fuel' {s} {s'} (no nv) tc eq e e' =
     ≈-trans (confineW fuel (eval s g) nv tc e) (≈-trans eq (≈-sym (confineW fuel' (eval s' g) nv tc e')))

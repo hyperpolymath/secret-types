@@ -13,22 +13,21 @@
     :uuid-source "uuid5(URL, github.com/hyperpolymath/secret-types)"
     :uuid-note "F-1 remains open: template mint-path cause and local scaffolding sweep; see docs/reports/audit/consistency-audit-2026-11-01.adoc"
     :kind "theory"
-    :source-commit "c4391fc841f0")
+    :source-commit "eee4e4038503")
   (prover
     :tool "agda"
     :version "2.6.4.3"
     :provenance "Debian 13 agda-bin=2.6.4.3-1+b2"
     :library "none (--no-libraries; Agda builtins only)"
-    :flags "--safe --without-K --no-libraries --ignore-interfaces --double-check -W error"
+    :flags "--safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error"
     :flags-source "scripts/proof-flags.sh"
     :flags-note "One definition, read by the gate and by this receipt; the receipt cannot describe a gate that did not run")
   (conformance
     :policy "standards/3-practice/PROOF-POLICY.adoc"
     :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01"
     :canonical-invocation "agda --safe --without-K --cubical-compatible"
-    :cubical-compatible "waived"
-    :waiver-ref "docs/proof-debt.adoc#waivers"
-    :waiver-reason "Every clause matching on the order relation is an indexed match, which Cubical Agda does not support; suppressing -WUnsupportedIndexedMatch would be a green gate over a weakened check"
+    :cubical-compatible "met"
+    :waiver-history "docs/proof-debt.adoc#waivers (W-1, retired)"
     :stronger-than-canonical ("--no-libraries" "--ignore-interfaces" "--double-check" "-W error"))
   (gate
     :command "bash scripts/check.sh"
@@ -64,10 +63,10 @@
     (module :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
     (module :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
     (module :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
-    (module :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "b57e91faa098eec4136c78fb617c4c6f139ebe175452ffd6dc91547ffe915052")
+    (module :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "f969be56a8ce37526413ea7412c19368c04a018f655e9ca1b7e015323d32ff0c")
     (module :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
     (module :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
-    (module :path "src/SecretTypes/Prelude.agda" :sha256 "8fe48747ddac6ec990ae2a72f534bdb0054d03d54e0d904a7f932c70aca924bb")
+    (module :path "src/SecretTypes/Prelude.agda" :sha256 "efb8be7faab3798ec6da7c315fd9903cc6112bce98194a8463fbae9f52df6eee")
     (module :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
     (module :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
     (module :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")

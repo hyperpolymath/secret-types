@@ -76,35 +76,30 @@ library versions, invocation, observed result, and the bridge or statement
 correspondence — *transported* or *re-proved* — and the local statuses
 AGDA-VERIFIED / COQ-CHECKED / LEAN-CHECKED / BRIDGE-PENDING before RECONCILED.
 
-=== What the grade does *not* include: `--cubical-compatible`
+=== `--cubical-compatible`: met (W-1 retired)
 
 `PROOF-POLICY` §2.1 (dated 2026-11-01) names
-`agda --safe --without-K --cubical-compatible` as the canonical invocation. This
-repository meets `--safe` and `--without-K`, is stricter in four other dimensions,
-and **does not** use `--cubical-compatible`. That was tested, not assumed: the
-flag was adopted on 2026-11-01 and the gate refused three times, twice for
-construction-injectivity lemmas (fixed: one deleted as dead code, one replaced by
-a retraction that computes definitionally) and then at `Lattice.agda:46`, where
-every clause matching on `_⊑_` is an *indexed match* — a property of how the
-two-point order is represented, not a stray lemma.
+`agda --safe --without-K --cubical-compatible` as the canonical invocation. The
+gate (`scripts/proof-flags.sh`) now runs exactly that, with four stricter
+options: `--no-libraries --ignore-interfaces --double-check -W error`. Because
+`-W error` makes every `UnsupportedIndexedMatch` warning fatal, the flag is
+checked rather than nominal: a later indexed match fails the gate.
 
-Part of it was then fixed for real: the two-point order was an indexed family
-(matching a proof needed injectivity of the index constructors `L`/`H`), and it is
-now a **computed predicate** (`L ⊑ _ = ⊤`, `H ⊑ L = ⊥`), so the order laws hold
-by computation and those warnings are gone. What remains is one class —
-`just`-injectivity in the fuel semantics — which needs the big-step relation
-rather than an equality on computed results, and that changes how N-5 states
-divergence. Both arms, the two shortcuts that were measured and failed, and that
-consequence are in `docs/proof-debt.adoc#waivers`.
+From 2026-11-01 the flag was waived (W-1, link:docs/proof-debt.adoc#waivers[]).
+Every clause that matched on an indexed relation needed constructor injectivity,
+which Cubical Agda does not support. Two re-representations closed it:
 
-The gap is recorded rather than closed by suppressing the warning: a gate that
-says `-WnoUnsupportedIndexedMatch` would be a green gate over a weakened check.
-Full evidence, the two arms (keep the waiver, or re-represent the order as a
-computed predicate), and what would make the waiver wrong are in
-link:docs/proof-debt.adoc#waivers[`docs/proof-debt.adoc` W-1]; the receipt carries
-`cubical-compatible = "waived"` so it is machine-visible. The grade is unaffected:
-mathesis Grade 3 is "type-checks locally in Agda under strict flags, not
-translated", and this gate is strict on the axes that bear on soundness.
+* *The order* (2026-11-01). `_⊑_` became a computed predicate
+  (`L ⊑ _ = ⊤`, `H ⊑ L = ⊥`), so the order laws hold by computation.
+* *`just`-injectivity* (2026-11-09). The 13 remaining warnings, in `tini`, `go`,
+  `confine` and `confineW`, came from matching `refl : just s ≡ just t`. The
+  clauses now take the equation as a variable and use `Prelude.just-inj`, which
+  is `cong` of a total projection and never matches on that equation. No theorem
+  statement changed, and the fuel semantics is untouched: the relational
+  big-step semantics that W-1 named as the way out, and its consequence for N-5,
+  are not needed.
+
+The receipt records `cubical-compatible = "met"`.
 
 === What the grade is anchored to
 
@@ -118,9 +113,10 @@ intact; a claim added here cannot leave the receipt intact either, in either
 direction.
 
 Proof debt, in the four dispositions the trusted-base policy requires, is
-link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted —
-and that file's `#waivers` section carries the one obligation this repository does
-not meet (`--cubical-compatible`), with its evidence and both arms.
+link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted.
+Its `#waivers` section is empty of open waivers. It keeps W-1
+(`--cubical-compatible`) as retired, with the evidence for the waiver and the
+re-representations that closed it.
 
 CI: the whole gate — core proofs, expected rejections, the laws certificate, the
 receipt drift check and the receipt emit — is green on `8e421cc`, run

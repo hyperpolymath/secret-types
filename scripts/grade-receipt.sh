@@ -122,8 +122,7 @@ emit() {
   printf '  (conformance\n    :policy "standards/3-practice/PROOF-POLICY.adoc"\n'
   printf '    :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01"\n'
   printf '    :canonical-invocation "agda --safe --without-K --cubical-compatible"\n'
-  printf '    :cubical-compatible "waived"\n    :waiver-ref "docs/proof-debt.adoc#waivers"\n'
-  printf '    :waiver-reason "Every clause matching on the order relation is an indexed match, which Cubical Agda does not support; suppressing -WUnsupportedIndexedMatch would be a green gate over a weakened check"\n'
+  printf '    :cubical-compatible "met"\n    :waiver-history "docs/proof-debt.adoc#waivers (W-1, retired)"\n'
   printf '    :stronger-than-canonical ("--no-libraries" "--ignore-interfaces" "--double-check" "-W error"))\n'
   printf '  (gate\n    :command "bash scripts/check.sh"\n    :laws-certificate "bash scripts/minimal-laws.sh"\n'
   printf '    :ci ".github/workflows/proofs.yml"\n    :module-count %s\n    :reject-fixture-count %s)\n' "$(modules | wc -l | tr -d ' ')" "$(fixtures | wc -l | tr -d ' ')"
