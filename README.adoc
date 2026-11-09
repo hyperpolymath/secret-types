@@ -12,6 +12,7 @@ image:https://img.shields.io/badge/Docs-CC--BY--SA--4.0-blue.svg?logo=creativeco
 // ── Status ──────────────────────────────────────────────────────────────────
 image:https://img.shields.io/badge/Proof-core_theorem_proven-brightgreen[Core theorem proven,link="PROOF-STATUS.adoc"]
 image:https://img.shields.io/badge/RSR-Rhodium_Standard-9C27B0[Rhodium Standard Repository,link="https://github.com/hyperpolymath/rhodium-standard-repositories"]
+image:https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/hyperpolymath/secret-types/governance-badges/badges/k9.json[K9 conformance,link="https://github.com/hyperpolymath/secret-types/actions/workflows/dogfood-gate.yml"]
 
 Confidentiality labels that constrain value flow, with declassification only at
 explicit audited points: a standalone information-flow typing project.
