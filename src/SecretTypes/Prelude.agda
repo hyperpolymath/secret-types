@@ -39,19 +39,28 @@ data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- NOT provided: an injectivity lemma for `just`.  It was here
--- (`just-inj : just a ≡ just b → a ≡ b`) until 2026-11-01 and nothing used it.
--- Under the canonical flag set (scripts/proof-flags.sh, which includes
--- --cubical-compatible per PROOF-POLICY §2.1) it is refused:
+-- Injectivity of `just`, stated so that --cubical-compatible accepts it
+-- (PROOF-POLICY §2.1).  The obvious definition, matching `refl` against
+-- `just a ≡ just b`, asks the unifier for constructor injectivity, which
+-- Agda 2.6.4.3 refuses under that flag:
 --
---   warning: -W[no]UnsupportedIndexedMatch
---   This clause uses pattern-matching features that are not yet supported by
---   Cubical Agda ... Reason: It relies on injectivity of the data constructor
---   just, which is not yet supported
+--   warning: -W[no]UnsupportedIndexedMatch ... It relies on injectivity of
+--   the data constructor just, which is not yet supported
 --
--- Deleting an unused lemma is the honest fix; disabling the warning, or the
--- flag, would have bought a green gate with a weaker check.  If a later proof
--- needs it, the way in is a cubical-compatible formulation, not a suppression.
+-- An earlier copy of that definition was deleted on 2026-11-01 for this
+-- reason.  This one matches nothing: it projects the equation through
+-- `from-just`, which computes, so no unification rule is needed.  The
+-- TINI proof (Noninterference.Generic) uses it wherever a finishing run's
+-- result must be read off `exec … ≡ just t`.
+
+-- The value inside a `just`, or the default for `nothing`.
+from-just : {A : Set} → A → Maybe A → A
+from-just d nothing  = d
+from-just d (just a) = a
+
+-- Equal `just`s have equal contents.
+just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
+just-inj {a = a} e = cong (from-just a) e
 
 -- Pass a present value to f and return its result; propagate nothing
 -- without applying f when the input is absent.
@@ -122,3 +131,4 @@ dec-stable (no ¬p) h = ⊥-elim (h ¬p)
 -- Excluded middle holds under double negation, for every proposition.
 ¬¬-dec : (P : Set) → ¬ ¬ Dec P
 ¬¬-dec P k = k (no λ p → k (yes p))
+
