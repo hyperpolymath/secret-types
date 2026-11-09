@@ -34,24 +34,36 @@ cong₂ f refl refl = refl
 -- Transport evidence for the predicate P along an equality of its indices.
 subst : {A : Set} (P : A → Set) {a b : A} → a ≡ b → P a → P b
 subst P refl p = p
+-- Transport evidence for a two-place predicate along equalities of both indices.
+subst₂ : {A B : Set} (P : A → B → Set) {a a' : A} {b b' : B} → a ≡ a' → b ≡ b' → P a b → P a' b'
+subst₂ P refl refl p = p
 
 data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- NOT provided: an injectivity lemma for `just`.  It was here
--- (`just-inj : just a ≡ just b → a ≡ b`) until 2026-11-01 and nothing used it.
--- Under the canonical flag set (scripts/proof-flags.sh, which includes
--- --cubical-compatible per PROOF-POLICY §2.1) it is refused:
+-- Injectivity of `just`, cubical-compatibly.  The lemma defined by matching
+-- (`just-inj (refl) = refl`, deleted 2026-11-01 as dead code) is refused under
+-- the canonical flag set (scripts/proof-flags.sh, --cubical-compatible per
+-- PROOF-POLICY §2.1):
 --
 --   warning: -W[no]UnsupportedIndexedMatch
 --   This clause uses pattern-matching features that are not yet supported by
 --   Cubical Agda ... Reason: It relies on injectivity of the data constructor
 --   just, which is not yet supported
 --
--- Deleting an unused lemma is the honest fix; disabling the warning, or the
--- flag, would have bought a green gate with a weaker check.  If a later proof
--- needs it, the way in is a cubical-compatible formulation, not a suppression.
+-- and so was every clause of the TINI proof that matched `refl : just s ≡ just t`
+-- (docs/proof-debt.adoc W-1, retired).  This version never matches on that
+-- equation: it applies `cong` to a total projection, and `cong` matches `refl`
+-- only against a variable.  `from-just d` returns the payload, or d for nothing.
+-- Suppressing the warning, or dropping the flag, would have bought a green gate
+-- with a weaker check; this is the cubical-compatible formulation instead.
+from-just : {A : Set} → A → Maybe A → A
+from-just d nothing  = d
+from-just _ (just a) = a
+
+just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
+just-inj {a = a} e = cong (from-just a) e
 
 -- Pass a present value to f and return its result; propagate nothing
 -- without applying f when the input is absent.
