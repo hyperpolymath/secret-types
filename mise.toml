@@ -19,5 +19,6 @@ lockfile = true
 [tools]
 just = "latest"
 shellcheck = "latest"     # the shell scripts
+yq = "latest"             # scripts/kyaml-format.sh (KYAML configs)
 zig = "latest"
 trivy = "latest"          # just deps-audit
