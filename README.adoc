@@ -76,14 +76,18 @@ Echo fibre over its outputs does not separate secret inputs — the Echo
 reading of noninterference, and the first candidate connection
 Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
-*Grade.* The proved claims are at Proof Witness Grade **`PWG-3`**
-(`PROOF-POLICY.adoc` §8) and no higher: they type-check in Agda under the
+*Grade.* The proved claims are at Proof Witness Grade **`PWG-2ii`**
+(`PROOF-POLICY.adoc` §8) and no higher. They type-check in Agda under the
 canonical §2.1 invocation, `--cubical-compatible` included, with stronger flags
-besides (`scripts/proof-flags.sh`). The Rocq and Lean recheck legs that §2
-requires, and that `PWG-2i`/`PWG-2ii` count, do not exist; they are recorded
-`unavailable`, not skipped silently. `PWG-3` is not a discharge: those legs are
-still owed. Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof
-Ledger], the machine record is
+besides (`scripts/proof-flags.sh`). Each is also re-proved by hand in Rocq
+(Coq 8.18.0, prelude only) and in Lean (4.24.0, core only, no Mathlib), with no
+axioms in either, and the statements are compared in
+link:verification/legs/README.adoc[`verification/legs/README.adoc`]. That
+comparison was written by Claude Code and is provisional until the owner reviews
+it. Not `PWG-1`: no per-commit receipt captures each checker's observed result
+yet. Not `+foundation-diverse`: no witness outside dependent type theory.
+Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger],
+the machine record is
 link:verification/receipts/agda-pwg_praxis.deed[`verification/receipts/agda-pwg_praxis.deed`]
 (checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
 dispositions. This paragraph states no grade the ledger does not support.

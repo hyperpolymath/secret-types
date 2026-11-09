@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MPL-2.0
+# The Lean recheck leg of secret-types (PROOF-POLICY §2). Lean core only:
+# no Mathlib and no other dependency (no `require` entries).
+name = "secret-types-lean-leg"
+defaultTargets = ["SecretTypes"]
+
+[[lean_lib]]
+name = "SecretTypes"

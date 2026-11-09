@@ -67,12 +67,14 @@ _None in the proof development._
 Two items are open *obligations* rather than proof debt, and are listed here so
 that they are not mistaken for either:
 
-* *Recheck legs (`PWG-2i`/`PWG-2ii`).* `PROOF-POLICY.adoc` §2 asks for every Agda
-  theory proof to be rechecked in Rocq and in Lean. Neither leg exists; both are
-  recorded `unavailable` in the receipt and in
-  link:../PROOF-STATUS.adoc[`PROOF-STATUS.adoc`]. An absent recheck is not an
-  escape hatch in a proof (the proof has no hole), but it bounds the grade at
-  `PWG-3`, and that bound is recorded rather than glossed.
+* *Recheck legs (`PWG-2ii`, met 2026-11-09).* `PROOF-POLICY.adoc` §2 asks for
+  every Agda theory proof to be rechecked in Rocq and in Lean. Both legs now
+  exist, re-proved by hand without a library or an axiom
+  (link:../verification/legs/README.adoc[`verification/legs/README.adoc`]),
+  and the receipt records them. The obligation that remains is review: the
+  statement comparison was written by Claude Code and is provisional until the
+  owner reviews it. `PWG-1` (a per-commit receipt of each checker's observed
+  result) is not met.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI
   for the current typing rules when finishing versus non-finishing is public.

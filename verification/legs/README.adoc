@@ -1,0 +1,183 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+= The Rocq and Lean recheck legs
+:revdate: 2026-11-09
+
+`standards/3-practice/PROOF-POLICY.adoc` §2 requires every Agda theory proof to
+be rechecked in Rocq and in Lean. Transport through Dedukti comes first, and a
+hand re-proof without Mathlib is the fallback. This directory holds both legs
+for N-1, N-2, N-3, N-7, N-8 and N-9, and this file is their §2.2
+correspondence record.
+
+`bash scripts/check-legs.sh` checks both. CI runs it as the `legs` job of
+`.github/workflows/proofs.yml`.
+
+== Route: `re-proved`, and why not `transported`
+
+Transport was tried first, as the policy orders, and is not available today:
+
+* Agda2Dedukti, the only Agda→Dedukti translator, builds against its own fork
+  of Agda (pinned commit `b026db1`, GHC 8.10, Stackage LTS 18.21). It is an Agda
+  backend, so it cannot run on Agda 2.6.4.3, the version the gate pins.
+* Even with a Dedukti term, there is no released exporter from Dedukti or
+  Lambdapi to Lean 4, and no released route to Rocq that this repository
+  could pin and run in CI.
+
+So both legs are hand re-proofs of the Agda statements. Each leg was written
+from the Agda module, statement by statement and proof by proof, and checked by
+its own kernel. Nothing is translated mechanically, so the statements are
+compared by hand below.
+
+== Versions and invocations
+
+[cols="1,2,3",options="header"]
+|===
+| Leg | Version | Invocation
+
+| Rocq
+| Coq 8.18.0 (Ubuntu 24.04 package `coq=8.18.0+dfsg-1build2`)
+| `coqc -q SecretTypes.v`, in `rocq/`.
+  The file loads no library, not even with `Require`: only Coq's prelude.
+
+| Lean
+| Lean 4.24.0 (release tarball, sha256
+  `b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec`)
+| `lake build`, then `lake env lean Axioms.lean`, in `lean/`. `lakefile.toml`
+  declares no `require`, so there is no Mathlib and no other package: only
+  Lean core.
+|===
+
+`scripts/check-legs.sh` refuses the run if either version differs, if a
+`require` or a `Require` appears, or if any source contains `sorry`, `admit`,
+`Admitted`, `Axiom` or `Parameter`.
+
+== Assumptions: none
+
+Every theorem below is printed with its axioms (§8.4):
+
+* Rocq: `Print Assumptions` reports `Closed under the global context` for all
+  11. The prelude's classical axioms are not loaded, so none can enter.
+* Lean: `#print axioms` (in `lean/Axioms.lean`) reports
+  `does not depend on any axioms` for all 11. In particular, no `propext`,
+  `Quot.sound` or `Classical.choice`.
+
+`check-legs.sh` fails unless every one of the 22 lines says so.
+
+== Universe discipline
+
+Agda's `Set` is `Type` in both legs. The order `_⊑_`, an observer's `sees` and
+the typing derivations are `Type`-valued in both, as in Agda, so a proof of
+`x ⊑ y` is data in all three systems. A store agreement is an equation between
+naturals: `Prop` in the legs and a set in Agda. The naturals have decidable
+equality, so the two readings hold the same information.
+
+The Agda proof of N-7 splits on whether the observer sees a branch label,
+under double negation, because agreement is stable (`¬¬ (s ≈ s') → s ≈ s'`).
+Both legs make the same move (`agree_stable`, `by_cases_sees`), so neither leg
+uses excluded middle.
+
+== Statement correspondence
+
+The legs keep the Agda names where the syntax allows. Lean writes `₁`/`₂` and
+`'`, Rocq writes `1`/`2` and `0`/`1`. The statements are compared on the
+following points; any other difference is notation.
+
+`exec`:: Agda defines `exec` with two helpers, `execIf` and `execWhile`. Both
+legs define one function, `run prev`, structural in the command, with `prev`
+the run at one less fuel (`none` at fuel zero), and set `exec 0 = run none`
+and `exec (f + 1) = run (some (exec f))`. Clause by clause this is Agda's
+definition: sequence and `ifz` keep the fuel, a loop at `f + 1` runs its body
+and re-enters at `f`, and a loop at `0` is `nothing`. The legs prove the
+clauses as lemmas (`exec_skip`, `exec_assign`, `exec_seq`, `exec_ifz`,
+`exec_while_zero` in Lean, `exec_while_succ`), each by `rfl` or by cases. The
+split exists so that Lean needs no well-founded recursion. Well-founded
+recursion would bring in `propext`.
+
+`Maybe`:: `Option` in Lean and `option` in Rocq, with `nothing`/`just` as
+`none`/`some`.
+
+The record:: Agda has one record, `Lattice` (`SecretTypes.Lattice.Record`), with
+the carrier, `_⊑_`, `_⊔_`, `⊥ₗ` and exactly three laws: `⊑-trans`,
+`⊔-upper₁` and `⊔-upper₂`. The legs split it into `Signature`, with the
+operations and no laws, and `Lattice`, which extends it with the same three
+laws. `TINI` and the typing rules are stated over `Signature`. That is what
+the Agda `Statement` and `Typing.Generic` modules are parameterised by, and the
+N-8 countermodels need it to state `TINI` where a law fails. The generic proof
+(`tini`) takes a `Lattice`. The laws are the same three, so neither leg is
+weaker or stronger than Agda here.
+
+`Observer`:: `sees : Carrier → Type` and down-closure, as in Agda.
+`principal L o` sees `· ⊑ o`, and its down-closure is `le_trans`, as in Agda.
+
+`Vars`:: a type with decidable equality. In Lean, `DecidableEq Var`; in
+Rocq, `{x = y} + {x <> y}`. Agda uses `Dec`. All three are the same choice
+data.
+
+== Claim by claim
+
+The state of every row is `RECONCILED` (§2.2): AGDA-VERIFIED by
+`scripts/check.sh`, COQ-CHECKED and LEAN-CHECKED by `scripts/check-legs.sh`,
+and the statements compared above with no bridge pending.
+
+[cols="1,2,2,2",options="header"]
+|===
+| Claim | Agda | Lean | Rocq
+
+| N-1
+| `Noninterference.tini`
+| `SecretTypes.Two.tini_two`
+| `Two.tini_two`
+
+| N-2
+| `Noninterference.Generic.eval-low`; `Noninterference.eval-low`
+| `SecretTypes.eval_low`; `SecretTypes.Two.eval_low_two`
+| `eval_low`; `Two.eval_low_two`
+
+| N-3
+| `Noninterference.Generic.confine`; `Noninterference.confine`
+| `SecretTypes.confine` (with `confine_loop`); `SecretTypes.Two.confine_two`
+| `confine` (with `confine_loop`); `Two.confine_two`
+
+| N-7
+| `Noninterference.Generic.tini : (V : Observer 𝓛) → TINI (Observer.sees V)`
+| `SecretTypes.tini`
+| `tini : TINI L label (sees O)`
+
+| N-8
+| `Countermodels.NoUpper₁.refutes`, `NoUpper₂.refutes`,
+  `NoDownClosure.refutes`, `NoTrans.refutes`, each `¬ TINI _`
+| `SecretTypes.Countermodels.NoUpper₁.refutes`, `NoUpper₂.refutes`,
+  `NoDownClosure.refutes`, `NoTrans.refutes`, each `TINI … → False`
+| `Countermodels.NoUpper1.refutes`, `NoUpper2.refutes`,
+  `NoDownClosure.refutes`, `NoTrans.refutes`
+
+| N-9
+| `Noninterference.OutcomeVisibility.termination-sensitive-fails : ¬ TSNI`
+| `SecretTypes.Two.termination_sensitive_fails : TSNI → False`
+| `Two.termination_sensitive_fails : TSNI -> False`
+|===
+
+Each N-8 countermodel is the Agda one: the same carrier, the same failing law,
+the same typed program and the same two stores. For `NoTrans`, the
+five-point order and its `join` are Agda's, case by case. N-9 uses the same
+`secret-loop`, the same stores `s₀ = (0, 0)` and `s₁ = (0, 1)`, and the same
+outcome at fuel 3.
+
+N-4, N-5 and N-6 have no leg. They are checked demonstrations, not theorems
+(§8.1).
+
+== What the legs do not establish
+
+* They are re-proofs, not transports. The match between each leg statement
+  and its Agda statement rests on the comparison above. Claude Code wrote it,
+  and it is provisional until the owner reviews it (estate doctrine 4). No
+  tool checks it.
+* `foundation_diverse` (§8.3) stays false. Lean's and Rocq's kernels are
+  independent of Agda's, but all three are dependent type theories. The tag
+  needs a witness in a different foundation, such as Isabelle/HOL, and none
+  exists.
+* The grade is `PWG-2ii`, not `PWG-1`. `PWG-1` needs a receipt per witness,
+  per commit, recording the observed result of a pinned checker run on that
+  commit (§8.2). The receipt here records the legs' versions, invocations and
+  input digests; the CI log of the `legs` job is the observed result, and it
+  is not yet captured as a receipt.
