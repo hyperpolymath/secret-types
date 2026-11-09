@@ -105,12 +105,37 @@ jobs:
           echo "a1bc93654f31669fd964ea3011a5e5e9676b9b6f8adcd762606e5140632ea72d  $RUNNER_TEMP/just.tgz" | sha256sum --check --strict
           tar -xzf "$RUNNER_TEMP/just.tgz" -C "$RUNNER_TEMP/just-bin" just
           echo "$RUNNER_TEMP/just-bin" >> "$GITHUB_PATH"
+      # Installed before the mint steps: repo-init and container-init reformat the
+      # container KYAML they fill (scripts/format-container-kyaml.sh), which needs
+      # a yq that can write KYAML. The KYAML ratchet below uses the same install.
+      - name: Install verified yq 4.53.3 and kyaml-format.sh (standards 8e48b1c)
+        run: |
+          mkdir -p "$RUNNER_TEMP/yq-bin"
+          curl --proto '=https' --proto-redir '=https' --fail --silent --show-error --location \
+            https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64 \
+            --output "$RUNNER_TEMP/yq-bin/yq"
+          echo "fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4  $RUNNER_TEMP/yq-bin/yq" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/yq-bin/yq"
+          echo "$RUNNER_TEMP/yq-bin" >> "$GITHUB_PATH"
+          curl --proto '=https' --proto-redir '=https' --fail --silent --show-error --location \
+            https://raw.githubusercontent.com/metadatastician/standards/e064539116c2dcfdf282a4749dbd58c69961c7e6/scripts/kyaml-format.sh \
+            --output "$RUNNER_TEMP/kyaml-format.sh"
+          echo "5fddd58fc8cbd2b68766ef5b4b5ba39f299da3f27252ae6cdcff0a641bbaef18  $RUNNER_TEMP/kyaml-format.sh" | sha256sum --check --strict
       - name: Non-interactive mint resolves every prompt from the environment
         run: bash tests/workflows/non_interactive_mint_test.sh
       # repo-init recorded the CHILD's own HEAD as the template commit whenever
       # a repo was created with "Use this template" (metadatastician/lintel).
       - name: Template pin resolves by tree equality (controls)
         run: bash tests/workflows/resolve_template_pin_test.sh
+      # A replay trusts RSR_PACKAGE_UUID; only recorded answers may supply it.
+      - name: Replay passes a package uuid only from recorded answers
+        run: bash tests/workflows/replay_mint_env_test.sh
+      # chain-mint reads checkouts through git: gitlinks kept, no ignored file read.
+      - name: Chain snapshots keep gitlinks and read no ignored file
+        run: bash tests/workflows/chain_tree_of_test.sh
+      # The repository map is line-based: a path holding a newline is refused by name.
+      - name: Repository map refuses a path holding a newline
+        run: bash tests/workflows/repo_map_newline_test.sh
       # The first CI job to run a FULL mint: a Use-this-template child, checked
       # for provenance, untouched fixtures and ignored files, the map and the
       # closing advice. A fresh mint of main aborted on 2026-10-20 and nothing
@@ -119,6 +144,11 @@ jobs:
         run: |
           command -v uuidgen >/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q uuid-runtime; }
           bash tests/e2e/use_template_mint_test.sh
+      # A repo made from a MINTED repo: its parent's mint is replayed, the
+      # template is minted with the new answers, and the parent's own work is
+      # carried by a three-way merge (Codex review of #251; owner ruling).
+      - name: Chain mint (a minted repo minted again) end to end
+        run: bash tests/e2e/chain_mint_test.sh
       # An archetype overlay once shipped its own actions.lock, which replaced
       # the spine's at mint and left every Julia mint with Lock Sync red.
       - name: Archetype lock fragments merge into a valid lock
@@ -174,19 +204,6 @@ jobs:
       # step 6 (standards#1025); files a third-party bot or tool rewrites or
       # finds by schema (Dependabot, FUNDING, issue forms, settings, CodeRabbit,
       # Copilot, GitLab CI, pre-commit) are not listed, as in standards.
-      - name: Install verified yq 4.53.3 and kyaml-format.sh (standards 8e48b1c)
-        run: |
-          mkdir -p "$RUNNER_TEMP/yq-bin"
-          curl --proto '=https' --proto-redir '=https' --fail --silent --show-error --location \
-            https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64 \
-            --output "$RUNNER_TEMP/yq-bin/yq"
-          echo "fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4  $RUNNER_TEMP/yq-bin/yq" | sha256sum --check --strict
-          chmod +x "$RUNNER_TEMP/yq-bin/yq"
-          echo "$RUNNER_TEMP/yq-bin" >> "$GITHUB_PATH"
-          curl --proto '=https' --proto-redir '=https' --fail --silent --show-error --location \
-            https://raw.githubusercontent.com/metadatastician/standards/8e48b1caade08a552646adeab66558ac43b4360d/scripts/kyaml-format.sh \
-            --output "$RUNNER_TEMP/kyaml-format.sh"
-          echo "5fddd58fc8cbd2b68766ef5b4b5ba39f299da3f27252ae6cdcff0a641bbaef18  $RUNNER_TEMP/kyaml-format.sh" | sha256sum --check --strict
       # Container narrowing at mint (build/just/container.just) can delete any
       # of these files. The template (archetypes/ present) must keep all of
       # them; a minted repository checks the ones it kept and names the rest.
@@ -267,3 +284,9 @@ jobs:
           set -euo pipefail
           bash tests/workflows/squabble_gate_test.sh
           bash scripts/check-required-contexts.sh .
+      # The three scanner contexts, their least privilege and their pinning are
+      # this repository's own: a job-level reusable wrapper would make them the
+      # CALLEE's job names, and `secrets: inherit` would forward every secret to
+      # a scanner that declares none. Every property is mutated in the test.
+      - name: Secret scanner contract (three stable contexts)
+        run: bash tests/workflows/secret_scanner_contract_test.sh
