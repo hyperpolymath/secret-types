@@ -52,6 +52,17 @@ module _ (V : Observer 𝓛) where
     ≈-trans : ∀ {s s' s''} → s ≈ s' → s' ≈ s'' → s ≈ s''
     ≈-trans p q x v = trans (p x v) (q x v)
 
+    -- Every store agrees with itself.
+    ≈-refl : ∀ {s} → s ≈ s
+    ≈-refl _ _ = refl
+
+    -- Carry an agreement to the stores two finishing runs returned.  The runs'
+    -- results are read through `just-injective`, a retraction, never by matching
+    -- `just a ≡ just b` against `refl`: that match needs constructor injectivity,
+    -- which `--cubical-compatible` refuses (PROOF-POLICY §2.1).
+    ≈-just : ∀ {s s' t t'} → just s ≡ just t → just s' ≡ just t' → s ≈ s' → t ≈ t'
+    ≈-just e e' eq = subst (λ u → _ ≈ u) (just-injective e') (subst (λ u → u ≈ _) (just-injective e) eq)
+
     -- A program counter V cannot see stays unseen in any branch it guards.
     unseen-⊔ : ∀ {pc} y → ¬ sees pc → ¬ sees (pc ⊔ y)
     unseen-⊔ y np v = np (sees-↓ (⊔-upper₁ _ y) v)
@@ -95,8 +106,8 @@ module _ (V : Observer 𝓛) where
   confineL  : ∀ {ℓ e c} fuel {s t} → ¬ sees ℓ → ℓ ⊢ c
             → exec fuel (while e c) s ≡ just t → t ≈ s
 
-  confine fuel np skip refl _ _ = refl
-  confine fuel {s} np (assign {x = x} {e = e} ok) refl = confine-assign x e (eval s e) s np ok
+  confine fuel np skip e = ≈-just e refl ≈-refl
+  confine fuel {s} np (assign {x = x} {e = g} ok) e = ≈-just e refl (confine-assign x g (eval s g) s np ok)
   confine fuel np (seq t₁ t₂) e with bind-just _ _ e
   ... | s₁ , (e₁ , e₂) = ≈-trans (confine fuel np t₂ e₂) (confine fuel np t₁ e₁)
   confine fuel np (ifz {e = g} t₁ t₂) e = confineIf fuel (eval _ g) (unseen-⊔ (lab g) np) t₁ t₂ e
@@ -108,7 +119,7 @@ module _ (V : Observer 𝓛) where
 
   confineW fuel zero np t e with bind-just _ _ e
   ... | s₁ , (e₁ , e₂) = ≈-trans (confineL fuel np t e₂) (confine fuel np t e₁)
-  confineW fuel (suc _) np t refl _ _ = refl
+  confineW fuel (suc _) np t e = ≈-just e refl ≈-refl
 
   confineL           zero       np t ()
   confineL {e = g} (suc fuel) {s} np t e = confineW fuel (eval s g) np t e
@@ -140,8 +151,8 @@ module _ (V : Observer 𝓛) where
          → (pc ⊔ lab e) ⊢ c → s ≈ s'
          → execWhile fuel (eval s e) e c s ≡ just t → execWhile fuel' (eval s' e) e c s' ≡ just t' → t ≈ t'
 
-  tini fuel fuel' skip eq refl refl = eq
-  tini fuel fuel' (assign {x = x} {e = g} ok) eq refl refl = tini-assign x g ok eq
+  tini fuel fuel' skip eq e e' = ≈-just e e' eq
+  tini fuel fuel' (assign {x = x} {e = g} ok) eq e e' = ≈-just e e' (tini-assign x g ok eq)
   tini fuel fuel' (seq t₁ t₂) eq e e' with bind-just _ _ e | bind-just _ _ e'
   ... | s₁ , (e₁ , e₂) | s₁' , (e₁' , e₂') = tini fuel fuel' t₂ (tini fuel fuel' t₁ eq e₁ e₁') e₂ e₂'
   tini fuel fuel' (ifz {pc} {g} t₁ t₂) eq e e' =
@@ -170,6 +181,6 @@ module _ (V : Observer 𝓛) where
     go : ∀ n {m} → n ≡ m → execWhile fuel n g c s ≡ just t → execWhile fuel' m g c s' ≡ just t' → t ≈ t'
     go zero    refl e e' with bind-just _ _ e | bind-just _ _ e'
     ... | s₁ , (e₁ , e₂) | s₁' , (e₁' , e₂') = tini fuel fuel' (while tc) (tini fuel fuel' tc eq e₁ e₁') e₂ e₂'
-    go (suc n) refl refl refl = eq
+    go (suc n) refl e e' = ≈-just e e' eq
   tiniW {pc} {g} fuel fuel' {s} {s'} (no nv) tc eq e e' =
     ≈-trans (confineW fuel (eval s g) nv tc e) (≈-trans eq (≈-sym (confineW fuel' (eval s' g) nv tc e')))
