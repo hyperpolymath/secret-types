@@ -55,8 +55,9 @@ compared by hand below.
 
 Every theorem below is printed with its axioms (§8.4):
 
-* Rocq: `Print Assumptions` reports `Closed under the global context` for all
-  11. The prelude's classical axioms are not loaded, so none can enter.
+* Rocq: `Print Assumptions` reports `Closed under the global context` for
+  all 11 theorems. The prelude's classical axioms are not loaded, so none can
+  enter.
 * Lean: `#print axioms` (in `lean/Axioms.lean`) reports
   `does not depend on any axioms` for all 11. In particular, no `propext`,
   `Quot.sound` or `Classical.choice`.
