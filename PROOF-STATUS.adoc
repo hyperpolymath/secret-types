@@ -118,12 +118,21 @@ Its `#waivers` section is empty of open waivers. It keeps W-1
 (`--cubical-compatible`) as retired, with the evidence for the waiver and the
 re-representations that closed it.
 
-CI: the whole gate — core proofs, expected rejections, the laws certificate, the
-receipt drift check and the receipt emit — is green on `8e421cc`, run
-link:https://github.com/hyperpolymath/secret-types/actions/runs/41327614303[41327614303].
-That run is also the evidence for the two Agda changes the flag attempt forced
-(`just-inj` removed as dead code, `_≟_` re-expressed through `pred`), which is why
-they are recorded rather than quietly folded in.
+CI: the whole gate, under the flags above with `--cubical-compatible`, is green
+on `b64974c` under the pinned Agda 2.6.4.3, run
+link:https://github.com/hyperpolymath/secret-types/actions/runs/42633550884[42633550884].
+The gate covers the core proofs, the expected rejections, the laws certificate,
+the receipt drift check and the receipt emit. That run was on the branch of
+hyperpolymath/secret-types#30. A later commit on that branch changed only these
+records and the receipt generator, not the proof sources or the flags. The first
+green `proofs.yml` run on `main` after the merge is the run the receipt rests on.
+
+Earlier run, kept as the evidence for what it showed: run
+link:https://github.com/hyperpolymath/secret-types/actions/runs/41327614303[41327614303]
+on `8e421cc`, under the flags *without* `--cubical-compatible`. It is the
+evidence for the two Agda changes the 2026-11-01 flag attempt forced (`just-inj`
+removed as dead code, `_≟_` re-expressed through `pred`), which is why those
+changes are recorded rather than quietly folded in.
 
 == Fragment (stated before the claims)
 

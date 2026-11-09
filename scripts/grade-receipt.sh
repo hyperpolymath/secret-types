@@ -69,6 +69,12 @@ source_commit="${commit_override:-$(git rev-parse --short=12 HEAD 2>/dev/null ||
 agda_version="$(proof_agda_pin)"
 agda_from="$(proof_agda_provenance)"
 flag_line="$(proof_flags_line)"
+# Conformance is read off the flags the gate actually runs, never written by
+# hand: drop the flag and the receipt says "absent", so --check reports drift.
+case " $flag_line " in
+  *" --cubical-compatible "*) cubical_compatible="met" ;;
+  *)                          cubical_compatible="absent" ;;
+esac
 
 # Print the Agda module paths under src/SecretTypes in sorted order.
 modules() { find src/SecretTypes -name '*.agda' | LC_ALL=C sort; }
@@ -122,7 +128,7 @@ emit() {
   printf '  (conformance\n    :policy "standards/3-practice/PROOF-POLICY.adoc"\n'
   printf '    :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01"\n'
   printf '    :canonical-invocation "agda --safe --without-K --cubical-compatible"\n'
-  printf '    :cubical-compatible "met"\n    :waiver-history "docs/proof-debt.adoc#waivers (W-1, retired)"\n'
+  printf '    :cubical-compatible "%s"\n    :waiver-history "docs/proof-debt.adoc#waivers (W-1, retired)"\n' "$cubical_compatible"
   printf '    :stronger-than-canonical ("--no-libraries" "--ignore-interfaces" "--double-check" "-W error"))\n'
   printf '  (gate\n    :command "bash scripts/check.sh"\n    :laws-certificate "bash scripts/minimal-laws.sh"\n'
   printf '    :ci ".github/workflows/proofs.yml"\n    :module-count %s\n    :reject-fixture-count %s)\n' "$(modules | wc -l | tr -d ' ')" "$(fixtures | wc -l | tr -d ' ')"
