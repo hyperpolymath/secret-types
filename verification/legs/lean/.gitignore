@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 .lake/
 # Written by `lake build`; with no `require` it lists no package, and it is not
 # JCS-serialised (estate JSON policy), so it is not committed.
