@@ -27,6 +27,17 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 ** `docs/EXPLAINME.adoc` listed `--cubical-compatible` among the checker flags
    while the flag was waived; that line is now true.
 
+* **Mint machinery synced to rsr-template-repo 2be7b88.** estate-rules was red:
+  the inherited `tests/e2e/use_template_mint_test.sh` (template c481073)
+  re-minted this already-minted tree and failed on an unfilled token. The
+  template fixed that in #275, #291, #293 and #294; files this repository held
+  byte-identical to c481073 now take the template's current version, diverged
+  files were three-way merged, and the inline three-scanner secret workflow
+  (#295) replaces the reusable caller. Kept as this repository's own: the
+  governance caller (#15), the verdict-grid pin (standards 8e48b1c, which
+  renders; the template's e064539 does not), the rule-order checker and its
+  policy, README and `mise.toml` (plus `yq`).
+
 * **The template's gates could not fail, and the toolchain was not minted.**
   Reported from JuliaPackageSpitter.jl and traced here; see
   `docs/reports/compliance/RSR-TEMPLATE-DAMAGE-2026-10-30.adoc` for the full
