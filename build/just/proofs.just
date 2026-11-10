@@ -40,7 +40,7 @@ proof-check-coq:
 proof-scan-dangerous:
     @bash scripts/scan-dangerous.sh
 
-# Regenerate the Grade-3 verification receipt (mathesis §6; PROOF-STATUS
+# Regenerate the verification receipt (PROOF-POLICY §8 Proof Witness Grades; PROOF-STATUS
 # "Grade, and the independent-witness legs"). CI runs the --check form, so a
 # committed receipt that no longer matches the tree fails the gate.
 proof-receipt:

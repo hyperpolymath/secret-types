@@ -9,7 +9,11 @@
 #
 #   Proof Witness Grades: standards/3-practice/PROOF-POLICY.adoc §8 (owner
 #   ruling 2026-11-04).  PWG-3: the Agda proof is PROVEN under the §2.1
-#   invocation and no Rocq or Lean leg counts yet.  The record carries the
+#   invocation.  PWG-2ii: PWG-3, and both the Rocq and the Lean leg count:
+#   kernel-checked (scripts/check-legs.sh, no axioms) and RECONCILED against
+#   the Agda statement (verification/legs/README.adoc).  Not PWG-1: that needs
+#   a per-commit receipt of each checker's observed result, which this file
+#   is not.  The record carries the
 #   §8.5 fields: pwg, foundation-diverse, and for each leg its route, its §5
 #   token and its §2.2 correspondence state.  A grade is derived, never
 #   asserted (§8.4): it is computed below from the legs, not typed in.
@@ -57,20 +61,20 @@ done
 # | RECONCILED | COUNTEREXAMPLE | QUARANTINED.  Only RECONCILED counts (§8.2).
 claims() {
   cat <<'ROWS'
-N-1|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
-N-2|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
-N-3|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
+N-1|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
+N-2|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
+N-3|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
 N-4|tested-only|demonstration|n/a|n/a|n/a|n/a
 N-5|tested-only|demonstration|n/a|n/a|n/a|n/a
 N-6|tested-only|demonstration|n/a|n/a|n/a|n/a
-N-7|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
-N-8|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
-N-9|proven|theorem|unavailable|AGDA-VERIFIED|unavailable|AGDA-VERIFIED
+N-7|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
+N-8|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
+N-9|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
 ROWS
 }
 
 # PROOF-POLICY §8.2: derive the grade from the Agda token and the legs.  A leg
-# counts only when it is RECONCILED (§2.2); none exists yet, so no leg counts.
+# counts only when it is RECONCILED (§2.2).
 # Print the PWG for one claim row's token, kind and two legs' §2.2 states.
 pwg_of() {
   local token="$1" kind="$2" coq_state="$3" lean_state="$4" counted=0
@@ -126,6 +130,42 @@ check_claim_ids() {
   fi
 }
 
+# The leg sources, in sorted order: everything a leg's kernel reads.
+leg_sources() {
+  find verification/legs/rocq -name '*.v' | LC_ALL=C sort
+  find verification/legs/lean -name '*.lean' -not -path '*/.lake/*' | LC_ALL=C sort
+  printf '%s\n' verification/legs/lean/lakefile.toml verification/legs/lean/lean-toolchain
+}
+
+# Print the (legs) block: per leg, the pinned checker, its invocation, the
+# axiom check, and the sha256 of every input.  The pins are read from
+# scripts/check-legs.sh, the one place the gate takes them from.
+emit_legs() {
+  local coq lean
+  coq="$(sed -n 's/^COQ_VERSION=\(.*\)$/\1/p' scripts/check-legs.sh)"
+  lean="$(sed -n 's/^LEAN_VERSION=\(.*\)$/\1/p' scripts/check-legs.sh)"
+  printf '  (legs\n    :gate "bash scripts/check-legs.sh"\n    :ci ".github/workflows/proofs.yml (job legs)"\n'
+  printf '    :correspondence "verification/legs/README.adoc"\n'
+  printf '    :route "re-proved"\n'
+  printf '    :route-reason "Agda2Dedukti is an Agda backend pinned to a fork (b026db1, GHC 8.10) and cannot run on Agda %s; no released Dedukti/Lambdapi exporter to Lean 4, and no pinned route to Rocq"\n' "$agda_version"
+  printf '    :state "RECONCILED"\n'
+  printf '    :review "statement comparison written by Claude Code; provisional until owner review (estate doctrine 4)"\n'
+  printf '    (leg :prover "rocq" :checker "coqc" :version "%s" :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)" :libraries "none (no Require)" :axioms "none (Print Assumptions: Closed under the global context)")\n' "$coq"
+  printf '    (leg :prover "lean" :checker "lean" :version "%s" :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)" :libraries "none (lakefile has no require; no Mathlib)" :axioms "none (#print axioms: does not depend on any axioms)")\n' "$lean"
+  printf '    (inputs\n'
+  while read -r p; do
+    printf '      (input :path "%s" :sha256 "%s")\n' "$p" "$(sha256sum "$p" | cut -d' ' -f1)"
+  done < <(leg_sources)
+  printf '    ))\n'
+}
+
+# A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
+# (scripts/check-legs.sh), so it is proven; any other state is still open.
+leg_token() {
+  local state="$1"
+  [[ "$state" == RECONCILED ]] && printf 'proven' || printf 'open'
+}
+
 # Print the derived receipt, including claim rows, module hashes and fixtures.
 emit() {
   printf ';; SPDX-License-Identifier: CC-BY-SA-4.0\n'
@@ -155,13 +195,14 @@ emit() {
   printf '    :library-dependencies 0\n    :axioms-assumed 0\n'
   printf '    :note "A non-zero count above fails the gate; the receipt is only meaningful while all four are zero")\n'
   printf '  ; PROOF-POLICY section 8: grades apply to theory theorems; demonstrations are ungraded.\n'
-  printf '  ; Rocq and Lean legs are unavailable: no transport or hand re-proof exists yet, so no leg counts.\n'
+  printf '  ; Rocq and Lean legs: re-proved by hand (Agda2Dedukti cannot run on the pinned Agda), RECONCILED in verification/legs/README.adoc.\n'
+  emit_legs
   printf '  (claims\n'
   while IFS='|' read -r id token kind coq coq_state lean lean_state; do
     if [[ "$kind" == theorem ]]; then
       printf '    (claim :id "%s" :token "%s" :kind "%s" :pwg "%s" :foundation-diverse #f\n' "$id" "$token" "$kind" "$(pwg_of "$token" "$kind" "$coq_state" "$lean_state")"
-      printf '      (leg :prover "rocq" :route "%s" :token "open" :state "%s" :receipts ())\n' "$coq" "$coq_state"
-      printf '      (leg :prover "lean" :route "%s" :token "open" :state "%s" :receipts ()))\n' "$lean" "$lean_state"
+      printf '      (leg :prover "rocq" :route "%s" :token "%s" :state "%s" :receipts ())\n' "$coq" "$(leg_token "$coq_state")" "$coq_state"
+      printf '      (leg :prover "lean" :route "%s" :token "%s" :state "%s" :receipts ()))\n' "$lean" "$(leg_token "$lean_state")" "$lean_state"
     else
       printf '    (claim :id "%s" :token "%s" :kind "%s" :pwg "%s")\n' "$id" "$token" "$kind" "$(pwg_of "$token" "$kind" "$coq_state" "$lean_state")"
     fi
@@ -177,7 +218,23 @@ emit() {
   printf '  )\n)\n'
 }
 
+# A RECONCILED leg must have a row in the correspondence record, and a claim
+# with a correspondence row must count its legs: the grade is derived from
+# the §2.2 record, not typed beside it (PROOF-POLICY §8.4).
+check_leg_records() {
+  local rec=verification/legs/README.adoc counted recorded
+  counted="$(claims | awk -F'|' '$5=="RECONCILED"||$7=="RECONCILED"{print $1}' | LC_ALL=C sort)"
+  recorded="$(grep -oE '^\| N-[0-9]+$' "$rec" 2>/dev/null | tr -d '| ' | LC_ALL=C sort -u || true)"
+  if [[ "$counted" != "$recorded" ]]; then
+    echo "ERROR: claims with a RECONCILED leg differ from the rows of $rec" >&2
+    diff <(printf '%s\n' "$recorded") <(printf '%s\n' "$counted") \
+      | grep -E '^[<>]' | sed "s|^<|  only in $rec:|; s/^>/  only in grade-receipt.sh:/" >&2
+    exit 1
+  fi
+}
+
 check_claim_ids
+check_leg_records
 
 case "$mode" in
   --write|"")

@@ -100,13 +100,17 @@ only tested or still open. Tokens are the standard's closed vocabulary.
   the public result for finishing. This refutes the current rules, not every
   possible termination-sensitive typing discipline.
 
-| Independent recheck in Rocq and in Lean (PROOF-POLICY §2)
-| open
-| —
-| `PROOF-STATUS.adoc` "Proof Witness Grades, and the independent-witness legs",
-  `verification/receipts/agda_praxis.deed`
-| No transport has been attempted and no hand re-proof exists, so every proven
-  theorem above is `PWG-3` (PROOF-POLICY §8) and no higher. The template skeletons under
+| Independent recheck of N-1, N-2, N-3, N-7, N-8 and N-9 in Rocq and in Lean
+  (PROOF-POLICY §2)
+| proven
+| `bash scripts/check-legs.sh` (Coq 8.18.0 and Lean 4.24.0, each pinned; no
+  library; every theorem printed with its axioms, and there are none)
+| `verification/legs/rocq/SecretTypes.v`, `verification/legs/lean/`;
+  correspondence in `verification/legs/README.adoc`
+| Re-proved by hand, not transported: Agda2Dedukti cannot run on the pinned
+  Agda. The statement comparison was written by Claude Code and is provisional
+  until the owner reviews it. With it, every proven row above is at `PWG-2ii`
+  (PROOF-POLICY §8). The template skeletons under
   `verification/proofs/{coq,lean4}` are *not* these legs and prove nothing here.
 
 | Strengthened termination-sensitive typing discipline

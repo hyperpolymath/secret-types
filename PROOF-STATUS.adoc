@@ -26,10 +26,13 @@ invocation, which this repository has met since waiver W-1 closed.
 |===
 | Claim | PWG | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | `PWG-3` | The Agda proof is PROVEN under the §2.1
-  invocation (receipt below). No Rocq leg and no Lean leg exists, so no leg
-  counts (§8.2). No axioms: `--safe`, a postulate scan of the import cone, and the
-  recorded cone. `foundation-diverse`: no.
+| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-2ii`* | PROVEN under the canonical
+  invocation `agda --safe --without-K --cubical-compatible`, with stronger flags
+  besides (`scripts/proof-flags.sh`), and both §2 legs count: re-proved in Rocq
+  and in Lean, kernel-checked with no axioms, `RECONCILED` (below). Not
+  `PWG-1`: that needs a per-commit receipt of each checker's observed result,
+  and the receipt records the gate, not its result. `foundation-diverse` is
+  false: Agda, Rocq and Lean are all dependent type theories (§8.3).
 
 | N-4, N-5, N-6 | `ungraded` | TESTED demonstrations (refusals, computed
   witnesses, a law-ablation certificate), not theorems; §8.1 grades theory
@@ -40,43 +43,51 @@ N-9 is a proved *refutation*: termination-sensitive noninterference is false for
 the current typing rules when finishing versus non-finishing is observable. A
 stronger typing discipline is OPEN, and so is declassification.
 
-A grade is not a discharge (§8.4.1): at `PWG-3` every theorem above still owes
-its Rocq and Lean legs (§2).
+No theorem rests on an axiom (§8.4, "axioms travel with the grade"). In Agda:
+`postulates = 0` and `escape-hatches = 0` in the receipt, under `--safe`. In
+Rocq, `Print Assumptions` reports `Closed under the global context` for every
+leg theorem; in Lean, `#print axioms` reports `does not depend on any axioms`.
 
-=== The two legs, recorded honestly
+=== The two legs
 
 `PROOF-POLICY.adoc` §2 requires every Agda theory proof to be rechecked in Rocq
 and in Lean, by transport through Dedukti first and by hand re-proof as the
-fallback, with the route named per theorem. Neither leg exists here, and the
-policy is explicit that a policy's adoption is not an execution: each row below
-would need its own CI receipt.
+fallback, with the route named per theorem. Both legs exist since 2026-11-09.
+Their §2.2 record (statements, universe discipline, versions, invocations,
+assumptions) is link:verification/legs/README.adoc[`verification/legs/README.adoc`];
+`bash scripts/check-legs.sh` checks them, and CI runs it as the `legs` job.
 
-[cols="1,1,1,3",options="header"]
+[cols="1,1,1,1,3",options="header"]
 |===
-| Claim | Rocq leg | Lean leg | Record
+| Claim | Rocq leg | Lean leg | §2.2 state | Record
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | `unavailable` (`OPEN`) | `unavailable` (`OPEN`)
-| No Agda→Dedukti transport and no hand re-proof has been attempted from this
-  repository yet. §2.2 state of each: `AGDA-VERIFIED`. Nothing was skipped
-  silently: this is the opening state, stated.
+| N-1, N-2, N-3, N-7, N-8, N-9 | `re-proved`, PROVEN | `re-proved`, PROVEN
+| `RECONCILED`
+| Transport is not available: Agda2Dedukti is an Agda backend pinned to a fork
+  of Agda and cannot run on 2.6.4.3, and there is no released Dedukti or
+  Lambdapi exporter to Lean 4. So each leg restates the Agda theorem and proves
+  it by hand: Coq 8.18.0 with the prelude only, Lean 4.24.0 with core only (no
+  Mathlib). The statement comparison was written by Claude Code and is
+  provisional until the owner reviews it (estate doctrine 4).
 
-| all rows | — | —
-| *A leg that does not exist cannot be evidenced by a file that happens to be
-  present.* `verification/proofs/coq/TypeSafety.v`,
+| N-4, N-5, N-6 | n/a | n/a | n/a
+| Checked demonstrations, not theorems (§8.1).
+
+| all rows | — | — | —
+| *A file that happens to be present is not a leg.*
+  `verification/proofs/coq/TypeSafety.v`,
   `verification/proofs/lean4/ApiTypes.lean` and the other skeletons under
   `verification/proofs/` are RSR template boilerplate ("replace with your
   project's …"). They prove nothing, they are not the legs, and their
-  `MANIFEST` lines claiming `gated` are false — no workflow invokes
+  `MANIFEST` lines claiming `gated` are false: no workflow invokes
   `scripts/check-proofs.sh`. Recorded as finding F-4 in
   link:docs/reports/audit/consistency-audit-2026-11-01.adoc.
 |===
 
-When a leg is attempted, `PROOF-POLICY` §2.2 fixes the record: exact
-proposition, assumptions, universe discipline, source revision, compiler and
-library versions, invocation, observed result, and the bridge or statement
-correspondence — *transported* or *re-proved* — and the correspondence states
-AGDA-VERIFIED / COQ-CHECKED / LEAN-CHECKED / BRIDGE-PENDING before RECONCILED.
-Only a RECONCILED leg raises the grade.
+The receipt's `(legs)` block records each leg's pinned checker, invocation and
+axiom check, and the `sha256` of every leg source, so a change to a leg cannot
+leave the receipt intact. `scripts/grade-receipt.sh` also refuses a claim that
+counts a leg without a row in the correspondence record, and the reverse.
 
 === The §2.1 invocation, and how waiver W-1 closed
 
