@@ -127,41 +127,72 @@ The record below is kept as it was written, for provenance.
 *Obligation.* `agda --safe --without-K --cubical-compatible <module>` is the
 canonical invocation for first-party Agda theory entrypoints.
 
-*State.* **Met.** `scripts/proof-flags.sh` carries `--cubical-compatible` beside
-`--safe --without-K --no-libraries --ignore-interfaces --double-check -W error`,
-and `scripts/check.sh` and `scripts/minimal-laws.sh` pass under it: core proofs,
-all four expected rejections at their intended declarations, and the
-laws certificate. With `-W error`, any `-WUnsupportedIndexedMatch` fails the
-gate, so the flag cannot be nominally on while the check is off.
+*State.* `--safe` and `--without-K` are in the gate. `--cubical-compatible` is
+**not**, and cannot be added without changing the development or weakening the
+check.
 
-*History.* Three CI runs on 2026-11-01 adopted the flag and then reported why it
-would not stay (Agda `2.6.4.3`, `agda-bin=2.6.4.3-1+b2`):
+*Evidence, from three CI runs on 2026-11-01 that adopted the flag and then had to
+report why it would not stay.* The flag was added, the Agda pin was unchanged
+(`2.6.4.3`, `agda-bin=2.6.4.3-1+b2`), and the gate went red three times:
 
-. `Prelude.agda:43` `just-inj`: injectivity of `just`. Fixed then: dead code,
-  deleted.
-. `Prelude.agda:91` `_≟_`: injectivity of `suc`. Fixed then: `suc-dec` pulls
-  the answer back along `pred`, which computes definitionally.
-. `Lattice.agda:46` `⊑-trans`: every clause matching the two-point order was an
-  indexed match on `_⊑_`. Fixed then (arm B1): `_⊑_` became a computed
-  predicate (`L ⊑ _ = ⊤`, `H ⊑ H = ⊤`, `H ⊑ L = ⊥`). Its one cost is that a
-  witness such as `L⊑H` no longer pins its target label by its type, so
-  `Countermodels.NoDownClosure` names its indices (`h {x = L} {y = H}`).
+. `Prelude.agda:43` `just-inj` — *"relies on injectivity of the data constructor
+  `just`, which is not yet supported"*. **Fixed**: the lemma was dead code and
+  was deleted.
+. `Prelude.agda:91` `_≟_` — *"relies on injectivity of the data constructor
+  `suc`"*. **Fixed**: `suc-dec` decides the predecessors and pulls the answer
+  back along `pred`, which computes definitionally, so no injectivity rule is
+  needed.
+. `Lattice.agda:46` `⊑-trans` — the same warning class, this time because every
+  clause that matches on the two-point order is an **indexed match** on `_⊑_`.
+  **Not fixed.** This is not incidental: `_⊑_` is an indexed family with three
+  constructors and no elimination principle other than matching, and `⊑-trans`,
+  `⊔-upper₁`, `⊔-upper₂` and the `principal` observer all match on it. Cubical
+  Agda does not support indexed matching; the warning says so and offers
+  `-W[no]UnsupportedIndexedMatch`.
 
-That left 13 warnings, all `injectivity of the data constructor just`, in `tini`,
-`go`, `confine` and `confineW`. They came from matching an equation
-`exec fuel c s ≡ just t` against `refl`. This record used to say that only a
-relational big-step semantics would remove them (arm B2), and that this would
-restate N-5 and reshape N-1/N-7, an owner decision about the theorem.
+*Two arms, labelled — and one of them has since been taken part of the way.*
 
-*How it closed (2026-11-09).* That was not necessary. The proofs no longer match
-such an equation. `SecretTypes.Prelude` defines `from-just` and
-`just-injective e = cong (from-just a) e`, a retraction: both sides of
-`cong (from-just a) e` reduce to the two values, so no injectivity rule is used.
-This is the same technique `suc-dec` already uses with `pred`. In
-`Noninterference.Generic` the six affected clauses go through one helper,
-`≈-just : just s ≡ just t → just s′ ≡ just t′ → s ≈ s′ → t ≈ t′`, built from
-`just-injective` and `subst`. The semantics, N-5 and every theorem statement are
-unchanged, and the receipt's module hashes record the two changed modules.
+* *Arm A — keep the flag off and record this waiver.* The gate stays at
+  `--safe --without-K --no-libraries --ignore-interfaces --double-check -W error`:
+  four dimensions stricter than the canonical invocation, one flag absent. The
+  absent flag is the one whose absence cannot hide an unsoundness here — it
+  constrains compatibility with cubical transports, not the truth of the present
+  theorems. The waiver stands, but it is **narrower than it was** (see below).
+* *Arm B — re-represent so that nothing needs index unification.* Two parts:
+  * *B1, done 2026-11-01.* `_⊑_` was an indexed family
+    (`data _⊑_ : Label → Label → Set where L⊑L; L⊑H; H⊑H`), so matching any
+    proof asked for injectivity of the index constructors `L`/`H`. It is now a
+    **computed predicate** — `L ⊑ _ = ⊤`, `H ⊑ H = ⊤`, `H ⊑ L = ⊥` — with the
+    laws proved by computation. The order still says exactly what it said, an
+    impossible flow is still `⊥` (so the three expected-rejection fixtures still
+    fail at their `⊑` obligation, checked), and the `H`-injectivity warnings are
+    **gone**: 16 → 13. One cost, recorded at the refutation that needs it: a
+    witness such as `L⊑H` no longer *pins* its target label by its type (since
+    `L ⊑ y` is `⊤` for every `y`), so `Countermodels.NoDownClosure` names its
+    indices explicitly (`h {x = L} {y = H}`).
+  * *B2, not attempted.* The 13 remaining warnings are all
+    `injectivity of the data constructor just`, in `tini`, `go`, `confine` and
+    `confineW`. They come from matching an equation of the form
+    `exec fuel c s ≡ just t`, where `exec` computes to `just v` and Agda must
+    solve `t := v` — constructor injectivity, and the cubical-unsupported step.
+    Two shortcuts were measured and do not work: a record-returning semantics
+    warns on the *record* constructor instead (probe file, 2026-11-01), and
+    threading the result as a variable fixes the equations it touches but not
+    the ones inside the clauses. The technique that does work is to stop putting
+    computed results in equality at all: restate the big-step semantics as a
+    **relation** (`data c , s ⇓ t`) and match derivations, which unify a variable
+    index against a constructor term instead of two constructor terms. That is a
+    research change with a named consequence: **N-5** (termination-insensitivity
+    is not vacuous) currently exhibits a program whose run returns `nothing`,
+    a computation; under a relational semantics divergence is the *absence* of a
+    derivation, so N-5 would need a new non-derivability argument. It also
+    changes the shape of N-1/N-7. That is an owner decision about the statement
+    of the theorem, not a refactor to slip into a flag change.
+*What would make the waiver wrong.* If `-WUnsupportedIndexedMatch` were ever
+suppressed in the gate, this waiver would become a lie — the flag would be
+nominally on and the check off. The gate does not suppress it, and
+`scripts/proof-flags.sh` is the single place the flags live, so that change
+could not happen by accident.
 
 *Consequence for the grade (as written on 2026-11-01, superseded).* It said the
 grade was unaffected, under the brief's "Grade 3". `PROOF-POLICY` §8 (2026-11-04)

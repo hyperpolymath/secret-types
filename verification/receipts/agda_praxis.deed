@@ -13,7 +13,7 @@
     :uuid-source "uuid5(URL, github.com/hyperpolymath/secret-types)"
     :uuid-note "F-1 remains open: template mint-path cause and local scaffolding sweep; see docs/reports/audit/consistency-audit-2026-11-01.adoc"
     :kind "theory"
-    :source-commit "18cbabfa6bd0")
+    :source-commit "ba2484fb7abc")
   (prover
     :tool "agda"
     :version "2.6.4.3"
