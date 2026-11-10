@@ -4,16 +4,16 @@
 ;; This describes the gate and tree; the CI log is the execution evidence.
 (praxis-deed
   :schema-version "1.0.0"
-  :canonical-name "secret-types-agda-pwg-receipt"
+  :canonical-name "secret-types-agda-receipt"
   (identity
     :project "secret-types"
-    :name "agda verification receipt (Proof Witness Grades)"
+    :name "Agda verification receipt with Proof Witness Grades"
     :repository "hyperpolymath/secret-types"
     :repo-uuid #u5"github.com/hyperpolymath/secret-types"
     :uuid-source "uuid5(URL, github.com/hyperpolymath/secret-types)"
     :uuid-note "F-1 remains open: template mint-path cause and local scaffolding sweep; see docs/reports/audit/consistency-audit-2026-11-01.adoc"
     :kind "theory"
-    :source-commit "efb9aa9ab390")
+    :source-commit "18cbabfa6bd0")
   (prover
     :tool "agda"
     :version "2.6.4.3"
@@ -24,10 +24,13 @@
     :flags-note "One definition, read by the gate and by this receipt; the receipt cannot describe a gate that did not run")
   (conformance
     :policy "standards/3-practice/PROOF-POLICY.adoc"
-    :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01; section 8 (PWG) dated 2026-11-04"
+    :policy-repository "hyperpolymath/standards"
+    :policy-commit "9bdf864cc7f2c8e24b4df84bf00d04158eee3ad5"
+    :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01; section 8 (PWG) 2026-11-04"
     :canonical-invocation "agda --safe --without-K --cubical-compatible"
-    :cubical-compatible "met"
-    :met-since "2026-11-09; W-1 closed, docs/proof-debt.adoc#waivers"
+    :cubical-compatible "in-force"
+    :flag-control "tests/flag-control/IndexedMatch.agda"
+    :closed-waiver "W-1, docs/proof-debt.adoc#waivers"
     :stronger-than-canonical ("--no-libraries" "--ignore-interfaces" "--double-check" "-W error"))
   (gate
     :command "bash scripts/check.sh"
@@ -41,7 +44,7 @@
     :library-dependencies 0
     :axioms-assumed 0
     :note "A non-zero count above fails the gate; the receipt is only meaningful while all four are zero")
-  ; PWGs apply to theory theorems (PROOF-POLICY section 8.1); refusal fixtures and leak witnesses are n/a.
+  ; PROOF-POLICY section 8: grades apply to theory theorems; demonstrations are ungraded.
   ; Rocq and Lean legs: re-proved by hand (Agda2Dedukti cannot run on the pinned Agda), RECONCILED in verification/legs/README.adoc.
   (legs
     :gate "bash scripts/check-legs.sh"
@@ -64,15 +67,27 @@
       (input :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335")
     ))
   (claims
-    (claim :id "N-1" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
-    (claim :id "N-2" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
-    (claim :id "N-3" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
-    (claim :id "N-4" :token "tested-only" :pwg "n/a" :coq-leg "n/a" :lean-leg "n/a")
-    (claim :id "N-5" :token "tested-only" :pwg "n/a" :coq-leg "n/a" :lean-leg "n/a")
-    (claim :id "N-6" :token "tested-only" :pwg "n/a" :coq-leg "n/a" :lean-leg "n/a")
-    (claim :id "N-7" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
-    (claim :id "N-8" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
-    (claim :id "N-9" :token "proven" :pwg "2ii" :coq-leg "re-proved" :lean-leg "re-proved")
+    (claim :id "N-1" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
+    (claim :id "N-2" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
+    (claim :id "N-3" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
+    (claim :id "N-4" :token "tested-only" :kind "demonstration" :pwg "ungraded")
+    (claim :id "N-5" :token "tested-only" :kind "demonstration" :pwg "ungraded")
+    (claim :id "N-6" :token "tested-only" :kind "demonstration" :pwg "ungraded")
+    (claim :id "N-7" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
+    (claim :id "N-8" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
+    (claim :id "N-9" :token "proven" :kind "theorem" :pwg "2ii" :foundation-diverse #f
+      (leg :prover "rocq" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ())
+      (leg :prover "lean" :route "re-proved" :token "proven" :state "RECONCILED" :receipts ()))
   )
   ; Every module hash is checked against the current tree.
   (modules
@@ -83,10 +98,10 @@
     (module :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
     (module :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
     (module :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
-    (module :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "7c86fcc801e256a2c4869c5ccc8302a93daa0a882e2493056e68b329ff79602a")
+    (module :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
     (module :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
     (module :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
-    (module :path "src/SecretTypes/Prelude.agda" :sha256 "5fea408acc63e0c91a293463913ef8f167a722cc1665f7a7010b26c8520c4072")
+    (module :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
     (module :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
     (module :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
     (module :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")

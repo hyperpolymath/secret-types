@@ -80,7 +80,8 @@ jobs:
       - name: Emit the receipt for this commit
         run: |
           bash scripts/grade-receipt.sh --write --commit "$(git rev-parse --short=12 HEAD)"
-          sed -n '1,80p' verification/receipts/agda-pwg_praxis.deed
+          sed -n '1,80p' verification/receipts/agda_praxis.deed
+
   # The Rocq and Lean recheck legs (PROOF-POLICY §2), re-proved by hand from
   # the Agda statements (verification/legs/README.adoc gives the route and the
   # statement correspondence). Both provers are pinned: Coq by its Ubuntu

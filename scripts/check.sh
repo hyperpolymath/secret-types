@@ -69,3 +69,21 @@ for file in "${rejects[@]}"; do
   echo "PASS: rejected $name at its invalid declaration"
 done
 echo "PASS: core proofs and all ${#rejects[@]} expected rejections"
+
+# Flag control: the canonical invocation must actually be in force.  The
+# fixture is a correct proof that only --cubical-compatible refuses (it needs
+# constructor injectivity, -WUnsupportedIndexedMatch, fatal under -W error).
+# If the flag were dropped from scripts/proof-flags.sh, the fixture would be
+# accepted and this step would fail.
+control=tests/flag-control/IndexedMatch.agda
+log=_build/check-logs/IndexedMatch.log
+if "$prover" "${flags[@]}" -i tests/flag-control "$control" >"$log" 2>&1; then
+  echo 'ERROR: flag control accepted: --cubical-compatible is not in force' >&2
+  exit 1
+fi
+if ! grep -q 'UnsupportedIndexedMatch' "$log"; then
+  cat "$log"
+  echo 'ERROR: flag control failed for a reason other than --cubical-compatible' >&2
+  exit 1
+fi
+echo 'PASS: flag control (--cubical-compatible is in force: an injectivity match is refused)'

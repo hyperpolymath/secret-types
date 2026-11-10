@@ -13,21 +13,22 @@
 # Conformance: standards/3-practice/PROOF-POLICY.adoc §2.1 (2026-11-01) sets
 #   agda --safe --without-K --cubical-compatible <module.agda>
 # as the estate default for first-party Agda theory entrypoints.  Every flag
-# below is that default, or strictly stronger:
+# below is that default, or strictly stronger; all three default flags are in
+# force:
 #
 #   --safe               policy default.  No postulates, no --type-in-type,
 #                        no termination pragmas, no unsafe features.
 #   --without-K          policy default.  No UIP, no Streicher K.  (Implied by
 #                        --cubical-compatible; kept explicit so the intent
 #                        survives a future flag change.)
-#   --cubical-compatible policy default.  Met since 2026-11-09: no clause relies
-#                        on constructor injectivity.  The `just` results of
-#                        finishing runs are read through `just-injective`, a
-#                        retraction (SecretTypes.Prelude), and the two-point
-#                        order is a computed predicate.  -W error makes any
-#                        -WUnsupportedIndexedMatch fatal, so a regression fails
-#                        the gate rather than weakening it.  History:
-#                        docs/proof-debt.adoc#waivers (W-1, closed).
+#   --cubical-compatible policy default.  In force since W-1 closed: the last
+#                        clauses that needed constructor injectivity (matching
+#                        `refl` against `exec … ≡ just t`) now read the result
+#                        through Prelude.just-inj, which matches nothing.  The
+#                        gate does NOT suppress -WUnsupportedIndexedMatch, and
+#                        -W error makes any return of such a clause fatal: a
+#                        planted `refl` match fails the gate (exit 42).
+#                        History: docs/proof-debt.adoc#waivers, W-1 (closed).
 #   --no-libraries       stronger.  Builtins only; no Agda standard library and
 #                        no sibling repository is on the path.  The policy's
 #                        "no Mathlib" rule (PROOF-POLICY §2) is the Lean form of

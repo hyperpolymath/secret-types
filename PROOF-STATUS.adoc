@@ -2,28 +2,27 @@
 = secret-types — Proof Status
 :revdate: 2026-11-09
 
-Statuses: PROVEN / TESTED / ASSUMED / DESIGNED / OPEN, with the closed ledger
-tokens of `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 in
+Statuses are the closed vocabulary of `standards/3-practice/PROOF-POLICY.adoc`
+§5 (PROVEN / PROVEN-WITH-AXIOMS / TESTED / ASSUMED / OPEN), with the matching
+ledger tokens of `standards/docs/README-EXPLAINME-STANDARD.adoc` §5 in
 link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger]. Every PROVEN line names
-its module. All modules are `--safe --without-K --no-libraries`, checked with
-`--double-check` and `-W error` by
-`scripts/check.sh`, no postulates. The flag set and the Agda pin live in exactly
-one place, `scripts/proof-flags.sh`, so this file, the gate and the receipt
-cannot disagree. CI: TESTED. `.github/workflows/proofs.yml` (Debian 13,
-`agda-bin=2.6.4.3-1+b2`) ran both gates green on f149e08, run
-https://github.com/hyperpolymath/secret-types/actions/runs/39289501788[39289501788],
-whose log ends `PASS: minimal-laws certificate (3 laws, each needed)`.
+its module. Every module is checked by `scripts/check.sh` under the §2.1
+canonical invocation, `agda --safe --without-K --cubical-compatible`, and four
+stricter flags (`--no-libraries --ignore-interfaces --double-check -W error`),
+with no postulates. The flag set and the Agda pin live in exactly one place,
+`scripts/proof-flags.sh`, so this file, the gate and the receipt cannot
+disagree, and a flag-control fixture proves the flag is really in force.
 
 == Proof Witness Grades, and the independent-witness legs
 
-Grades here are `PROOF-POLICY.adoc` §8 Proof Witness Grades (owner ruling
-2026-11-04), always written with their `PWG-` prefix. Until 2026-11-09 this file
-said "mathesis Grade 3". §8 replaced that wording, and §8.2 makes `PWG-3`
-conditional on the §2.1 invocation, which this repository did not meet until
-W-1 closed (below). Before 2026-11-09 the honest grade of every row was
-therefore `ungraded`, not 3.
+Grades here are the estate's *Proof Witness Grades*, `PROOF-POLICY.adoc` §8
+(owner ruling 2026-11-04): `PWG-3`, `PWG-2i`, `PWG-2ii`, `PWG-1`, lower is
+stronger, `ungraded` below the ladder. They are derived from the receipt, never
+asserted (§8.4). This file previously said "mathesis Grade 3", the unratified
+brief's wording; §8 supersedes it, and its `PWG-3` additionally needs the §2.1
+invocation, which this repository has met since waiver W-1 closed.
 
-[cols="1,2,2",options="header"]
+[cols="1,1,3",options="header"]
 |===
 | Claim | PWG | Why not higher
 
@@ -32,17 +31,17 @@ therefore `ungraded`, not 3.
   besides (`scripts/proof-flags.sh`), and both §2 legs count: re-proved in Rocq
   and in Lean, kernel-checked with no axioms, `RECONCILED` (below). Not
   `PWG-1`: that needs a per-commit receipt of each checker's observed result,
-  and the receipt records the gate, not its result. `foundation_diverse` is
+  and the receipt records the gate, not its result. `foundation-diverse` is
   false: Agda, Rocq and Lean are all dependent type theories (§8.3).
 
-| N-4, N-5, N-6 | n/a | They are checked demonstrations (refusals, computed
-  witnesses, a shell-orchestrated law-ablation certificate), not theory
-  theorems. §8.1 grades theorems only.
-
-| Termination-sensitive noninterference under the current typing rules | REFUTED | N-9
-  formalizes the N-5 counterexample when finishing versus non-finishing is
-  observable. A stronger typing discipline remains open. Declassification is OPEN.
+| N-4, N-5, N-6 | `ungraded` | TESTED demonstrations (refusals, computed
+  witnesses, a law-ablation certificate), not theorems; §8.1 grades theory
+  theorems only.
 |===
+
+N-9 is a proved *refutation*: termination-sensitive noninterference is false for
+the current typing rules when finishing versus non-finishing is observable. A
+stronger typing discipline is OPEN, and so is declassification.
 
 No theorem rests on an axiom (§8.4, "axioms travel with the grade"). In Agda:
 `postulates = 0` and `escape-hatches = 0` in the receipt, under `--safe`. In
@@ -90,45 +89,48 @@ axiom check, and the `sha256` of every leg source, so a change to a leg cannot
 leave the receipt intact. `scripts/grade-receipt.sh` also refuses a claim that
 counts a leg without a row in the correspondence record, and the reverse.
 
-=== The canonical invocation is met: `--cubical-compatible` (W-1, closed)
+=== The §2.1 invocation, and how waiver W-1 closed
 
 `PROOF-POLICY` §2.1 (dated 2026-11-01) names
-`agda --safe --without-K --cubical-compatible` as the canonical invocation. The
-gate now runs it, with `--no-libraries --ignore-interfaces --double-check -W
-error` besides, so any `-WUnsupportedIndexedMatch` is fatal rather than
-suppressed.
+`agda --safe --without-K --cubical-compatible` as the canonical invocation. It is
+in force. Adopting it took two rounds:
 
-Two changes made the flag hold; neither changes a statement. The two-point
-order became a computed predicate on 2026-11-01 (W-1 arm B1). On 2026-11-09 the
-last class of warnings went: the proofs used to match an equation
-`exec fuel c s ≡ just t` against `refl`, which needs injectivity of `just`. They
-now read the result through `just-injective`, a retraction
-(`cong (from-just a)`, `SecretTypes.Prelude`), the same move `suc-dec` makes with
-`pred`. W-1 had said only a relational semantics would do (arm B2), at the cost
-of restating N-5; that turned out to be unnecessary, and the semantics, N-5 and
-every theorem statement are unchanged. The record is in
-link:docs/proof-debt.adoc#waivers[`docs/proof-debt.adoc` W-1].
+* *2026-11-01.* Two constructor-injectivity lemmas were removed or re-expressed
+  (`just-inj` deleted, `_≟_` through `pred`), and the two-point order became a
+  computed predicate (`L ⊑ _ = ⊤`, `H ⊑ L = ⊥`), which removed every
+  `L`/`H`-injectivity warning. Thirteen warnings remained, all
+  `just`-injectivity in `Noninterference.Generic`, from matching `refl`
+  against `exec … ≡ just t`. The flag was waived (W-1), on the belief that only
+  a relational big-step semantics could remove them.
+* *2026-11-09.* That belief was wrong, and was measured rather than argued. The
+  thirteen clauses now read the run's result through `Prelude.just-inj`, defined
+  by `cong` through a computing projection, which needs no unification rule. The
+  statements, the semantics and every fixture are unchanged. Conversely, a
+  relational semantics alone would *not* have been enough: a probe proving
+  determinism of `c , s ⇓ t` raised 22 `UnsupportedIndexedMatch` warnings,
+  because inverting two derivations of one command needs injectivity of `Cmd`'s
+  constructors.
+
+The warning is never suppressed. `tests/flag-control/IndexedMatch.agda` is a
+correct proof that only `--cubical-compatible` refuses; `scripts/check.sh` fails
+if it is ever accepted, so dropping the flag cannot pass the gate (tested both
+ways). W-1 is kept, closed, in link:docs/proof-debt.adoc#waivers[`docs/proof-debt.adoc`].
 
 === What the grade is anchored to
 
-`verification/receipts/agda-pwg_praxis.deed`, generated by
-`scripts/grade-receipt.sh` and checked in CI, records the exact source commit,
-the Agda pin and provenance, the flag set, the `sha256` of every module (the
-import cone: builtins only), the claim IDs with their ledger tokens, PWGs and
-legs, and the trust-base counts (`postulates = 0`, `escape-hatches = 0`,
-`library-dependencies = 0`, `axioms-assumed = 0`). A change to a proved statement
-cannot leave the receipt intact; a claim added here cannot leave the receipt
-intact either, in either direction.
+`verification/receipts/agda_praxis.deed`, generated by `scripts/grade-receipt.sh`
+and checked in CI, records the exact source commit, the Agda pin and provenance,
+the flag set, the `PROOF-POLICY` commit it reads (`hyperpolymath/standards`
+`9bdf864cc7f2c8e24b4df84bf00d04158eee3ad5`), the `sha256` of every module (the
+import cone of `SecretTypes.All`), the trust-base counts (`postulates = 0`,
+`escape-hatches = 0`, `library-dependencies = 0`, `axioms-assumed = 0`), and for
+each claim its ledger token, its derived `pwg`, `foundation-diverse`, and each
+leg's route, token and §2.2 state (§8.5). A change to a proved statement cannot
+leave the receipt intact; a claim added here cannot leave the receipt intact
+either, in either direction.
 
 Proof debt, in the four dispositions the trusted-base policy requires, is
 link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted.
-Its `#waivers` section now carries no open waiver; W-1 is kept there, closed,
-as the record of how the flag came to hold.
-
-CI history: the gate without `--cubical-compatible` was green on `8e421cc`, run
-link:https://github.com/hyperpolymath/secret-types/actions/runs/41327614303[41327614303],
-which is also the evidence for the two Agda changes the first flag attempt
-forced (`just-inj` removed as dead code, `_≟_` re-expressed through `pred`).
 
 == Fragment (stated before the claims)
 

@@ -39,22 +39,28 @@ data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- The value inside a `just`, with a default for `nothing`.  `just` is a
--- constructor, so `from-just d (just a)` computes to `a` definitionally.
+-- Injectivity of `just`, stated so that --cubical-compatible accepts it
+-- (PROOF-POLICY §2.1).  The obvious definition, matching `refl` against
+-- `just a ≡ just b`, asks the unifier for constructor injectivity, which
+-- Agda 2.6.4.3 refuses under that flag:
+--
+--   warning: -W[no]UnsupportedIndexedMatch ... It relies on injectivity of
+--   the data constructor just, which is not yet supported
+--
+-- An earlier copy of that definition was deleted on 2026-11-01 for this
+-- reason.  This one matches nothing: it projects the equation through
+-- `from-just`, which computes, so no unification rule is needed.  The
+-- TINI proof (Noninterference.Generic) uses it wherever a finishing run's
+-- result must be read off `exec … ≡ just t`.
+
+-- The value inside a `just`, or the default for `nothing`.
 from-just : {A : Set} → A → Maybe A → A
 from-just d nothing  = d
 from-just d (just a) = a
 
--- Injectivity of `just`, as a retraction rather than a rule.  Matching
--- `just a ≡ just b` against `refl` asks for constructor injectivity, which
--- Cubical Agda does not support (`-WUnsupportedIndexedMatch`; fatal under the
--- canonical flags, scripts/proof-flags.sh).  Here `cong (from-just a) e :
--- from-just a (just a) ≡ from-just a (just b)`, and both sides *reduce* to `a`
--- and `b` — the same move as `suc-dec` below makes with `pred`.  Every proof
--- that needs the value out of a finishing run goes through this lemma and
--- never matches such an equation directly.
-just-injective : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
-just-injective {a = a} e = cong (from-just a) e
+-- Equal `just`s have equal contents.
+just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
+just-inj {a = a} e = cong (from-just a) e
 
 -- Pass a present value to f and return its result; propagate nothing
 -- without applying f when the input is absent.
@@ -125,3 +131,4 @@ dec-stable (no ¬p) h = ⊥-elim (h ¬p)
 -- Excluded middle holds under double negation, for every proposition.
 ¬¬-dec : (P : Set) → ¬ ¬ Dec P
 ¬¬-dec P k = k (no λ p → k (yes p))
+

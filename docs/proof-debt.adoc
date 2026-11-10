@@ -18,7 +18,7 @@ empty, and that emptiness is *enforced* rather than asserted. `scripts/check.sh`
 refuses the build if any `.agda` file under `src/SecretTypes` or `tests`
 contains `postulate`, and the same tree is compiled with `--safe`, which
 independently refuses `postulate`, `{-# TERMINATING #-}`, `{-# NON_TERMINATING #-}`
-and `--type-in-type`. `verification/receipts/agda-pwg_praxis.deed` records the
+and `--type-in-type`. `verification/receipts/agda_praxis.deed` records the
 counts (`postulates = 0`, `escape-hatches = 0`) *derived from the tree*, and CI
 fails if they move.
 
@@ -95,8 +95,7 @@ places is a claim the gate does not support.
 [[waivers]]
 == Waivers — obligations this repository does not meet
 
-None is open. W-1 is kept below, closed, as the record of how the obligation
-came to be met.
+None open. W-1 below is closed and kept for its evidence.
 
 A waiver is not an escape hatch inside a proof and not proof debt. It is an
 obligation the *policy* sets that this repository does not yet satisfy, recorded
@@ -105,6 +104,25 @@ the mapped option was not used (`PROOF-POLICY.adoc` §4 asks for exactly that
 shape when a mapped prover is not the right fit).
 
 === W-1 `--cubical-compatible` (PROOF-POLICY §2.1, dated 2026-11-01) — CLOSED 2026-11-09
+
+*Closed.* The flag is in force in `scripts/proof-flags.sh`, and therefore in the
+gate, the laws certificate and the receipt. The 13 remaining warnings below
+(`just`-injectivity in `Noninterference.Generic`) were removed without arm B2: each
+clause now reads the run's result through `Prelude.just-inj`, defined by `cong`
+through the computing projection `from-just`, which needs no unification rule.
+No statement, semantics or fixture changed. The flag is proved to be in force by
+`tests/flag-control/IndexedMatch.agda`, a correct proof that only the flag
+refuses; `scripts/check.sh` fails if it is ever accepted, and removing the flag
+from `scripts/proof-flags.sh` was tested to fail the gate.
+
+The premise of arm B2 below also turned out to be false. A relational semantics
+does not by itself satisfy the flag: a probe proving determinism of
+`c , s ⇓ t` raised 22 `UnsupportedIndexedMatch` warnings, because inverting two
+derivations of one command needs injectivity of `Cmd`'s constructors. A big-step
+relation is still planned, as a second semantics with an adequacy theorem
+(`exec` finishes iff `⇓` holds), not as a replacement and not for this flag.
+
+The record below is kept as it was written, for provenance.
 
 *Obligation.* `agda --safe --without-K --cubical-compatible <module>` is the
 canonical invocation for first-party Agda theory entrypoints.
@@ -145,12 +163,7 @@ This is the same technique `suc-dec` already uses with `pred`. In
 `just-injective` and `subst`. The semantics, N-5 and every theorem statement are
 unchanged, and the receipt's module hashes record the two changed modules.
 
-*What would make this record wrong.* If `-WUnsupportedIndexedMatch` were
-suppressed in the gate, the flag would be nominally on and the check off. The
-gate does not suppress it, and `scripts/proof-flags.sh` is the single place the
-flags live.
-
-*Consequence for the grade.* Before this closed, the proved rows were
-`ungraded` under `PROOF-POLICY` §8.2, which makes `PWG-3` conditional on the §2.1
-invocation; this file said "Grade 3" at the time. They are now `PWG-3`. The
-receipt records `cubical-compatible = "met"`.
+*Consequence for the grade (as written on 2026-11-01, superseded).* It said the
+grade was unaffected, under the brief's "Grade 3". `PROOF-POLICY` §8 (2026-11-04)
+then required the §2.1 invocation for `PWG-3`, so while W-1 was open the theorems
+were `ungraded`. Closing W-1 is what makes them `PWG-3`.

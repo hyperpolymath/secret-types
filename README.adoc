@@ -37,7 +37,7 @@ worth stating because it was measured on 2026-11-01:
 link:https://github.com/metadatastician/lintel[`metadatastician/lintel`] imports
 `SecretTypes.{Prelude,Vars,Lattice.Record,Lang,Noninterference.Generic}`, defines
 `reader-sets : Lattice`, and opens the generic TINI at it, so the estate does
-have a mechanised consumer of this calculus. It is pinned at `ee01db4`; Lintel's
+have a mechanised consumer of this calculus. It is pinned at `d1d843b`; Lintel's
 own gate was run against this repository's HEAD on 2026-11-01 and passes, so the
 lattice re-representation described in link:docs/proof-debt.adoc#waivers[the
 proof-debt record] is non-breaking for it. Recording a consumer that exists is
@@ -88,9 +88,9 @@ it. Not `PWG-1`: no per-commit receipt captures each checker's observed result
 yet. Not `+foundation-diverse`: no witness outside dependent type theory.
 Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger],
 the machine record is
-link:verification/receipts/agda-pwg_praxis.deed[`verification/receipts/agda-pwg_praxis.deed`]
+link:verification/receipts/agda_praxis.deed[`verification/receipts/agda_praxis.deed`]
 (checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
-dispositions. This paragraph states no grade the ledger does not support.
+dispositions. This paragraph states no grade the receipt does not support.
 
 == Where things belong
 
