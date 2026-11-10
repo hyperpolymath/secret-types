@@ -161,7 +161,10 @@ emit_legs() {
 
 # A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
 # (scripts/check-legs.sh), so it is proven; any other state is still open.
-leg_token() { [[ "$1" == RECONCILED ]] && printf 'proven' || printf 'open'; }
+leg_token() {
+  local state="$1"
+  [[ "$state" == RECONCILED ]] && printf 'proven' || printf 'open'
+}
 
 # Print the derived receipt, including claim rows, module hashes and fixtures.
 emit() {

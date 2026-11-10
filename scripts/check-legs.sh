@@ -23,9 +23,9 @@ LEAN_VERSION=4.24.0
 fail=0
 
 got="$(coqc --version | sed -n 's/^The Coq Proof Assistant, version \([0-9.]*\).*/\1/p')"
-[ "$got" = "$COQ_VERSION" ] || { echo "ERROR: expected Coq $COQ_VERSION, found '${got:-none}'" >&2; exit 2; }
+[[ "$got" == "$COQ_VERSION" ]] || { echo "ERROR: expected Coq $COQ_VERSION, found '${got:-none}'" >&2; exit 2; }
 got="$(lean --version | sed -n 's/^Lean (version \([0-9.]*\),.*/\1/p')"
-[ "$got" = "$LEAN_VERSION" ] || { echo "ERROR: expected Lean $LEAN_VERSION, found '${got:-none}'" >&2; exit 2; }
+[[ "$got" == "$LEAN_VERSION" ]] || { echo "ERROR: expected Lean $LEAN_VERSION, found '${got:-none}'" >&2; exit 2; }
 
 # The Lean leg may not depend on anything: no `require` in the lakefile.
 if grep -nE '^\s*\[\[require\]\]|^\s*require\b' verification/legs/lean/lakefile.toml; then
@@ -43,7 +43,7 @@ fi
 rocq_out="$(cd verification/legs/rocq && coqc -q SecretTypes.v 2>&1)" || { echo "$rocq_out" >&2; echo 'FAIL: the Rocq leg does not check' >&2; exit 1; }
 n_closed="$(grep -c '^Closed under the global context$' <<< "$rocq_out" || true)"
 n_print="$(grep -c '^Print Assumptions ' verification/legs/rocq/SecretTypes.v)"
-if [ "$n_closed" != "$n_print" ] || grep -vq '^Closed under the global context$' <<< "$rocq_out"; then
+if [[ "$n_closed" != "$n_print" ]] || grep -vq '^Closed under the global context$' <<< "$rocq_out"; then
   echo "$rocq_out" >&2; echo "FAIL: the Rocq leg rests on an axiom ($n_closed of $n_print closed)" >&2; fail=1
 else
   echo "PASS: Rocq leg (Coq $COQ_VERSION), $n_print theorems closed under the global context"
@@ -53,7 +53,7 @@ lean_out="$(cd verification/legs/lean && lake build >/dev/null && lake env lean 
   || { echo "$lean_out" >&2; echo 'FAIL: the Lean leg does not check' >&2; exit 1; }
 n_free="$(grep -c 'does not depend on any axioms$' <<< "$lean_out" || true)"
 n_ax="$(grep -c '^#print axioms ' verification/legs/lean/Axioms.lean)"
-if [ "$n_free" != "$n_ax" ] || grep -vq 'does not depend on any axioms$' <<< "$lean_out"; then
+if [[ "$n_free" != "$n_ax" ]] || grep -vq 'does not depend on any axioms$' <<< "$lean_out"; then
   echo "$lean_out" >&2; echo "FAIL: the Lean leg rests on an axiom ($n_free of $n_ax free)" >&2; fail=1
 else
   echo "PASS: Lean leg (Lean $LEAN_VERSION, core only), $n_ax theorems depend on no axioms"
