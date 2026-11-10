@@ -34,34 +34,31 @@ cong₂ f refl refl = refl
 -- Transport evidence for the predicate P along an equality of its indices.
 subst : {A : Set} (P : A → Set) {a b : A} → a ≡ b → P a → P b
 subst P refl p = p
--- Transport evidence for a two-place predicate along equalities of both indices.
-subst₂ : {A B : Set} (P : A → B → Set) {a a' : A} {b b' : B} → a ≡ a' → b ≡ b' → P a b → P a' b'
-subst₂ P refl refl p = p
 
 data Maybe (A : Set) : Set where
   nothing : Maybe A
   just    : A → Maybe A
 
--- Injectivity of `just`, cubical-compatibly.  The lemma defined by matching
--- (`just-inj (refl) = refl`, deleted 2026-11-01 as dead code) is refused under
--- the canonical flag set (scripts/proof-flags.sh, --cubical-compatible per
--- PROOF-POLICY §2.1):
+-- Injectivity of `just`, stated so that --cubical-compatible accepts it
+-- (PROOF-POLICY §2.1).  The obvious definition, matching `refl` against
+-- `just a ≡ just b`, asks the unifier for constructor injectivity, which
+-- Agda 2.6.4.3 refuses under that flag:
 --
---   warning: -W[no]UnsupportedIndexedMatch
---   This clause uses pattern-matching features that are not yet supported by
---   Cubical Agda ... Reason: It relies on injectivity of the data constructor
---   just, which is not yet supported
+--   warning: -W[no]UnsupportedIndexedMatch ... It relies on injectivity of
+--   the data constructor just, which is not yet supported
 --
--- and so was every clause of the TINI proof that matched `refl : just s ≡ just t`
--- (docs/proof-debt.adoc W-1, retired).  This version never matches on that
--- equation: it applies `cong` to a total projection, and `cong` matches `refl`
--- only against a variable.  `from-just d` returns the payload, or d for nothing.
--- Suppressing the warning, or dropping the flag, would have bought a green gate
--- with a weaker check; this is the cubical-compatible formulation instead.
+-- An earlier copy of that definition was deleted on 2026-11-01 for this
+-- reason.  This one matches nothing: it projects the equation through
+-- `from-just`, which computes, so no unification rule is needed.  The
+-- TINI proof (Noninterference.Generic) uses it wherever a finishing run's
+-- result must be read off `exec … ≡ just t`.
+
+-- The value inside a `just`, or the default for `nothing`.
 from-just : {A : Set} → A → Maybe A → A
 from-just d nothing  = d
-from-just _ (just a) = a
+from-just d (just a) = a
 
+-- Equal `just`s have equal contents.
 just-inj : {A : Set} {a b : A} → just a ≡ just b → a ≡ b
 just-inj {a = a} e = cong (from-just a) e
 
@@ -134,3 +131,4 @@ dec-stable (no ¬p) h = ⊥-elim (h ¬p)
 -- Excluded middle holds under double negation, for every proposition.
 ¬¬-dec : (P : Set) → ¬ ¬ Dec P
 ¬¬-dec P k = k (no λ p → k (yes p))
+

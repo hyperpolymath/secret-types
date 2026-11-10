@@ -10,6 +10,23 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The canonical Agda invocation is in force, and grades follow PROOF-POLICY §8.**
+** `--cubical-compatible` (PROOF-POLICY §2.1) is in `scripts/proof-flags.sh`, so
+   the gate, the laws certificate and the receipt all run under
+   `--safe --without-K --cubical-compatible`. The thirteen
+   `just`-injectivity clauses in `Noninterference.Generic` read the run's result
+   through `Prelude.just-inj`, defined by `cong`, not by matching. No statement,
+   semantics or fixture changed. Waiver W-1 is closed.
+** `tests/flag-control/IndexedMatch.agda` proves the flag is in force:
+   `scripts/check.sh` fails if that fixture is ever accepted.
+** "mathesis Grade 3" was the unratified brief's wording; the theorems are now
+   recorded as `PWG-3` with the §8.5 fields (`pwg`, `foundation-diverse`, and
+   each leg's route, token and §2.2 state). The receipt moved from
+   `agda-grade3_praxis.deed` to `agda_praxis.deed`, because a grade is derived
+   and can change, and pins the `PROOF-POLICY` commit it reads.
+** `docs/EXPLAINME.adoc` listed `--cubical-compatible` among the checker flags
+   while the flag was waived; that line is now true.
+
 * **Mint machinery synced to rsr-template-repo 2be7b88.** estate-rules was red:
   the inherited `tests/e2e/use_template_mint_test.sh` (template c481073)
   re-minted this already-minted tree and failed on an unfilled token. The

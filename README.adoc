@@ -38,7 +38,7 @@ worth stating because it was measured on 2026-11-01:
 link:https://github.com/metadatastician/lintel[`metadatastician/lintel`] imports
 `SecretTypes.{Prelude,Vars,Lattice.Record,Lang,Noninterference.Generic}`, defines
 `reader-sets : Lattice`, and opens the generic TINI at it, so the estate does
-have a mechanised consumer of this calculus. It is pinned at `ee01db4`; Lintel's
+have a mechanised consumer of this calculus. It is pinned at `d1d843b`; Lintel's
 own gate was run against this repository's HEAD on 2026-11-01 and passes, so the
 lattice re-representation described in link:docs/proof-debt.adoc#waivers[the
 proof-debt record] is non-breaking for it. Recording a consumer that exists is
@@ -77,16 +77,17 @@ Echo fibre over its outputs does not separate secret inputs — the Echo
 reading of noninterference, and the first candidate connection
 Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
-*Grade.* The proved claims are **mathesis Grade 3** and no higher: they
-type-check in Agda under the estate's canonical strict flags
-(`scripts/proof-flags.sh`) and have not been translated to an independent
-foundational system. The Rocq and Lean recheck legs that `PROOF-POLICY.adoc` §2
-requires for Grade 2 do not exist; they are recorded `unavailable`, not skipped
-silently. Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof
-Ledger], the machine record is
-link:verification/receipts/agda-grade3_praxis.deed[`verification/receipts/agda-grade3_praxis.deed`]
+*Grade.* The proved theorems are at **`PWG-3`** (a Proof Witness Grade,
+`standards/3-practice/PROOF-POLICY.adoc` §8) and no higher: they type-check in
+Agda under the canonical §2.1 invocation, `--safe --without-K
+--cubical-compatible`, plus four stricter flags (`scripts/proof-flags.sh`), with
+no axioms. The Rocq and Lean recheck legs that §2 requires do not exist yet, so
+no leg counts; they are recorded `unavailable`, not skipped silently, and a grade
+is not a discharge. Per-claim evidence is in
+link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger], the machine record is
+link:verification/receipts/agda_praxis.deed[`verification/receipts/agda_praxis.deed`]
 (checked in CI), and link:docs/proof-debt.adoc[proof debt] is empty in all four
-dispositions. This paragraph states no grade the ledger does not support.
+dispositions. This paragraph states no grade the receipt does not support.
 
 == Where things belong
 
