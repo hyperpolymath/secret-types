@@ -10,6 +10,23 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The proof receipt has the shape of PROOF-POLICY §8.5.1.** The canon reader
+  (`readProofReceipt`, standards `be39f90`) refused the old receipt
+  (`unexpected clause (identity)`), so no grade could be derived from it.
+** `scripts/grade-receipt.sh` writes `:profile proof-receipt`, a
+   `(trusted-base ...)` and one `(claim ...)` per theorem with its Agda, Rocq
+   and Lean legs and their receipts. Demonstrations N-4, N-5 and N-6 have no
+   claim (§8.1).
+** The receipts come from a run ledger whose rows the CI `receipt` job prints
+   for its own run. `--check` fails when a leg's inputs change after its
+   current receipt's run.
+** `scripts/check-trusted-base.sh` checks that the prover-supplied postulates
+   of the import cone are exactly the listed trusted base (§8.4), with scanner
+   controls in `tests/trusted-base/`.
+** The pinned reader runs in CI with a negative control: a wrong `:pwg` must
+   be refused. The grade is now what the reader derives; until a CI run is
+   recorded, that is `ungraded`.
+
 * **The canonical Agda invocation is in force, and grades follow PROOF-POLICY §8.**
 ** `--cubical-compatible` (PROOF-POLICY §2.1) is in `scripts/proof-flags.sh`, so
    the gate, the laws certificate and the receipt all run under

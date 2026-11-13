@@ -20,6 +20,13 @@ export LC_ALL="${LC_ALL:-C.UTF-8}"
 
 COQ_VERSION=8.18.0
 LEAN_VERSION=4.24.0
+# The invocations, one definition: this script runs them, and
+# scripts/grade-receipt.sh records them as each receipt's :invocation.
+ROCQ_DIR=verification/legs/rocq
+ROCQ_INVOCATION='coqc -q SecretTypes.v'
+LEAN_DIR=verification/legs/lean
+LEAN_BUILD='lake build'
+LEAN_AXIOMS='lake env lean Axioms.lean'
 fail=0
 
 got="$(coqc --version | sed -n 's/^The Coq Proof Assistant, version \([0-9.]*\).*/\1/p')"
@@ -40,7 +47,7 @@ if grep -nE '\b(sorry|admit|Admitted|Axiom|Parameter|axiom)\b' verification/legs
   echo 'FAIL: an escape hatch in a leg' >&2; fail=1
 fi
 
-rocq_out="$(cd verification/legs/rocq && coqc -q SecretTypes.v 2>&1)" || { echo "$rocq_out" >&2; echo 'FAIL: the Rocq leg does not check' >&2; exit 1; }
+rocq_out="$(cd "$ROCQ_DIR" && $ROCQ_INVOCATION 2>&1)" || { echo "$rocq_out" >&2; echo 'FAIL: the Rocq leg does not check' >&2; exit 1; }
 n_closed="$(grep -c '^Closed under the global context$' <<< "$rocq_out" || true)"
 n_print="$(grep -c '^Print Assumptions ' verification/legs/rocq/SecretTypes.v)"
 if [[ "$n_closed" != "$n_print" ]] || grep -vq '^Closed under the global context$' <<< "$rocq_out"; then
@@ -49,7 +56,7 @@ else
   echo "PASS: Rocq leg (Coq $COQ_VERSION), $n_print theorems closed under the global context"
 fi
 
-lean_out="$(cd verification/legs/lean && lake build >/dev/null && lake env lean Axioms.lean 2>&1)" \
+lean_out="$(cd "$LEAN_DIR" && $LEAN_BUILD >/dev/null && $LEAN_AXIOMS 2>&1)" \
   || { echo "$lean_out" >&2; echo 'FAIL: the Lean leg does not check' >&2; exit 1; }
 n_free="$(grep -c 'does not depend on any axioms$' <<< "$lean_out" || true)"
 n_ax="$(grep -c '^#print axioms ' verification/legs/lean/Axioms.lean)"

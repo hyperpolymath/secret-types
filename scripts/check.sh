@@ -36,8 +36,8 @@ echo 'PASS: trusted base (no postulates under src/SecretTypes or tests)'
 
 mapfile -t flags < <(proof_flags)
 flags+=(-i src)
-"$prover" "${flags[@]}" src/SecretTypes/All.agda
-echo 'PASS: core proofs (SecretTypes.All, builtins only)'
+"$prover" "${flags[@]}" "$(proof_agda_root)"
+echo "PASS: core proofs ($(proof_agda_root), builtins only)"
 
 # Expected rejections: each fixture must fail AT its `invalid` declaration
 # with a type mismatch, never for a missing import or a parse error.

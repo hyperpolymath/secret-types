@@ -2,63 +2,53 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 #
-# grade-receipt.sh [--check]
+# grade-receipt.sh: the proof receipt of this repository,
+# verification/receipts/agda_praxis.deed, in the shape of
+# standards/3-practice/PROOF-POLICY.adoc §8.5.1 (profile proof-receipt).
 #
-# Writes (or checks) verification/receipts/agda_praxis.deed: the machine record
-# of this repository's Agda claims, each with its Proof Witness Grade.
+#   --write              write the receipt from the tree and the run ledger
+#   --check              regenerate it, refuse any difference, check that each
+#                        current receipt still describes the tree, and run the
+#                        pinned reader with a negative control
+#   --digest PROVER      print the inputs digest of one leg (agda|rocq|lean)
+#   --run-row PROVER --run URL --commit SHA --checker TEXT --axioms TEXT
+#                        print one ledger row for a run that just passed
+#   --emit-run ROWS --out FILE
+#                        write a receipt for the run whose rows are in ROWS:
+#                        they become current, and the earlier current receipts
+#                        of the same legs become superseded (CI does this)
+#   --fetch-reader       fetch the pinned reader into _build/ and check it
 #
-#   Proof Witness Grades: standards/3-practice/PROOF-POLICY.adoc §8 (owner
-#   ruling 2026-11-04).  PWG-3: the Agda proof is PROVEN under the §2.1
-#   invocation.  PWG-2ii: PWG-3, and both the Rocq and the Lean leg count:
-#   kernel-checked (scripts/check-legs.sh, no axioms) and RECONCILED against
-#   the Agda statement (verification/legs/README.adoc).  Not PWG-1: that needs
-#   a per-commit receipt of each checker's observed result, which this file
-#   is not.  The record carries the
-#   §8.5 fields: pwg, foundation-diverse, and for each leg its route, its §5
-#   token and its §2.2 correspondence state.  A grade is derived, never
-#   asserted (§8.4): it is computed below from the legs, not typed in.
-#
-# The receipt is DERIVED from the tree, never typed by hand, except for the
-# claim list below, which is cross-checked against the claim IDs in
-# PROOF-STATUS.adoc in both directions.  That makes two drifts impossible:
-#   * a module added or changed without the receipt following it, and
-#   * a claim added to PROOF-STATUS.adoc without a ledger token and its legs.
-#
-# What the receipt deliberately does NOT do: it does not run Agda.  It records
-# the gate, the flags and the pinned versions; the gate itself runs in CI
-# (.github/workflows/proofs.yml) and its log is the execution evidence.  A
-# receipt is a statement about which gate produced which result, not a
-# substitute for the result — standards/3-practice/PROOF-POLICY.adoc §2.3.
+# What is derived and what is typed.  Two lists are typed in this file: the
+# claim list (cross-checked against PROOF-STATUS.adoc and
+# verification/legs/README.adoc) and the run ledger (each row copied from the
+# CI log that printed it).  Everything else is read from the one definition
+# the gate also reads: the flags, the root, the invocation and the trusted
+# base from scripts/proof-flags.sh; the leg invocations and pins from
+# scripts/check-legs.sh.  The grade is never typed: it is derived here under
+# §8.2 and derived again by the pinned reader, which refuses a receipt whose
+# :pwg its legs and receipts do not support (§8.4).
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+export LC_ALL=C.UTF-8
 . scripts/proof-flags.sh
 
 out=verification/receipts/agda_praxis.deed
-mode=
-commit_override=
-while (( $# )); do
-  case "$1" in
-    --write|--check) mode="$1" ;;
-    --commit)        commit_override="${2:-}"; shift ;;
-    -h|--help)
-      printf 'usage: %s [--write|--check] [--commit <sha>]\n' "${0##*/}"
-      printf '  --commit records a specific revision instead of HEAD (CI does this,\n'
-      printf '           because a committed receipt can only name its parent)\n'
-      exit 0 ;;
-    *) printf 'unknown argument: %s\n' "$1" >&2; exit 2 ;;
-  esac
-  shift
-done
+repo="hyperpolymath/secret-types"
+
+# The pinned reader: readProofReceipt in standards 1-formats/deed/tools/deed_lint.js
+# (PROOF-POLICY §8.5.1), at the commit and sha256 that Mathesis also pins.
+READER_COMMIT=be39f900665fb7c042c05d1165da018adc1860f4
+READER_SHA256=f7e2b91905f0d99e5cabab59385073afb695be8b9f2d0591257a6a6fd62e25e3
+READER_URL="https://raw.githubusercontent.com/metadatastician/standards/$READER_COMMIT/1-formats/deed/tools/deed_lint.js"
+reader="${DEED_LINT:-_build/deed_lint.js}"
 
 # ── The claim list ────────────────────────────────────────────────────────────
-# id | ledger token (README-EXPLAINME-STANDARD §5 vocabulary) | kind |
-# Rocq route | Rocq §2.2 state | Lean route | Lean §2.2 state.
-# Tokens are the closed vocabulary: proven | proven-with-postulates | tested-only
-# | argued | open.  Kind is theorem (graded, PROOF-POLICY §8.1) or
-# demonstration (a checked example, below the ladder: `ungraded`).  Leg routes
-# are PROOF-POLICY §2 and §8.5: transported | re-proved | waived | unavailable.
-# States are §2.2: AGDA-VERIFIED | COQ-CHECKED | LEAN-CHECKED | BRIDGE-PENDING
-# | RECONCILED | COUNTEREXAMPLE | QUARANTINED.  Only RECONCILED counts (§8.2).
+# id | §5 token of the Agda proof | kind | Rocq route | Rocq §2.2 state |
+# Lean route | Lean §2.2 state.  Kind is theorem (graded, §8.1) or
+# demonstration (a checked example; §8.1 grades theorems only, so a
+# demonstration has no claim in the receipt).  Routes: transported | re-proved
+# | waived | unavailable.  States: §2.2; only RECONCILED counts (§8.2).
 claims() {
   cat <<'ROWS'
 N-1|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
@@ -73,195 +63,320 @@ N-9|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
 ROWS
 }
 
-# PROOF-POLICY §8.2: derive the grade from the Agda token and the legs.  A leg
-# counts only when it is RECONCILED (§2.2).
-# Print the PWG for one claim row's token, kind and two legs' §2.2 states.
+# ── The run ledger ────────────────────────────────────────────────────────────
+# One row per checker run, copied from the log of the run that printed it
+# (the receipt job of .github/workflows/proofs.yml prints the rows of its own
+# run).  One run of a leg checks every theorem, so each row is a receipt of
+# that leg for every claim.
+# prover | run | commit (40 hex) | checker | invocation | inputs sha256 |
+# axioms reported | state (current|superseded|regressed) | reason
+runs() {
+  cat <<'ROWS'
+ROWS
+}
+
+die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+
+# ── Inputs of each leg ────────────────────────────────────────────────────────
+# Every file a leg's checker or gate reads.  A current receipt describes the
+# tree only while the digest of these files is the digest its run recorded.
+inputs() {
+  case "$1" in
+    agda)
+      { find src/SecretTypes -name '*.agda'
+        find tests/reject tests/flag-control tests/trusted-base -type f
+        printf '%s\n' scripts/proof-flags.sh scripts/check.sh scripts/check-trusted-base.sh scripts/scan-agda-postulates.awk
+      } ;;
+    rocq)
+      { find verification/legs/rocq -name '*.v'; printf '%s\n' scripts/check-legs.sh; } ;;
+    lean)
+      { find verification/legs/lean \( -name '*.lean' -o -name lakefile.toml -o -name lean-toolchain \) -not -path '*/.lake/*'
+        printf '%s\n' scripts/check-legs.sh; } ;;
+    *) die "unknown prover: $1" ;;
+  esac | while read -r p; do [[ -f "$p" ]] && printf '%s\n' "$p"; done | LC_ALL=C sort -u
+}
+# The digest of a leg's inputs: sha256 of the sorted "sha256  path" listing.
+digest() { inputs "$1" | xargs -d '\n' sha256sum | sha256sum | cut -d' ' -f1; }
+
+# The invocation each leg's gate runs, read from its one definition.
+legvar() { sed -n "s/^$1='\\{0,1\\}\\([^']*\\)'\\{0,1\\}\$/\\1/p" scripts/check-legs.sh; }
+invocation() {
+  case "$1" in
+    agda) proof_agda_invocation ;;
+    rocq) printf '%s (in %s)\n' "$(legvar ROCQ_INVOCATION)" "$(legvar ROCQ_DIR)" ;;
+    lean) printf '%s; %s (in %s)\n' "$(legvar LEAN_BUILD)" "$(legvar LEAN_AXIOMS)" "$(legvar LEAN_DIR)" ;;
+  esac
+}
+
+# ── Ledger rows ───────────────────────────────────────────────────────────────
+# Validate one row; print nothing.  A field may not hold " or \ (deed strings)
+# and may not be empty, except the reason of a current receipt.
+check_row() {
+  local row="$1" prover run commit checker inv dig ax state reason
+  IFS='|' read -r prover run commit checker inv dig ax state reason <<< "$row"
+  [[ "$(tr -cd '|' <<< "$row" | wc -c)" == 8 ]] || die "a ledger row needs 9 fields: $row"
+  [[ "$row" != *'"'* && "$row" != *'\'* ]] || die "a ledger row holds a quote or backslash: $row"
+  [[ "$prover" =~ ^(agda|rocq|lean)$ ]] || die "unknown prover in row: $row"
+  [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || die "a row's commit must be 40 lowercase hex: $row"
+  [[ "$dig" =~ ^[0-9a-f]{64}$ ]] || die "a row's inputs digest must be a sha256: $row"
+  [[ -n "$run" && -n "$checker" && -n "$inv" && -n "$ax" ]] || die "an empty field in row: $row"
+  case "$state" in
+    current) [[ -z "$reason" ]] || die "a current row carries no reason: $row" ;;
+    superseded|regressed) [[ -n "$reason" ]] || die "a $state row needs a reason: $row" ;;
+    *) die "unknown receipt state in row: $row" ;;
+  esac
+}
+
+# The ledger in force: runs(), plus the rows of $extra (a file) as current;
+# an earlier current row of a prover that $extra covers becomes superseded.
+extra=
+ledger() {
+  local row prover run state
+  local -A replaced=()
+  if [[ -n "$extra" ]]; then
+    while IFS= read -r row; do
+      [[ -n "$row" ]] || continue
+      IFS='|' read -r prover run _ <<< "$row"
+      replaced[$prover]="$run"
+      printf '%s\n' "$row"
+    done < "$extra"
+  fi
+  while IFS= read -r row; do
+    [[ -n "$row" ]] || continue
+    IFS='|' read -r prover _ _ _ _ _ _ state _ <<< "$row"
+    if [[ "$state" == current && -n "${replaced[$prover]:-}" ]]; then
+      printf '%s|superseded|replaced by the later run %s\n' "$(cut -d'|' -f1-7 <<< "$row")" "${replaced[$prover]}"
+    else
+      printf '%s\n' "$row"
+    fi
+  done < <(runs)
+}
+
+# ── Grade (§8.2, the same rules as readProofReceipt) ──────────────────────────
+has_current() { awk -F'|' -v p="$1" '$1==p && $8=="current"{f=1} END{exit !f}' "$ledger_file"; }
+current_field() { awk -F'|' -v p="$1" -v f="$2" '$1==p && $8=="current"{print $f}' "$ledger_file"; }
+canonical() {
+  local w=" $1 "
+  [[ "$w" == *' --safe '* && "$w" == *' --without-K '* ]] && [[ "$w" == *' --cubical-compatible '* || "$w" == *' --cubical '* ]]
+}
 pwg_of() {
-  local token="$1" kind="$2" coq_state="$3" lean_state="$4" counted=0
-  [[ "$kind" == theorem ]] || { printf 'ungraded'; return; }
+  local token="$1" coq_route="$2" coq_state="$3" lean_route="$4" lean_state="$5" n=0 p
   [[ "$token" == proven || "$token" == proven-with-postulates ]] || { printf 'ungraded'; return; }
-  # A leg counts on its §2.2 state, never on its route: a transported or
-  # re-proved leg still BRIDGE-PENDING does not count.
-  [[ "$coq_state" == RECONCILED ]] && counted=$((counted + 1))
-  [[ "$lean_state" == RECONCILED ]] && counted=$((counted + 1))
-  case "$counted" in 0) printf '3' ;; 1) printf '2i' ;; 2) printf '2ii' ;; esac
+  has_current agda && canonical "$(current_field agda 5)" || { printf 'ungraded'; return; }
+  for p in rocq lean; do
+    local route state
+    if [[ $p == rocq ]]; then route="$coq_route" state="$coq_state"; else route="$lean_route" state="$lean_state"; fi
+    [[ "$route" == transported || "$route" == re-proved ]] && [[ "$state" == RECONCILED ]] && has_current "$p" && n=$((n + 1))
+  done
+  case "$n" in
+    0) printf 'PWG-3' ;;
+    1) printf 'PWG-2i' ;;
+    2) if [[ "$(current_field agda 3)" == "$source_commit" && "$(current_field rocq 3)" == "$source_commit" \
+              && "$(current_field lean 3)" == "$source_commit" ]]; then printf 'PWG-1'; else printf 'PWG-2ii'; fi ;;
+  esac
 }
 
-# ── Derived facts ─────────────────────────────────────────────────────────────
-repo="hyperpolymath/secret-types"
-source_commit="${commit_override:-$(git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')}"
-agda_version="$(proof_agda_pin)"
-agda_from="$(proof_agda_provenance)"
-flag_line="$(proof_flags_line)"
-# The standards commit this receipt reads PROOF-POLICY at (section 7 asks a
-# gate to cite the policy by repository, path and full 40-character commit).
-policy_commit="9bdf864cc7f2c8e24b4df84bf00d04158eee3ad5"
-
-# Print the Agda module paths under src/SecretTypes in sorted order.
-modules() { find src/SecretTypes -name '*.agda' | LC_ALL=C sort; }
-# Print the Agda rejection fixture paths under tests/reject in sorted order.
-fixtures() { find tests/reject -name '*.agda' | LC_ALL=C sort; }
-
-# Print matching escape-hatch lines with paths and line numbers from Agda files
-# in the gated trees. Suppress grep errors and return success even with no hits.
-escape_hits() {
-  grep -rn --include='*.agda' -E \
-    '(^|[^A-Za-z])(postulate|believe_me|trustMe|sorry|Admitted)([^A-Za-z]|$)|{-# *(TERMINATING|NON_TERMINATING) *#-}|--type-in-type' \
-    src/SecretTypes tests 2>/dev/null || true
+# ── Emit ──────────────────────────────────────────────────────────────────────
+emit_receipts() {
+  local prover="$1" row p run commit checker inv dig ax state reason
+  # Current first, then the lineage in ledger order.
+  for want in current other; do
+    while IFS= read -r row; do
+      IFS='|' read -r p run commit checker inv dig ax state reason <<< "$row"
+      [[ "$p" == "$prover" ]] || continue
+      if [[ $want == current ]]; then [[ $state == current ]] || continue; else [[ $state != current ]] || continue; fi
+      printf '      ; inputs sha256 %s (bash scripts/grade-receipt.sh --digest %s)\n' "$dig" "$prover"
+      printf '      ; axioms reported: %s\n' "$ax"
+      printf '      (receipt :run "%s"\n' "$run"
+      printf '               :commit "%s"\n' "$commit"
+      printf '               :checker "%s"\n' "$checker"
+      printf '               :invocation "%s"\n' "$inv"
+      if [[ $state == current ]]; then
+        printf '               :state current)\n'
+      else
+        printf '               :state %s\n               :reason "%s")\n' "$state" "$reason"
+      fi
+    done < "$ledger_file"
+  done
 }
 
-# The claim list and PROOF-STATUS.adoc must name exactly the same claims.
-# PROOF-STATUS is the human record; this receipt is the machine one; a claim in
-# one and not the other is drift, in either direction.
-# Exit with an error if claim IDs cannot be read or differ.
+emit() {
+  local id token kind coq coq_state lean lean_state m name binding
+  printf ';; SPDX-License-Identifier: CC-BY-SA-4.0\n'
+  printf ';; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)\n'
+  printf ';; The proof receipt of secret-types (PROOF-POLICY §8.5.1).\n'
+  printf ';; GENERATED by scripts/grade-receipt.sh: regenerate with --write, check with --check.\n'
+  printf ';; Each (receipt ...) is a row of the run ledger in that script, copied from\n'
+  printf ';; the CI log that printed it.  The grade is derived, never typed:\n'
+  printf ';;   bun deed_lint.js --proof-receipt-json verification/receipts/agda_praxis.deed\n'
+  printf ';; with the reader at standards %s.\n' "$READER_COMMIT"
+  printf ';; Demonstrations N-4, N-5 and N-6 are not theorems (§8.1) and have no claim here.\n'
+  printf ';; The trusted base is what scripts/check-trusted-base.sh finds in the\n'
+  printf ';; prover-supplied modules of the import cone of %s.\n' "$(proof_agda_root)"
+  printf '(praxis-deed\n'
+  printf '  :schema-version "1.0.0"\n'
+  printf '  :canonical-name "secret-types-proof-receipt"\n'
+  printf '  :profile proof-receipt\n'
+  printf '  :repository "%s"\n' "$repo"
+  printf '  :source-commit "%s"\n' "$source_commit"
+  printf '  (trusted-base'
+  while IFS='|' read -r m name binding; do
+    printf '\n    (primitive :prover agda :module "%s" :name "%s" :binding "%s")' "$m" "$name" "$binding"
+  done < <(proof_trusted_base)
+  printf ')\n'
+  while IFS='|' read -r id token kind coq coq_state lean lean_state; do
+    [[ "$kind" == theorem ]] || continue
+    printf '  (claim :id "%s" :pwg %s :foundation-diverse #f\n' "$id" "$(pwg_of "$token" "$coq" "$coq_state" "$lean" "$lean_state")"
+    printf '    (leg :prover agda :route source :token %s :state AGDA-VERIFIED' "$token"
+    has_any agda && { printf '\n'; emit_receipts agda | sed '$ s/$/)/'; } || printf ')\n'
+    printf '    (leg :prover rocq :route %s :token %s :state %s' "$coq" "$(leg_token "$coq_state")" "$coq_state"
+    has_any rocq && { printf '\n'; emit_receipts rocq | sed '$ s/$/)/'; } || printf ')\n'
+    printf '    (leg :prover lean :route %s :token %s :state %s' "$lean" "$(leg_token "$lean_state")" "$lean_state"
+    has_any lean && { printf '\n'; emit_receipts lean | sed '$ s/$/))/'; } || printf '))\n'
+  done < <(claims)
+  printf ')\n'
+}
+has_any() { awk -F'|' -v p="$1" '$1==p{f=1} END{exit !f}' "$ledger_file"; }
+# A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
+# (scripts/check-legs.sh refuses any), so it is proven; any other state is open.
+leg_token() { [[ "$1" == RECONCILED ]] && printf 'proven' || printf 'open'; }
+
+# ── Cross-checks of the typed claim list ──────────────────────────────────────
 check_claim_ids() {
   local decl doc
   decl="$(claims | cut -d'|' -f1 | LC_ALL=C sort)"
   doc="$(grep -oE '^\| N-[0-9]+ ' PROOF-STATUS.adoc | tr -d '| ' | LC_ALL=C sort -u || true)"
-  if [[ -z "$doc" ]]; then
-    echo 'ERROR: no claim ids found in PROOF-STATUS.adoc; the table layout changed' >&2
-    exit 1
-  fi
+  [[ -n "$doc" ]] || die 'no claim ids found in PROOF-STATUS.adoc; the table layout changed'
   if [[ "$decl" != "$doc" ]]; then
-    echo 'ERROR: claim ids differ between this receipt and PROOF-STATUS.adoc' >&2
     diff <(printf '%s\n' "$doc") <(printf '%s\n' "$decl") \
       | sed 's/^</  only in PROOF-STATUS.adoc:/; s/^>/  only in grade-receipt.sh:/' >&2
-    exit 1
+    die 'claim ids differ between this receipt and PROOF-STATUS.adoc'
   fi
 }
-
-# The leg sources, in sorted order: everything a leg's kernel reads.
-leg_sources() {
-  find verification/legs/rocq -name '*.v' | LC_ALL=C sort
-  find verification/legs/lean -name '*.lean' -not -path '*/.lake/*' | LC_ALL=C sort
-  printf '%s\n' verification/legs/lean/lakefile.toml verification/legs/lean/lean-toolchain
-}
-
-# Print the (legs) block: per leg, the pinned checker, its invocation, the
-# axiom check, and the sha256 of every input.  The pins are read from
-# scripts/check-legs.sh, the one place the gate takes them from.
-emit_legs() {
-  local coq lean
-  coq="$(sed -n 's/^COQ_VERSION=\(.*\)$/\1/p' scripts/check-legs.sh)"
-  lean="$(sed -n 's/^LEAN_VERSION=\(.*\)$/\1/p' scripts/check-legs.sh)"
-  printf '  (legs\n    :gate "bash scripts/check-legs.sh"\n    :ci ".github/workflows/proofs.yml (job legs)"\n'
-  printf '    :correspondence "verification/legs/README.adoc"\n'
-  printf '    :route "re-proved"\n'
-  printf '    :route-reason "Agda2Dedukti is an Agda backend pinned to a fork (b026db1, GHC 8.10) and cannot run on Agda %s; no released Dedukti/Lambdapi exporter to Lean 4, and no pinned route to Rocq"\n' "$agda_version"
-  printf '    :state "RECONCILED"\n'
-  printf '    :review "statement comparison written by Claude Code; provisional until owner review (estate doctrine 4)"\n'
-  printf '    (leg :prover "rocq" :checker "coqc" :version "%s" :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)" :libraries "none (no Require)" :axioms "none (Print Assumptions: Closed under the global context)")\n' "$coq"
-  printf '    (leg :prover "lean" :checker "lean" :version "%s" :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)" :libraries "none (lakefile has no require; no Mathlib)" :axioms "none (#print axioms: does not depend on any axioms)")\n' "$lean"
-  printf '    (inputs\n'
-  while read -r p; do
-    printf '      (input :path "%s" :sha256 "%s")\n' "$p" "$(sha256sum "$p" | cut -d' ' -f1)"
-  done < <(leg_sources)
-  printf '    ))\n'
-}
-
-# A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
-# (scripts/check-legs.sh), so it is proven; any other state is still open.
-leg_token() {
-  local state="$1"
-  [[ "$state" == RECONCILED ]] && printf 'proven' || printf 'open'
-}
-
-# Print the derived receipt, including claim rows, module hashes and fixtures.
-emit() {
-  printf ';; SPDX-License-Identifier: CC-BY-SA-4.0\n'
-  printf ';; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)\n'
-  printf ';; GENERATED by scripts/grade-receipt.sh; regenerate with --write, check with --check.\n'
-  printf ';; This describes the gate and tree; the CI log is the execution evidence.\n'
-  printf '(praxis-deed\n  :schema-version "1.0.0"\n  :canonical-name "secret-types-agda-receipt"\n'
-  printf '  (identity\n    :project "secret-types"\n    :name "Agda verification receipt with Proof Witness Grades"\n'
-  printf '    :repository "%s"\n    :repo-uuid #u5"github.com/%s"\n' "$repo" "$repo"
-  printf '    :uuid-source "uuid5(URL, github.com/%s)"\n' "$repo"
-  printf '    :uuid-note "F-1 remains open: template mint-path cause and local scaffolding sweep; see docs/reports/audit/consistency-audit-2026-11-01.adoc"\n'
-  printf '    :kind "theory"\n    :source-commit "%s")\n' "$source_commit"
-  printf '  (prover\n    :tool "agda"\n    :version "%s"\n    :provenance "%s"\n' "$agda_version" "$agda_from"
-  printf '    :library "none (--no-libraries; Agda builtins only)"\n    :flags "%s"\n' "$flag_line"
-  printf '    :flags-source "scripts/proof-flags.sh"\n'
-  printf '    :flags-note "One definition, read by the gate and by this receipt; the receipt cannot describe a gate that did not run")\n'
-  printf '  (conformance\n    :policy "standards/3-practice/PROOF-POLICY.adoc"\n'
-  printf '    :policy-repository "hyperpolymath/standards"\n    :policy-commit "%s"\n' "$policy_commit"
-  printf '    :policy-revision "owner ruling 2026-10-26; section 2.1 dated 2026-11-01; section 8 (PWG) 2026-11-04"\n'
-  printf '    :canonical-invocation "agda --safe --without-K --cubical-compatible"\n'
-  printf '    :cubical-compatible "in-force"\n    :flag-control "tests/flag-control/IndexedMatch.agda"\n'
-  printf '    :closed-waiver "W-1, docs/proof-debt.adoc#waivers"\n'
-  printf '    :stronger-than-canonical ("--no-libraries" "--ignore-interfaces" "--double-check" "-W error"))\n'
-  printf '  (gate\n    :command "bash scripts/check.sh"\n    :laws-certificate "bash scripts/minimal-laws.sh"\n'
-  printf '    :ci ".github/workflows/proofs.yml"\n    :module-count %s\n    :reject-fixture-count %s)\n' "$(modules | wc -l | tr -d ' ')" "$(fixtures | wc -l | tr -d ' ')"
-  printf '  (trust-base\n    :postulates %s\n    :escape-hatches %s\n' "$(grep -rlw --include='*.agda' postulate src/SecretTypes tests 2>/dev/null | wc -l | tr -d ' ')" "$(escape_hits | wc -l | tr -d ' ')"
-  printf '    :library-dependencies 0\n    :axioms-assumed 0\n'
-  printf '    :note "A non-zero count above fails the gate; the receipt is only meaningful while all four are zero")\n'
-  printf '  ; PROOF-POLICY section 8: grades apply to theory theorems; demonstrations are ungraded.\n'
-  printf '  ; Rocq and Lean legs: re-proved by hand (Agda2Dedukti cannot run on the pinned Agda), RECONCILED in verification/legs/README.adoc.\n'
-  emit_legs
-  printf '  (claims\n'
-  while IFS='|' read -r id token kind coq coq_state lean lean_state; do
-    if [[ "$kind" == theorem ]]; then
-      printf '    (claim :id "%s" :token "%s" :kind "%s" :pwg "%s" :foundation-diverse #f\n' "$id" "$token" "$kind" "$(pwg_of "$token" "$kind" "$coq_state" "$lean_state")"
-      printf '      (leg :prover "rocq" :route "%s" :token "%s" :state "%s" :receipts ())\n' "$coq" "$(leg_token "$coq_state")" "$coq_state"
-      printf '      (leg :prover "lean" :route "%s" :token "%s" :state "%s" :receipts ()))\n' "$lean" "$(leg_token "$lean_state")" "$lean_state"
-    else
-      printf '    (claim :id "%s" :token "%s" :kind "%s" :pwg "%s")\n' "$id" "$token" "$kind" "$(pwg_of "$token" "$kind" "$coq_state" "$lean_state")"
-    fi
-  done < <(claims)
-  printf '  )\n  ; Every module hash is checked against the current tree.\n  (modules\n'
-  while read -r m; do
-    printf '    (module :path "%s" :sha256 "%s")\n' "$m" "$(sha256sum "$m" | cut -d' ' -f1)"
-  done < <(modules)
-  printf '  )\n  (fixtures\n'
-  while read -r f; do
-    printf '    (fixture :path "%s")\n' "$f"
-  done < <(fixtures)
-  printf '  )\n)\n'
-}
-
-# A RECONCILED leg must have a row in the correspondence record, and a claim
-# with a correspondence row must count its legs: the grade is derived from
-# the §2.2 record, not typed beside it (PROOF-POLICY §8.4).
 check_leg_records() {
   local rec=verification/legs/README.adoc counted recorded
   counted="$(claims | awk -F'|' '$5=="RECONCILED"||$7=="RECONCILED"{print $1}' | LC_ALL=C sort)"
   recorded="$(grep -oE '^\| N-[0-9]+$' "$rec" 2>/dev/null | tr -d '| ' | LC_ALL=C sort -u || true)"
   if [[ "$counted" != "$recorded" ]]; then
-    echo "ERROR: claims with a RECONCILED leg differ from the rows of $rec" >&2
     diff <(printf '%s\n' "$recorded") <(printf '%s\n' "$counted") \
       | grep -E '^[<>]' | sed "s|^<|  only in $rec:|; s/^>/  only in grade-receipt.sh:/" >&2
-    exit 1
+    die "claims with a RECONCILED leg differ from the rows of $rec"
   fi
 }
 
-check_claim_ids
-check_leg_records
+# Prepare $ledger_file and $source_commit.  The source commit is the commit of
+# the current receipts, which must agree; with no current receipt it is
+# $fallback_commit (nothing is graded then, so nothing rests on it).
+prepare() {
+  ledger_file="$(mktemp)"; tmpfiles+=("$ledger_file")
+  ledger > "$ledger_file"
+  local row
+  while IFS= read -r row; do check_row "$row"; done < "$ledger_file"
+  local commits
+  commits="$(awk -F'|' '$8=="current"{print $3}' "$ledger_file" | sort -u)"
+  [[ "$(grep -c . <<< "$commits" || true)" -le 1 ]] || die "the current receipts name different commits: $(tr '\n' ' ' <<< "$commits")"
+  local p
+  for p in agda rocq lean; do
+    [[ "$(awk -F'|' -v p="$p" '$1==p && $8=="current"' "$ledger_file" | wc -l)" -le 1 ]] || die "the $p leg has more than one current row"
+  done
+  source_commit="${commits:-$fallback_commit}"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || die "no 40-hex source commit (got '${source_commit}')"
+}
+
+# Each current receipt must still describe the tree: its inputs digest is the
+# digest of the inputs now.  Otherwise the grade cannot be carried forward
+# (§8.4, regression drops the grade): record a new run, or mark the row
+# superseded or regressed with its reason.
+check_currency() {
+  local p want got
+  for p in agda rocq lean; do
+    has_current "$p" || continue
+    want="$(current_field "$p" 6)"; got="$(digest "$p")"
+    [[ "$want" == "$got" ]] || die "the $p inputs changed since run $(current_field "$p" 2) (recorded $want, now $got): record a new CI run, or mark that row superseded or regressed"
+  done
+}
+
+# Run the pinned reader on $1 and print each claim's derived grade.  Then the
+# negative control: the same receipt with one claim's :pwg changed must be
+# refused, so a reader that stopped deriving grades cannot pass this gate.
+read_with_reader() {
+  local file="$1" json first wrong ctl err
+  command -v bun >/dev/null || die 'bun is needed to run the pinned reader'
+  [[ -f "$reader" ]] || die "the pinned reader is missing at $reader: run bash scripts/grade-receipt.sh --fetch-reader"
+  [[ "$(sha256sum "$reader" | cut -d' ' -f1)" == "$READER_SHA256" ]] || die "$reader is not the pinned reader (sha256 differs)"
+  json="$(bun "$reader" --proof-receipt-json "$file")" || die "the pinned reader refused $file"
+  printf 'PASS: the pinned reader (standards %s) accepts %s\n' "${READER_COMMIT:0:12}" "$file"
+  grep -oE '"source_commit":"[0-9a-f]{40}"' <<< "$json" | sed 's/"source_commit":"\(.*\)"/  source-commit \1/'
+  grep -oE '"id":"[^"]*","pwg":"[^"]*","foundation_diverse":(true|false)' <<< "$json" \
+    | sed -E 's/"id":"([^"]*)","pwg":"([^"]*)","foundation_diverse":(.*)/  \1  \2  foundation-diverse \3/'
+  first="$(grep -m1 -oE ':pwg [A-Za-z0-9-]+' "$file" | cut -d' ' -f2)"
+  case "$first" in PWG-1) wrong=PWG-2ii ;; *) wrong=PWG-1 ;; esac
+  ctl="$(mktemp -d)"; tmpfiles+=("$ctl")
+  awk -v w="$wrong" '!done && /:pwg /{sub(/:pwg [A-Za-z0-9-]+/, ":pwg " w); done=1} {print}' "$file" > "$ctl/control_praxis.deed"
+  if err="$(bun "$reader" --proof-receipt-json "$ctl/control_praxis.deed" 2>&1)"; then
+    die "negative control: the reader accepted a receipt whose first claim records :pwg $wrong"
+  fi
+  grep -q 'records :pwg' <<< "$err" || { printf '%s\n' "$err" >&2; die 'negative control: refused for another reason than the grade'; }
+  printf 'PASS: negative control (the first claim recorded as :pwg %s is refused: its legs support %s)\n' "$wrong" "$first"
+}
+
+tmpfiles=()
+cleanup() { (( ${#tmpfiles[@]} )) && rm -rf "${tmpfiles[@]}"; return 0; }
+trap cleanup EXIT
+
+mode=--write; fallback_commit=; target="$out"
+r_prover=; r_run=; r_commit=; r_checker=; r_axioms=
+while (( $# )); do
+  case "$1" in
+    --write|--check|--fetch-reader) mode="$1" ;;
+    --digest)   mode=--digest; r_prover="${2:-}"; shift ;;
+    --run-row)  mode=--run-row; r_prover="${2:-}"; shift ;;
+    --emit-run) mode=--emit-run; extra="${2:-}"; shift ;;
+    --out)      target="${2:-}"; shift ;;
+    --commit)   fallback_commit="${2:-}"; r_commit="${2:-}"; shift ;;
+    --run)      r_run="${2:-}"; shift ;;
+    --checker)  r_checker="${2:-}"; shift ;;
+    --axioms)   r_axioms="${2:-}"; shift ;;
+    -h|--help)  sed -n '5,22p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) printf 'unknown argument: %s\n' "$1" >&2; exit 2 ;;
+  esac
+  shift
+done
 
 case "$mode" in
-  --write|"")
-    mkdir -p "$(dirname "$out")"
-    emit > "$out"
-    printf 'WROTE %s (source-commit %s)\n' "$out" "$source_commit"
-    ;;
+  --digest) digest "$r_prover" ;;
+  --run-row)
+    row="$r_prover|$r_run|$r_commit|$r_checker|$(invocation "$r_prover")|$(digest "$r_prover")|$r_axioms|current|"
+    check_row "$row"; printf '%s\n' "$row" ;;
+  --fetch-reader)
+    mkdir -p "$(dirname "$reader")"
+    curl --proto '=https' --tlsv1.2 -fsSL "$READER_URL" -o "$reader.tmp"
+    echo "$READER_SHA256  $reader.tmp" | sha256sum --check --strict >/dev/null || { rm -f "$reader.tmp"; die 'the fetched reader does not match its pinned sha256'; }
+    mv "$reader.tmp" "$reader"; printf 'FETCHED the pinned reader to %s\n' "$reader" ;;
+  --write|--emit-run)
+    check_claim_ids; check_leg_records
+    [[ -n "$fallback_commit" ]] || fallback_commit="$(git rev-parse HEAD)"
+    [[ "$mode" == --write || -f "$extra" ]] || die "--emit-run needs a rows file"
+    prepare
+    mkdir -p "$(dirname "$target")"
+    emit > "$target"
+    printf 'WROTE %s (source-commit %s)\n' "$target" "$source_commit"
+    if [[ "$mode" == --emit-run ]]; then
+      read_with_reader "$target"
+      printf 'To record this run, add these rows to runs() in scripts/grade-receipt.sh:\n'
+      sed 's/^/  /' "$extra"
+    fi ;;
   --check)
-    tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+    check_claim_ids; check_leg_records
+    [[ -f "$out" ]] || die "$out is missing"
+    fallback_commit="$(sed -n 's/^  :source-commit "\([0-9a-f]*\)"$/\1/p' "$out")"
+    prepare
+    check_currency
+    tmp="$(mktemp)"; tmpfiles+=("$tmp")
     emit > "$tmp"
-    # The source-commit line is expected to differ: a receipt is committed by
-    # the change that produces it and so records its parent.  Everything else
-    # must match byte for byte, including every module sha256.
-    # Print the receipt file in $1 without its source-commit line.
-    filter() { grep -v '^    :source-commit ' "$1"; }
-    if ! diff -u <(filter "$out") <(filter "$tmp") > /tmp/receipt-diff.$$ 2>&1; then
-      echo 'ERROR: verification receipt does not match the tree:' >&2
-      sed -n '1,60p' /tmp/receipt-diff.$$ >&2
-      rm -f /tmp/receipt-diff.$$
-      echo 'Regenerate with: bash scripts/grade-receipt.sh --write' >&2
-      exit 1
+    if ! diff -u "$out" "$tmp" >&2; then
+      die 'the receipt does not match the tree and the run ledger: regenerate with bash scripts/grade-receipt.sh --write'
     fi
-    rm -f /tmp/receipt-diff.$$
-    echo "PASS: verification receipt matches the tree ($(modules | wc -l | tr -d ' ') modules, all sha256 verified)"
-    ;;
-  *)
-    echo "usage: ${0##*/} [--write|--check]" >&2
-    exit 2
-    ;;
+    printf 'PASS: %s matches the tree and the run ledger (source-commit %s)\n' "$out" "$source_commit"
+    read_with_reader "$out" ;;
 esac

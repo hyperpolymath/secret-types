@@ -79,14 +79,44 @@ proof_agda_provenance() {
   printf '%s\n' 'Debian 13 agda-bin=2.6.4.3-1+b2'
 }
 
+# The graded root: the one module the gate checks and whose import cone holds
+# every theorem.  scripts/check.sh, scripts/check-trusted-base.sh and the
+# receipt read it from here.
+proof_agda_root() {
+  printf '%s\n' 'src/SecretTypes/All.agda'
+}
+
+# The gate's Agda invocation, as one line: what scripts/check.sh runs on the
+# graded root, and what a receipt records as its :invocation.
+proof_agda_invocation() {
+  printf 'agda %s -i src %s\n' "$(proof_flags_line)" "$(proof_agda_root)"
+}
+
+# The prover's trusted base (PROOF-POLICY §8.4): every postulate in a
+# prover-supplied module of the graded root's import cone, as
+# module|name|binding.  scripts/check-trusted-base.sh checks that this exact
+# list is what the cone holds; the receipt writes it as (trusted-base ...).
+# A prover pin bump can change it; then the gate fails until this list is
+# updated and the receipt is earned again.
+proof_trusted_base() {
+  printf '%s\n' \
+    'Agda.Primitive|Level|BUILTIN LEVEL' \
+    'Agda.Primitive|lzero|BUILTIN LEVELZERO' \
+    'Agda.Primitive|lsuc|BUILTIN LEVELSUC' \
+    'Agda.Primitive|_⊔_|BUILTIN LEVELMAX'
+}
+
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   case "${1:-flags}" in
     flags)      proof_flags ;;
     line)       proof_flags_line ;;
     version)    proof_agda_pin ;;
     provenance) proof_agda_provenance ;;
+    root)       proof_agda_root ;;
+    invocation) proof_agda_invocation ;;
+    trusted-base) proof_trusted_base ;;
     *)
-      printf 'usage: %s [flags|line|version|provenance]\n' "${0##*/}" >&2
+      printf 'usage: %s [flags|line|version|provenance|root|invocation|trusted-base]\n' "${0##*/}" >&2
       exit 2
       ;;
   esac
