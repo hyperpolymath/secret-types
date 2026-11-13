@@ -82,7 +82,7 @@ that they are not mistaken for either:
   statement comparison was written by Claude Code and is provisional until the
   owner reviews it. The grade is what the pinned reader derives from the proof
   receipt (`PROOF-POLICY` §8.5.1): `PWG-1`, from the receipts of CI run
-  43448301280 on commit `88a763a`. The grade rests on the provisional
+  43455458225 on commit `7dfeab2`. The grade rests on the provisional
   statement comparison above.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI

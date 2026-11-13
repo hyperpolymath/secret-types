@@ -30,6 +30,14 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
    reader derives `PWG-1` for N-1, N-2, N-3, N-7, N-8 and N-9. The grade rests
    on the `RECONCILED` statement comparisons, which stay provisional until the
    owner reviews them.
+** Review of #39, done in #40: the postulate scanner refuses a carriage
+   return and any nested module, with two new refusal controls. The generator
+   writes a waived or unavailable leg with only its reason, and `--emit-run`
+   checks input currency. The receipt job writes its run's receipt before it
+   checks the committed one. The scanner is an input of the Agda leg, so the
+   receipts were earned again: CI run 43455458225 on commit `7dfeab2`, and the
+   reader derives `PWG-1` for the same six claims. The runs on `88a763a` and
+   `eaa7e97` are kept as superseded lineage.
 
 * **The canonical Agda invocation is in force, and grades follow PROOF-POLICY §8.**
 ** `--cubical-compatible` (PROOF-POLICY §2.1) is in `scripts/proof-flags.sh`, so

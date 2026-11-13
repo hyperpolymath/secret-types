@@ -29,8 +29,8 @@ invocation, which this repository has met since waiver W-1 closed.
 | N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
 | PWG-1 is the top grade. The pinned reader derives it from
   link:verification/receipts/agda_praxis.deed[the receipt]: CI run
-  https://github.com/hyperpolymath/secret-types/actions/runs/43448301280[43448301280]
-  checked all three witnesses on the exact source commit `88a763a` (§8.2).
+  https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
+  checked all three witnesses on the exact source commit `7dfeab2` (§8.2).
   The Agda proof is PROVEN under the canonical invocation
   `agda --safe --without-K --cubical-compatible`, with stronger flags besides
   (`scripts/proof-flags.sh`). Both §2 legs are re-proved in Rocq and in Lean,
