@@ -179,8 +179,10 @@ jobs:
           bun-version: '1.3.12'
       - name: Fetch the pinned reader (sha256-checked)
         run: bash scripts/grade-receipt.sh --fetch-reader
-      - name: The committed receipt matches the tree, and the reader accepts it
-        run: bash scripts/grade-receipt.sh --check
+      # The receipt of this run comes first, so a stale committed receipt
+      # cannot stop it: when the leg inputs change, this step still prints
+      # the rows to record.  The check of the committed receipt follows and
+      # stays a failing gate.
       - name: The receipt of this run
         env:
           AGDA_ROW: ${{ needs.proofs.outputs.row }}
@@ -191,3 +193,6 @@ jobs:
           mkdir -p "$RUNNER_TEMP/receipt"
           bash scripts/grade-receipt.sh --emit-run "$RUNNER_TEMP/rows" --out "$RUNNER_TEMP/receipt/agda_praxis.deed"
           cat "$RUNNER_TEMP/receipt/agda_praxis.deed"
+      - name: The committed receipt matches the tree, and the reader accepts it
+        if: success() || failure()
+        run: bash scripts/grade-receipt.sh --check

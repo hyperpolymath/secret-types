@@ -116,3 +116,7 @@ package-lock.json text eol=lf -diff linguist-generated=true
 **/*.res   linguist-detectable=false
 *.nix      text eol=lf
 flake.lock text eol=lf -diff linguist-generated=true
+
+# Scanner refusal control: its CRLF line ends are the test, so git must keep
+# the bytes as they are (scripts/check-trusted-base.sh).
+tests/trusted-base/CarriageReturn.txt -text

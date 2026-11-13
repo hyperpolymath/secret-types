@@ -20,7 +20,7 @@
     (primitive :prover agda :module "Agda.Primitive" :name "lzero" :binding "BUILTIN LEVELZERO")
     (primitive :prover agda :module "Agda.Primitive" :name "lsuc" :binding "BUILTIN LEVELSUC")
     (primitive :prover agda :module "Agda.Primitive" :name "_⊔_" :binding "BUILTIN LEVELMAX"))
-  (claim :id "N-1" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-1" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -28,7 +28,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -69,7 +70,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-2" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-2" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -77,7 +78,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -118,7 +120,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-3" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-3" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -126,7 +128,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -167,7 +170,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-7" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-7" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -175,7 +178,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -216,7 +220,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-8" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-8" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -224,7 +228,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -265,7 +270,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-9" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-9" :pwg ungraded :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
@@ -273,7 +278,8 @@
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"

@@ -18,8 +18,9 @@
 #     Any other dash run (for example an operator such as -->) stays code, so
 #     a doubtful case can only find MORE postulates, never fewer.
 # It refuses (exit 3) what it does not lex: a string literal, a character
-# literal, a tab, explicit layout braces after postulate, a declaration with
-# no type signature, and a postulate with no BUILTIN binding.  A refusal is a
+# literal, a tab, a carriage return, a nested module, explicit layout braces
+# after postulate, a declaration with no type signature, and a postulate with
+# no BUILTIN binding.  A refusal is a
 # gate failure: extend the scanner, never weaken it.
 # Positive and negative controls: tests/trusted-base/ (run by
 # scripts/check-trusted-base.sh on every gate run).
@@ -41,6 +42,7 @@ END {
   if (refused) exit 3
   if (module == "") { print "scan-agda-postulates.awk: set -v module=NAME" > "/dev/stderr"; exit 2 }
   if (index(src, "\t")) refuse("a tab character")
+  if (index(src, "\r")) refuse("a carriage return (CRLF line ends are not lexed)")
   n = length(src); out = ""; i = 1; npragma = 0
   while (i <= n) {
     c = substr(src, i, 1); c2 = substr(src, i, 2); c3 = substr(src, i, 3)
@@ -96,6 +98,11 @@ END {
   }
 
   nl = split(out, line, "\n")
+  # One module per file: a BUILTIN binding is keyed by its short name, so a
+  # nested module could reuse a bound name for an unbound postulate.  Refuse
+  # any module declaration after the first, until the scan tracks scopes.
+  nmod = 0
+  for (l = 1; l <= nl; l++) if (line[l] ~ /(^|[ ;{])module( |$)/ && ++nmod > 1) refuse("a nested module on line " l)
   for (l = 1; l <= nl; l++) {
     s = line[l]
     if (!match(s, /(^|[ (){};])postulate([ (){};]|$)/)) continue
