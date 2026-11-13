@@ -18,9 +18,11 @@ empty, and that emptiness is *enforced* rather than asserted. `scripts/check.sh`
 refuses the build if any `.agda` file under `src/SecretTypes` or `tests`
 contains `postulate`, and the same tree is compiled with `--safe`, which
 independently refuses `postulate`, `{-# TERMINATING #-}`, `{-# NON_TERMINATING #-}`
-and `--type-in-type`. `verification/receipts/agda_praxis.deed` records the
-counts (`postulates = 0`, `escape-hatches = 0`) *derived from the tree*, and CI
-fails if they move.
+and `--type-in-type`. The only postulates in the import cone are the four that
+Agda itself supplies in `Agda.Primitive`, each bound by `BUILTIN`.
+`scripts/check-trusted-base.sh` finds them in the cone and fails on any other.
+`verification/receipts/agda_praxis.deed` lists them as its `(trusted-base ...)`
+and records, beside each receipt, the axioms that the run reported.
 
 == (a) Discharged in this repo
 
@@ -57,8 +59,8 @@ ledger token `proven` rather than `proven-with-postulates`
 an axiom is ever needed, the procedure is fixed in advance: name it here with its
 justification, list it in that claim's trust-boundary column in the
 link:EXPLAINME.adoc#proof-ledger[Proof Ledger], and demote the token in the same
-change. `scripts/grade-receipt.sh` counts axioms, so the receipt cannot quietly
-keep saying zero.
+change. Each receipt records the axioms its run reported, and the gates refuse
+any axiom, so the receipt cannot quietly keep saying none.
 
 == (d) DEBT — actively to be closed
 
@@ -73,8 +75,10 @@ that they are not mistaken for either:
   (link:../verification/legs/README.adoc[`verification/legs/README.adoc`]),
   and the receipt records them. The obligation that remains is review: the
   statement comparison was written by Claude Code and is provisional until the
-  owner reviews it. `PWG-1` (a per-commit receipt of each checker's observed
-  result) is not met.
+  owner reviews it. The grade is what the pinned reader derives from the proof
+  receipt (`PROOF-POLICY` §8.5.1): `PWG-1`, from the receipts of CI run
+  43448301280 on commit `88a763a`. The grade rests on the provisional
+  statement comparison above.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI
   for the current typing rules when finishing versus non-finishing is public.
@@ -83,11 +87,12 @@ that they are not mistaken for either:
 
 == Who checks this file
 
-* `scripts/grade-receipt.sh --check` (CI: `.github/workflows/proofs.yml`) — the
-  derived counts, and the claim IDs, must match the tree and
-  `PROOF-STATUS.adoc`.
-* `scripts/check.sh` — `postulate` refusal, then the full gate.
-* The receipt's `[trust-base]` block is the machine copy of sections (a)–(c).
+* `scripts/grade-receipt.sh --check` (CI: `.github/workflows/proofs.yml`, job
+  `receipt`): the receipt must match the tree, the run ledger and the claim
+  IDs in `PROOF-STATUS.adoc`, and the pinned reader must accept it.
+* `scripts/check.sh`: `postulate` refusal, then the full gate.
+* `scripts/check-trusted-base.sh`: the prover-supplied postulates of the
+  import cone are exactly the receipt's `(trusted-base ...)`.
 
 A future addition to this file that is not accompanied by a change in those three
 places is a claim the gate does not support.

@@ -40,10 +40,11 @@ proof-check-coq:
 proof-scan-dangerous:
     @bash scripts/scan-dangerous.sh
 
-# Regenerate the verification receipt (PROOF-POLICY §8 Proof Witness Grades; PROOF-STATUS
-# "Grade, and the independent-witness legs"). CI runs the --check form, so a
+# Check the proof receipt (PROOF-POLICY §8.5.1) with the pinned reader, which
+# is fetched (sha256-checked) on first use. CI runs the same --check, so a
 # committed receipt that no longer matches the tree fails the gate.
 proof-receipt:
+    @test -f _build/deed_lint.js || bash scripts/grade-receipt.sh --fetch-reader
     @bash scripts/grade-receipt.sh --check
 
 proof-receipt-write:
