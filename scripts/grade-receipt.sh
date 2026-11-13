@@ -45,21 +45,23 @@ reader="${DEED_LINT:-_build/deed_lint.js}"
 
 # ── The claim list ────────────────────────────────────────────────────────────
 # id | §5 token of the Agda proof | kind | Rocq route | Rocq §2.2 state |
-# Lean route | Lean §2.2 state.  Kind is theorem (graded, §8.1) or
+# Lean route | Lean §2.2 state | Rocq reason | Lean reason.  A waived or
+# unavailable leg carries a reason and no token, state or receipt (§8.5.1);
+# the reason columns stay empty for any other route.  Kind is theorem (graded, §8.1) or
 # demonstration (a checked example; §8.1 grades theorems only, so a
 # demonstration has no claim in the receipt).  Routes: transported | re-proved
 # | waived | unavailable.  States: §2.2; only RECONCILED counts (§8.2).
 claims() {
   cat <<'ROWS'
-N-1|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
-N-2|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
-N-3|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
-N-4|tested-only|demonstration|n/a|n/a|n/a|n/a
-N-5|tested-only|demonstration|n/a|n/a|n/a|n/a
-N-6|tested-only|demonstration|n/a|n/a|n/a|n/a
-N-7|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
-N-8|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
-N-9|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED
+N-1|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
+N-2|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
+N-3|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
+N-4|tested-only|demonstration|n/a|n/a|n/a|n/a||
+N-5|tested-only|demonstration|n/a|n/a|n/a|n/a||
+N-6|tested-only|demonstration|n/a|n/a|n/a|n/a||
+N-7|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
+N-8|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
+N-9|proven|theorem|re-proved|RECONCILED|re-proved|RECONCILED||
 ROWS
 }
 
@@ -72,9 +74,12 @@ ROWS
 # axioms reported | state (current|superseded|regressed) | reason
 runs() {
   cat <<'ROWS'
-agda|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|current|
-rocq|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)|coqc -q SecretTypes.v (in verification/legs/rocq)|88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129|Rocq leg (Coq 8.18.0), 11 theorems closed under the global context|current|
-lean|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)|lake build; lake env lean Axioms.lean (in verification/legs/lean)|d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac|Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms|current|
+agda|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|current|
+rocq|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)|coqc -q SecretTypes.v (in verification/legs/rocq)|88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129|Rocq leg (Coq 8.18.0), 11 theorems closed under the global context|current|
+lean|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)|lake build; lake env lean Axioms.lean (in verification/legs/lean)|d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac|Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms|current|
+agda|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|superseded|the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it
+rocq|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)|coqc -q SecretTypes.v (in verification/legs/rocq)|88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129|Rocq leg (Coq 8.18.0), 11 theorems closed under the global context|superseded|replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1
+lean|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)|lake build; lake env lean Axioms.lean (in verification/legs/lean)|d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac|Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms|superseded|replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1
 agda|local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)|eaa7e975ca7beb0a304c39704cc9bc6d88d46b83|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, .deb unpacked on Ubuntu 24.04)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d|--safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit|superseded|local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1
 rocq|local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)|eaa7e975ca7beb0a304c39704cc9bc6d88d46b83|The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)|coqc -q SecretTypes.v (in verification/legs/rocq)|8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24|Rocq leg (Coq 8.18.0), 11 theorems closed under the global context|superseded|local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1
 lean|local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)|eaa7e975ca7beb0a304c39704cc9bc6d88d46b83|Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)|lake build; lake env lean Axioms.lean (in verification/legs/lean)|a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96|Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms|superseded|local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1
@@ -211,7 +216,7 @@ emit_receipts() {
 }
 
 emit() {
-  local id token kind coq coq_state lean lean_state m name binding
+  local id token kind coq coq_state lean lean_state coq_reason lean_reason m name binding
   printf ';; SPDX-License-Identifier: CC-BY-SA-4.0\n'
   printf ';; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)\n'
   printf ';; The proof receipt of secret-types (PROOF-POLICY §8.5.1).\n'
@@ -234,19 +239,32 @@ emit() {
     printf '\n    (primitive :prover agda :module "%s" :name "%s" :binding "%s")' "$m" "$name" "$binding"
   done < <(proof_trusted_base)
   printf ')\n'
-  while IFS='|' read -r id token kind coq coq_state lean lean_state; do
+  while IFS='|' read -r id token kind coq coq_state lean lean_state coq_reason lean_reason; do
     [[ "$kind" == theorem ]] || continue
     printf '  (claim :id "%s" :pwg %s :foundation-diverse #f\n' "$id" "$(pwg_of "$token" "$coq" "$coq_state" "$lean" "$lean_state")"
     printf '    (leg :prover agda :route source :token %s :state AGDA-VERIFIED' "$token"
     has_any agda && { printf '\n'; emit_receipts agda | sed '$ s/$/)/'; } || printf ')\n'
-    printf '    (leg :prover rocq :route %s :token %s :state %s' "$coq" "$(leg_token "$coq_state")" "$coq_state"
-    has_any rocq && { printf '\n'; emit_receipts rocq | sed '$ s/$/)/'; } || printf ')\n'
-    printf '    (leg :prover lean :route %s :token %s :state %s' "$lean" "$(leg_token "$lean_state")" "$lean_state"
-    has_any lean && { printf '\n'; emit_receipts lean | sed '$ s/$/))/'; } || printf '))\n'
+    emit_leg rocq "$coq" "$coq_state" "$coq_reason" ')'
+    emit_leg lean "$lean" "$lean_state" "$lean_reason" '))'
   done < <(claims)
   printf ')\n'
 }
-has_any() { local prover="$1"; awk -F'|' -v p="$prover" '$1==p{f=1} END{exit !f}' "$ledger_file"; }
+# Print one recheck leg, then $5 (the closing parentheses).  A waived or
+# unavailable leg carries only its reason (§8.5.1); a transported or
+# re-proved leg carries its token, its §2.2 state and its receipts.
+emit_leg() {
+  local prover="$1" route="$2" state="$3" reason="$4" close="$5"
+  case "$route" in
+    waived|unavailable)
+      [[ -n "$reason" && "$reason" != *'"'* ]] || die "a $route $prover leg needs a reason without a quote"
+      printf '    (leg :prover %s :route %s :reason "%s"%s\n' "$prover" "$route" "$reason" "$close" ;;
+    transported|re-proved)
+      printf '    (leg :prover %s :route %s :token %s :state %s' "$prover" "$route" "$(leg_token "$state")" "$state"
+      if has_any "$prover"; then printf '\n'; emit_receipts "$prover" | sed "\$ s/\$/$close/"; else printf '%s\n' "$close"; fi ;;
+    *) die "unknown route for the $prover leg: $route" ;;
+  esac
+}
+has_any() { local prover="$1";awk -F'|' -v p="$prover" '$1==p{f=1} END{exit !f}' "$ledger_file"; }
 # A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
 # (scripts/check-legs.sh refuses any), so it is proven; any other state is open.
 leg_token() { local state="$1"; [[ "$state" == RECONCILED ]] && printf 'proven' || printf 'open'; }
@@ -368,6 +386,8 @@ case "$mode" in
     [[ -n "$fallback_commit" ]] || fallback_commit="$(git rev-parse HEAD)"
     [[ "$mode" == --write || -f "$extra" ]] || die "--emit-run needs a rows file"
     prepare
+    # A run's receipt must describe the tree it was emitted from.
+    if [[ "$mode" == --emit-run ]]; then check_currency; fi
     mkdir -p "$(dirname "$target")"
     emit > "$target"
     printf 'WROTE %s (source-commit %s)\n' "$target" "$source_commit"

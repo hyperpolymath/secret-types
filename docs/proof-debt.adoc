@@ -52,8 +52,13 @@ misreport what they are.
 _None._ No axiom is assumed, so nothing needs a justification, a citation or a
 trust-boundary entry.
 
-This is the load-bearing sentence for the repository's status claims: with no
-postulates and no axioms in the trusted base, `PROOF-STATUS.adoc` may use the
+This is the load-bearing sentence for the repository's status claims. The
+development introduces no postulate and no axiom. The only postulates in its
+import cone are the four that Agda supplies in `Agda.Primitive` (`Level`,
+`lzero`, `lsuc`, `_⊔_`), each bound by `BUILTIN`. They are the prover's
+trusted base (PROOF-POLICY §8.4), listed in the receipt and checked by
+`scripts/check-trusted-base.sh`, not axioms of this development. So
+`PROOF-STATUS.adoc` may use the
 ledger token `proven` rather than `proven-with-postulates`
 (`standards/docs/README-EXPLAINME-STANDARD.adoc` §5, `PROOF-POLICY.adoc` §5). If
 an axiom is ever needed, the procedure is fixed in advance: name it here with its
@@ -77,7 +82,7 @@ that they are not mistaken for either:
   statement comparison was written by Claude Code and is provisional until the
   owner reviews it. The grade is what the pinned reader derives from the proof
   receipt (`PROOF-POLICY` §8.5.1): `PWG-1`, from the receipts of CI run
-  43448301280 on commit `88a763a`. The grade rests on the provisional
+  43455458225 on commit `7dfeab2`. The grade rests on the provisional
   statement comparison above.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI

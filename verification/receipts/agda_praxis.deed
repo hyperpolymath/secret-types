@@ -14,7 +14,7 @@
   :canonical-name "secret-types-proof-receipt"
   :profile proof-receipt
   :repository "hyperpolymath/secret-types"
-  :source-commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
+  :source-commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
   (trusted-base
     (primitive :prover agda :module "Agda.Primitive" :name "Level" :binding "BUILTIN LEVEL")
     (primitive :prover agda :module "Agda.Primitive" :name "lzero" :binding "BUILTIN LEVELZERO")
@@ -22,13 +22,21 @@
     (primitive :prover agda :module "Agda.Primitive" :name "_⊔_" :binding "BUILTIN LEVELMAX"))
   (claim :id "N-1" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -40,11 +48,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -56,11 +72,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -71,13 +95,21 @@
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
   (claim :id "N-2" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -89,11 +121,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -105,11 +145,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -120,13 +168,21 @@
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
   (claim :id "N-3" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -138,11 +194,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -154,11 +218,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -169,13 +241,21 @@
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
   (claim :id "N-7" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -187,11 +267,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -203,11 +291,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -218,13 +314,21 @@
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
   (claim :id "N-8" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -236,11 +340,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -252,11 +364,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -267,13 +387,21 @@
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
   (claim :id "N-9" :pwg PWG-1 :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
+      ; inputs sha256 8ddc8473b1b274c5c4ac4162177c0b411385d356d3b065bf4effeef84d4d4eba (bash scripts/grade-receipt.sh --digest agda)
+      ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
+               :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
+               :state current)
       ; inputs sha256 a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4 (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)"
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
-               :state current)
+               :state superseded
+               :reason "the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it")
       ; inputs sha256 22d8e74d66d65909af1862a92d10ce8d460a2012f392ec604b759c4fb2fcd72d (bash scripts/grade-receipt.sh --digest agda)
       ; axioms reported: --safe; trusted base (no postulates under src/SecretTypes or tests); the import cone was not yet gated at this commit
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -285,11 +413,19 @@
     (leg :prover rocq :route re-proved :token proven :state RECONCILED
       ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
+               :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
+               :state current)
+      ; inputs sha256 88cee666f75f94eea702abe967a25c10d3958988012da1300847c5c0a1372129 (bash scripts/grade-receipt.sh --digest rocq)
+      ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)"
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 8cdb209c928d2c63a73366e9c11d51ad2a799fd123d8a2c51379a4ca666b4b24 (bash scripts/grade-receipt.sh --digest rocq)
       ; axioms reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
@@ -301,11 +437,19 @@
     (leg :prover lean :route re-proved :token proven :state RECONCILED
       ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
+      (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
+               :commit "7dfeab2dc13142fac476ee9c698cf009deb709c9"
+               :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
+               :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
+               :state current)
+      ; inputs sha256 d30ae3c6563e34c78ef98de43d52e9eebcedac1714c8e2be06c413871c6ac6ac (bash scripts/grade-receipt.sh --digest lean)
+      ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
                :commit "88a763ac6101b8d9e59c71caa6959abb4bffe4bd"
                :checker "Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)"
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
-               :state current)
+               :state superseded
+               :reason "replaced by the later run https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1")
       ; inputs sha256 a4616dcb6de917279eab73cf53d6ac39584a09c71a22ff3624b825c61638dc96 (bash scripts/grade-receipt.sh --digest lean)
       ; axioms reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "local run, 2026-11-12, Claude Code cloud container (Ubuntu 24.04)"
