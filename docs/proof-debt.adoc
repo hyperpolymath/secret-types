@@ -52,8 +52,13 @@ misreport what they are.
 _None._ No axiom is assumed, so nothing needs a justification, a citation or a
 trust-boundary entry.
 
-This is the load-bearing sentence for the repository's status claims: with no
-postulates and no axioms in the trusted base, `PROOF-STATUS.adoc` may use the
+This is the load-bearing sentence for the repository's status claims. The
+development introduces no postulate and no axiom. The only postulates in its
+import cone are the four that Agda supplies in `Agda.Primitive` (`Level`,
+`lzero`, `lsuc`, `_⊔_`), each bound by `BUILTIN`. They are the prover's
+trusted base (PROOF-POLICY §8.4), listed in the receipt and checked by
+`scripts/check-trusted-base.sh`, not axioms of this development. So
+`PROOF-STATUS.adoc` may use the
 ledger token `proven` rather than `proven-with-postulates`
 (`standards/docs/README-EXPLAINME-STANDARD.adoc` §5, `PROOF-POLICY.adoc` §5). If
 an axiom is ever needed, the procedure is fixed in advance: name it here with its
