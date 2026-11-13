@@ -79,10 +79,10 @@ Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
 *Grade.* The proof receipt
 (link:verification/receipts/agda_praxis.deed[`verification/receipts/agda_praxis.deed`],
-`PROOF-POLICY.adoc` §8.5.1) records no CI run yet, so the pinned reader derives
-`ungraded` for each claim. The grade is what the reader derives, never a
-value typed here. The evidence below is what the CI receipts will record. The
-proved claims type-check in Agda under the
+`PROOF-POLICY.adoc` §8.5.1) holds the receipts of CI run 43448301280 on commit
+`88a763a`. From them the pinned reader derives Proof Witness Grade **`PWG-1`**
+for each proved claim. The grade is what the reader derives, never a value
+typed here. The proved claims type-check in Agda under the
 canonical §2.1 invocation, `--cubical-compatible` included, with stronger flags
 besides (`scripts/proof-flags.sh`). Each is also re-proved by hand in Rocq
 (Coq 8.18.0, prelude only) and in Lean (4.24.0, core only, no Mathlib), with no

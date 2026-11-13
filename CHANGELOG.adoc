@@ -24,8 +24,12 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
    of the import cone are exactly the listed trusted base (§8.4), with scanner
    controls in `tests/trusted-base/`.
 ** The pinned reader runs in CI with a negative control: a wrong `:pwg` must
-   be refused. The grade is now what the reader derives; until a CI run is
-   recorded, that is `ungraded`.
+   be refused. The grade is now what the reader derives.
+** The receipts of CI run 43448301280 on commit `88a763a` are recorded, and
+   the local runs of 2026-11-12 are kept as superseded lineage. From these the
+   reader derives `PWG-1` for N-1, N-2, N-3, N-7, N-8 and N-9. The grade rests
+   on the `RECONCILED` statement comparisons, which stay provisional until the
+   owner reviews them.
 
 * **The canonical Agda invocation is in force, and grades follow PROOF-POLICY §8.**
 ** `--cubical-compatible` (PROOF-POLICY §2.1) is in `scripts/proof-flags.sh`, so
