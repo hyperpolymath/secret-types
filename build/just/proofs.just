@@ -44,7 +44,7 @@ proof-scan-dangerous:
 # is fetched (sha256-checked) on first use. CI runs the same --check, so a
 # committed receipt that no longer matches the tree fails the gate.
 proof-receipt:
-    @test -f _build/deed_lint.js || bash scripts/grade-receipt.sh --fetch-reader
+    @test -f _build/standards/scripts/check-proof-receipt.sh || bash scripts/grade-receipt.sh --fetch-reader
     @bash scripts/grade-receipt.sh --check
 
 proof-receipt-write:
