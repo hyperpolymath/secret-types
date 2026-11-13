@@ -14,7 +14,7 @@
   :canonical-name "secret-types-proof-receipt"
   :profile proof-receipt
   :repository "hyperpolymath/secret-types"
-  :source-commit "eaa7e975ca7beb0a304c39704cc9bc6d88d46b83"
+  :source-commit "0a508df31c4490a64b72d3125fa2686cf955f1e1"
   (trusted-base
     (primitive :prover agda :module "Agda.Primitive" :name "Level" :binding "BUILTIN LEVEL")
     (primitive :prover agda :module "Agda.Primitive" :name "lzero" :binding "BUILTIN LEVELZERO")

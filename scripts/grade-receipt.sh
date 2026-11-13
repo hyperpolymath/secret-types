@@ -81,7 +81,8 @@ die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 # Every file a leg's checker or gate reads.  A current receipt describes the
 # tree only while the digest of these files is the digest its run recorded.
 inputs() {
-  case "$1" in
+  local prover="$1"
+  case "$prover" in
     agda)
       { find src/SecretTypes -name '*.agda'
         find tests/reject tests/flag-control tests/trusted-base -type f
@@ -92,19 +93,21 @@ inputs() {
     lean)
       { find verification/legs/lean \( -name '*.lean' -o -name lakefile.toml -o -name lean-toolchain \) -not -path '*/.lake/*'
         printf '%s\n' scripts/check-legs.sh; } ;;
-    *) die "unknown prover: $1" ;;
+    *) die "unknown prover: $prover" ;;
   esac | while read -r p; do [[ -f "$p" ]] && printf '%s\n' "$p"; done | LC_ALL=C sort -u
 }
 # The digest of a leg's inputs: sha256 of the sorted "sha256  path" listing.
-digest() { inputs "$1" | xargs -d '\n' sha256sum | sha256sum | cut -d' ' -f1; }
+digest() { local prover="$1"; inputs "$prover" | xargs -d '\n' sha256sum | sha256sum | cut -d' ' -f1; }
 
 # The invocation each leg's gate runs, read from its one definition.
-legvar() { sed -n "s/^$1='\\{0,1\\}\\([^']*\\)'\\{0,1\\}\$/\\1/p" scripts/check-legs.sh; }
+legvar() { local name="$1"; sed -n "s/^$name='\\{0,1\\}\\([^']*\\)'\\{0,1\\}\$/\\1/p" scripts/check-legs.sh; }
 invocation() {
-  case "$1" in
+  local prover="$1"
+  case "$prover" in
     agda) proof_agda_invocation ;;
     rocq) printf '%s (in %s)\n' "$(legvar ROCQ_INVOCATION)" "$(legvar ROCQ_DIR)" ;;
     lean) printf '%s; %s (in %s)\n' "$(legvar LEAN_BUILD)" "$(legvar LEAN_AXIOMS)" "$(legvar LEAN_DIR)" ;;
+    *) die "unknown prover: $prover" ;;
   esac
 }
 
@@ -153,8 +156,8 @@ ledger() {
 }
 
 # ── Grade (§8.2, the same rules as readProofReceipt) ──────────────────────────
-has_current() { awk -F'|' -v p="$1" '$1==p && $8=="current"{f=1} END{exit !f}' "$ledger_file"; }
-current_field() { awk -F'|' -v p="$1" -v f="$2" '$1==p && $8=="current"{print $f}' "$ledger_file"; }
+has_current() { local prover="$1"; awk -F'|' -v p="$prover" '$1==p && $8=="current"{f=1} END{exit !f}' "$ledger_file"; }
+current_field() { local prover="$1" field="$2"; awk -F'|' -v p="$prover" -v f="$field" '$1==p && $8=="current"{print $f}' "$ledger_file"; }
 canonical() {
   local w=" $1 "
   [[ "$w" == *' --safe '* && "$w" == *' --without-K '* ]] && [[ "$w" == *' --cubical-compatible '* || "$w" == *' --cubical '* ]]
@@ -173,6 +176,7 @@ pwg_of() {
     1) printf 'PWG-2i' ;;
     2) if [[ "$(current_field agda 3)" == "$source_commit" && "$(current_field rocq 3)" == "$source_commit" \
               && "$(current_field lean 3)" == "$source_commit" ]]; then printf 'PWG-1'; else printf 'PWG-2ii'; fi ;;
+    *) die "unexpected recheck count: $n" ;;
   esac
 }
 
@@ -236,10 +240,10 @@ emit() {
   done < <(claims)
   printf ')\n'
 }
-has_any() { awk -F'|' -v p="$1" '$1==p{f=1} END{exit !f}' "$ledger_file"; }
+has_any() { local prover="$1"; awk -F'|' -v p="$prover" '$1==p{f=1} END{exit !f}' "$ledger_file"; }
 # A leg's §5 token: a RECONCILED re-proof is kernel-checked with no axiom
 # (scripts/check-legs.sh refuses any), so it is proven; any other state is open.
-leg_token() { [[ "$1" == RECONCILED ]] && printf 'proven' || printf 'open'; }
+leg_token() { local state="$1"; [[ "$state" == RECONCILED ]] && printf 'proven' || printf 'open'; }
 
 # ── Cross-checks of the typed claim list ──────────────────────────────────────
 check_claim_ids() {
@@ -379,4 +383,5 @@ case "$mode" in
     fi
     printf 'PASS: %s matches the tree and the run ledger (source-commit %s)\n' "$out" "$source_commit"
     read_with_reader "$out" ;;
+  *) die "unknown mode: $mode" ;;
 esac

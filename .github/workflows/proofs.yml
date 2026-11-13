@@ -51,8 +51,12 @@ jobs:
         with:
           ref: ${{ env.SOURCE_COMMIT }}
           persist-credentials: false
+      # actions/checkout marks the workspace as a safe directory only under a
+      # temporary HOME, so in this container a later git call refuses the
+      # clone ("dubious ownership"; run 43447816480).  Mark it for this job.
       - name: Verify the checked Agda version and the commit under test
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           test "$(agda --version)" = 'Agda version 2.6.4.3'
           test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
       # The gate surfaces its own failure twice: once in the log, and once as a
