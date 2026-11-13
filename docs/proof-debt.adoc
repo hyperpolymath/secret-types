@@ -78,12 +78,12 @@ that they are not mistaken for either:
   every Agda theory proof to be rechecked in Rocq and in Lean. Both legs now
   exist, re-proved by hand without a library or an axiom
   (link:../verification/legs/README.adoc[`verification/legs/README.adoc`]),
-  and the receipt records them. The obligation that remains is review: the
-  statement comparison was written by Claude Code and is provisional until the
-  owner reviews it. The grade is what the pinned reader derives from the proof
-  receipt (`PROOF-POLICY` §8.5.1): `PWG-1`, from the receipts of CI run
-  43455458225 on commit `7dfeab2`. The grade rests on the provisional
-  statement comparison above.
+  and the receipt records them. The statement comparison was written by Claude
+  Code, and the owner reviewed it on 2026-11-13, so no obligation remains here.
+  The grade is what the pinned reader derives from the proof receipt
+  (`PROOF-POLICY` §8.5.1, §8.5.2): `PWG-1` at commit `292d566` on main, from
+  the receipts of CI run 43455458225 on commit `7dfeab2` and the echo that
+  joins the two commits.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI
   for the current typing rules when finishing versus non-finishing is public.

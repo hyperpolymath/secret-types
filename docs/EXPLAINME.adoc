@@ -108,8 +108,8 @@ only tested or still open. Tokens are the standard's closed vocabulary.
 | `verification/legs/rocq/SecretTypes.v`, `verification/legs/lean/`;
   correspondence in `verification/legs/README.adoc`
 | Re-proved by hand, not transported: Agda2Dedukti cannot run on the pinned
-  Agda. The statement comparison was written by Claude Code and is provisional
-  until the owner reviews it. Every proven row above has the grade that the
+  Agda. The statement comparison was written by Claude Code, and the owner
+  reviewed it on 2026-11-13. Every proven row above has the grade that the
   pinned reader derives from `verification/receipts/agda_praxis.deed`
   (PROOF-POLICY §8.5.1; see `PROOF-STATUS.adoc`), not a grade typed here. The
   template skeletons under
