@@ -28,18 +28,20 @@ invocation, which this repository has met since waiver W-1 closed.
 
 | N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
 | PWG-1 is the top grade. The pinned reader derives it from
-  link:verification/receipts/agda_praxis.deed[the receipt]: CI run
+  link:verification/receipts/agda_praxis.deed[the receipt], whose
+  `:source-commit` is `292d566` on main. CI run
   https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
-  checked all three witnesses on the exact source commit `7dfeab2` (§8.2).
-  The Agda proof is PROVEN under the canonical invocation
+  checked all three witnesses on commit `7dfeab2`. The squash merge of #40
+  replaced that commit by `292d566`, and an echo (§8.5.2) records that the
+  inputs of every leg are equal at both commits. The Agda proof is PROVEN
+  under the canonical invocation
   `agda --safe --without-K --cubical-compatible`, with stronger flags besides
   (`scripts/proof-flags.sh`). Both §2 legs are re-proved in Rocq and in Lean,
   kernel-checked with no axioms, and `RECONCILED` (below). The grade is the
-  one the reader derives, never a value typed here. It rests on the
-  `RECONCILED` statement comparisons, which stay provisional until the owner
-  reviews them. A change to any leg's inputs fails `--check` until a new CI
-  run is recorded. `foundation-diverse` is false: Agda, Rocq and Lean are all
-  dependent type theories (§8.3).
+  one the reader derives, never a value typed here. A change to any leg's
+  inputs fails `--check` until a new CI run is recorded.
+  `foundation-diverse` is false: Agda, Rocq and Lean are all dependent type
+  theories (§8.3).
 
 | N-4, N-5, N-6 | `ungraded` | TESTED demonstrations (refusals, computed
   witnesses, a law-ablation certificate), not theorems; §8.1 grades theory
@@ -74,8 +76,9 @@ assumptions) is link:verification/legs/README.adoc[`verification/legs/README.ado
   of Agda and cannot run on 2.6.4.3, and there is no released Dedukti or
   Lambdapi exporter to Lean 4. So each leg restates the Agda theorem and proves
   it by hand: Coq 8.18.0 with the prelude only, Lean 4.24.0 with core only (no
-  Mathlib). The statement comparison was written by Claude Code and is
-  provisional until the owner reviews it (estate doctrine 4).
+  Mathlib). The statement comparison was written by Claude Code, and the
+  owner reviewed it on 2026-11-13 (estate doctrine 4; ruling relayed by the
+  Mathesis session).
 
 | N-4, N-5, N-6 | n/a | n/a | n/a
 | Checked demonstrations, not theorems (§8.1).
@@ -128,12 +131,12 @@ ways). W-1 is kept, closed, in link:docs/proof-debt.adoc#waivers[`docs/proof-deb
 === What the grade is anchored to
 
 `verification/receipts/agda_praxis.deed` is the proof receipt of
-`PROOF-POLICY` §8.5.1 (profile `proof-receipt`). `scripts/grade-receipt.sh`
-writes it, and CI checks it (`.github/workflows/proofs.yml`, job `receipt`).
-It holds:
+`PROOF-POLICY` §8.5.1 and §8.5.2 (profile `proof-receipt`).
+`scripts/grade-receipt.sh` writes it, and CI checks it
+(`.github/workflows/proofs.yml`, job `receipt`). It holds:
 
-* `:repository` and `:source-commit`, the full commit that its current
-  receipts name;
+* `:repository` and `:source-commit`, a full commit on main that the current
+  receipts describe;
 * `(trusted-base ...)`: the four postulates of `Agda.Primitive` (`Level`,
   `lzero`, `lsuc`, `_⊔_`) with their `BUILTIN` bindings. These are the only
   postulates in the prover-supplied modules of the import cone of
@@ -141,20 +144,37 @@ It holds:
   (`--dependency-graph`), scans those modules with a comment-aware scanner
   (`scripts/scan-agda-postulates.awk`, with controls in `tests/trusted-base/`)
   and compares the result with the one list in `scripts/proof-flags.sh`;
+* one `(echo ...)` per history rewrite of a commit that a receipt names
+  (§8.5.2): the source commit, its image on main, and the inputs digest of
+  each leg, equal at both;
 * one `(claim ...)` per theorem, with its Agda, Rocq and Lean legs, and each
   leg's receipts with their lineage states (current, superseded, regressed).
+  Each current receipt carries `:inputs-sha256` (the §8.5.1 digest of the
+  files its checker read) and `(axioms ...)` (the axioms its checker
+  reported; empty, because every gate fails on an axiom).
 
 The receipts come from a run ledger in `scripts/grade-receipt.sh`. Each row is
-copied from the log of the CI run that printed it. The `receipt` job checks the
-committed receipt, then writes the receipt for its own run and prints the rows
-to record. The pinned reader (`readProofReceipt`, standards
-`be39f900665fb7c042c05d1165da018adc1860f4`) derives each claim's grade. A
-negative control runs with every check: the same receipt with a wrong `:pwg`
-must be refused.
+copied from the log of the CI run that printed it. Every digest is a git fact:
+the script computes it, and the reference script of the standard
+(`scripts/proof-inputs-sha256.sh`) checks it. The input sets are those of
+§8.5.1. For Agda, the input set is the repository's modules in the import
+cone, and `scripts/check-trusted-base.sh` checks it against
+`agda --dependency-graph` on every gate run.
 
-The reader's receipt fields have no slot for the axioms reported or for the
-input digest, which §8.2 lists. The receipt records both as generated comments
-beside each receipt, and `--check` gates the digest.
+`--check` does the git checks of §8.5.3:
+
+. the `:source-commit` is on main;
+. the `:inputs-sha256` of each current receipt is the reference digest at its
+  commit;
+. the witness digests of each echo are equal at its source and at its image.
+  The source of an echo is fetched by its pull-request reference if no branch
+  holds it.
+
+The `receipt` job writes the receipt for its own run and prints the rows to
+record, then checks the committed receipt. The pinned reader
+(`readProofReceipt`, standards `d9b03a30e9570e1ffc05f16a580ab0f7a7e6fec6`)
+derives each claim's grade. A negative control runs with every check: the
+same receipt with a wrong `:pwg` must be refused.
 
 Proof debt, in the four dispositions the trusted-base policy requires, is
 link:docs/proof-debt.adoc[] — all four empty, and enforced rather than asserted.

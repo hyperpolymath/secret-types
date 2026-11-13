@@ -79,17 +79,19 @@ Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 
 *Grade.* The proof receipt
 (link:verification/receipts/agda_praxis.deed[`verification/receipts/agda_praxis.deed`],
-`PROOF-POLICY.adoc` §8.5.1) holds the receipts of CI run 43455458225 on commit
-`7dfeab2`. From them the pinned reader derives Proof Witness Grade **`PWG-1`**
-for each proved claim. The grade is what the reader derives, never a value
+`PROOF-POLICY.adoc` §8.5.1 and §8.5.2) describes commit `292d566` on main. It
+holds the receipts of CI run 43455458225 on commit `7dfeab2`, and an echo
+records that the squash merge into `292d566` left every leg's inputs equal.
+From them the pinned reader derives Proof Witness Grade **`PWG-1`** for each
+proved claim. The grade is what the reader derives, never a value
 typed here. The proved claims type-check in Agda under the
 canonical §2.1 invocation, `--cubical-compatible` included, with stronger flags
 besides (`scripts/proof-flags.sh`). Each is also re-proved by hand in Rocq
 (Coq 8.18.0, prelude only) and in Lean (4.24.0, core only, no Mathlib), with no
 axioms in either, and the statements are compared in
 link:verification/legs/README.adoc[`verification/legs/README.adoc`]. That
-comparison was written by Claude Code and is provisional until the owner reviews
-it. Not `+foundation-diverse`: no witness outside dependent type theory.
+comparison was written by Claude Code, and the owner reviewed it on 2026-11-13.
+Not `+foundation-diverse`: no witness outside dependent type theory.
 Per-claim evidence is in link:docs/EXPLAINME.adoc#proof-ledger[the Proof Ledger],
 the machine record is
 link:verification/receipts/agda_praxis.deed[`verification/receipts/agda_praxis.deed`]

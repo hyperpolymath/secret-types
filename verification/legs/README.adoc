@@ -171,8 +171,8 @@ N-4, N-5 and N-6 have no leg. They are checked demonstrations, not theorems
 
 * They are re-proofs, not transports. The match between each leg statement
   and its Agda statement rests on the comparison above. Claude Code wrote it,
-  and it is provisional until the owner reviews it (estate doctrine 4). No
-  tool checks it.
+  and the owner reviewed it on 2026-11-13 (estate doctrine 4; ruling relayed
+  by the Mathesis session). No tool checks it.
 * `foundation_diverse` (§8.3) stays false. Lean's and Rocq's kernels are
   independent of Agda's, but all three are dependent type theories. The tag
   needs a witness in a different foundation, such as Isabelle/HOL, and none

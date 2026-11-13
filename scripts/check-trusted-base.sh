@@ -49,6 +49,20 @@ mapfile -t cone < <(sed -n 's/.*label="\([^"]*\)".*/\1/p' "$work/cone.dot" | sor
 (( ${#cone[@]} > 0 )) || { echo 'FAIL: empty dependency graph' >&2; exit 1; }
 agda_dir="$("$prover" --print-agda-dir)"
 
+# The repository's part of the cone is the Agda input set of the receipt
+# (PROOF-POLICY §8.5.1).  scripts/grade-receipt.sh computes it by a text scan
+# of import statements; it must be exactly the set Agda reports.
+for m in "${cone[@]}"; do
+  rel="src/${m//.//}.agda"
+  [[ -f "$rel" ]] && printf '%s\n' "$rel"
+done | LC_ALL=C sort > "$work/cone-repo"
+bash scripts/grade-receipt.sh --inputs agda > "$work/cone-scan"
+if ! diff -u "$work/cone-repo" "$work/cone-scan"; then
+  echo 'FAIL: the Agda input set of scripts/grade-receipt.sh differs from the cone agda --dependency-graph reports' >&2
+  exit 1
+fi
+echo "PASS: Agda input set ($(wc -l < "$work/cone-repo" | tr -d ' ') repository modules) equals the cone Agda reports"
+
 # 3. Scan the prover-supplied modules.  Every module of the cone is either the
 # development's (under src/) or Agda's (under the prover's lib/prim); a module
 # in neither place fails, so nothing in the cone goes unscanned.

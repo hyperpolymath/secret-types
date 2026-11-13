@@ -10,6 +10,25 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The receipt carries inputs digests, axioms and an echo (PROOF-POLICY
+  §8.5.1 to §8.5.3, standards `d9b03a3`).**
+** Each current receipt carries `:inputs-sha256` and `(axioms ...)`. The
+   digests use the §8.5.1 input sets, and the pinned reference script
+   `scripts/proof-inputs-sha256.sh` checks them. The Agda input set is the
+   cone, and `scripts/check-trusted-base.sh` checks it against
+   `agda --dependency-graph`.
+** #40 was squash-merged, so the receipts of run 43455458225 name `7dfeab2`,
+   which main does not contain. The echo `7dfeab2` to `292d566` records that
+   every leg's inputs are equal at both commits. The `:source-commit` is
+   `292d566`, and the reader derives `PWG-1` for N-1, N-2, N-3, N-7, N-8 and
+   N-9 through the echo.
+** `--check` does the git checks of §8.5.3: the source commit is on main, each
+   current digest matches the reference script at its commit, and each echo
+   witness is equal at source and image (the source is fetched by
+   `refs/pull/40/head`).
+** The owner reviewed the `RECONCILED` statement comparisons (2026-11-13), so
+   the docs no longer call them provisional.
+
 * **The proof receipt has the shape of PROOF-POLICY §8.5.1.** The canon reader
   (`readProofReceipt`, standards `be39f90`) refused the old receipt
   (`unexpected clause (identity)`), so no grade could be derived from it.
