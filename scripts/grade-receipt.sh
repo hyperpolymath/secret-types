@@ -51,7 +51,7 @@ default_branch=main
 # _build/standards, because the checker finds the reader and the digest
 # script by their paths.  Mathesis pins the same reader and runs the same
 # checker.
-STANDARDS_COMMIT=882ac8953e1cb25131356530e1c0d5f276cb3ba0
+STANDARDS_COMMIT=e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d
 READER_SHA256=37ff85be499b35dd9d74399e05d9ae1e57ccf095362c355f93e04b3bbf4c9491
 DIGEST_SHA256=dfc6dde01a3a79df638eebe4cad0eae584d8f17280077e149174c0667e9508f4
 CHECKER_SHA256=831f5a43c906c3edc8cfa68ab5fe13c37e7a41b35e40068481d988d887f4bd3f

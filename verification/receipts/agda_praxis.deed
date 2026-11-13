@@ -7,7 +7,7 @@
 ;; checked with the reference script of the standard.  The grade is derived,
 ;; never typed:
 ;;   bun deed_lint.js --proof-receipt-json verification/receipts/agda_praxis.deed
-;; with the reader at standards 882ac8953e1cb25131356530e1c0d5f276cb3ba0.
+;; with the reader at standards e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d.
 ;; Demonstrations N-4, N-5 and N-6 are not theorems (§8.1) and have no claim here.
 ;; The trusted base is what scripts/check-trusted-base.sh finds in the
 ;; prover-supplied modules of the import cone of src/SecretTypes/All.agda.
