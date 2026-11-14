@@ -7,7 +7,7 @@
 ;; checked with the reference script of the standard.  The grade is derived,
 ;; never typed:
 ;;   bun deed_lint.js --proof-receipt-json verification/receipts/agda_praxis.deed
-;; with the reader at standards d9b03a30e9570e1ffc05f16a580ab0f7a7e6fec6.
+;; with the reader at standards e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d.
 ;; Demonstrations N-4, N-5 and N-6 are not theorems (§8.1) and have no claim here.
 ;; The trusted base is what scripts/check-trusted-base.sh finds in the
 ;; prover-supplied modules of the import cone of src/SecretTypes/All.agda.
@@ -36,6 +36,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -59,6 +75,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -82,6 +100,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -106,6 +132,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -129,6 +171,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -152,6 +196,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -176,6 +228,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -199,6 +267,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -222,6 +292,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -246,6 +324,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -269,6 +363,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -292,6 +388,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -316,6 +420,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -339,6 +459,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -362,6 +484,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -386,6 +516,22 @@
                :invocation "agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda"
                :inputs-sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e"
                :state current
+               (inputs-manifest
+                 (file :path "src/SecretTypes/All.agda" :sha256 "3538afeb43c6c55498ba95ed6918df7ca9474439c24b1ef64b6f4dc488bf892b")
+                 (file :path "src/SecretTypes/Countermodels.agda" :sha256 "2f3c155a3e18e1282d4dc0f605aadadfda8e9bba24614626bc10cfbec2184f31")
+                 (file :path "src/SecretTypes/Lang.agda" :sha256 "957333acdcc5c67692630411cd7a82e96075f07533b0d2cc7c99d000b1522570")
+                 (file :path "src/SecretTypes/Lang/Two.agda" :sha256 "4bb9e6db64c7dfa36fd7ce3bfd5947331819ac4c3ba1d2fb599c46e07be53c9a")
+                 (file :path "src/SecretTypes/Lattice.agda" :sha256 "119d637de4dd4578c0eb0cd3dbad679f4281db9fa4660833fdd74b8d220ab10e")
+                 (file :path "src/SecretTypes/Lattice/Record.agda" :sha256 "25f4ee821b8e245dccb4f5f7eae9c3f1006a4b6eaeab3af14646721f14f83de3")
+                 (file :path "src/SecretTypes/Noninterference.agda" :sha256 "944231de8ab05155f2aaa8da6a37edfa32123cac25c29ea5a2e4a2d71f68ab0e")
+                 (file :path "src/SecretTypes/Noninterference/Generic.agda" :sha256 "716de16efc8ded98b0744fd38a5f95ca6e431b07dedb43e12140f5260e28af01")
+                 (file :path "src/SecretTypes/Noninterference/OutcomeVisibility.agda" :sha256 "33e63996ccb6ea5ba834dd158584b8a1fb5594d50e79c2ee2c144ffe7588d93a")
+                 (file :path "src/SecretTypes/Noninterference/Statement.agda" :sha256 "f76d84eb3a434c2f9f4203303fcf30fb04282afe787ce085d4590855b43e4c45")
+                 (file :path "src/SecretTypes/Prelude.agda" :sha256 "8ec095409f9424acf26e458e0ff1b129d1ca9525f37afa6d40e66bfcbd2cfed1")
+                 (file :path "src/SecretTypes/Typing.agda" :sha256 "f535815d15f4b224a028b01261af8d7f233d8b3c0a26e48ec5c4223f3afe1d42")
+                 (file :path "src/SecretTypes/Typing/Generic.agda" :sha256 "adacd5405be17ccbf845c56d2d7980d2b0eae7214a284df2bf5a64d64ccf7718")
+                 (file :path "src/SecretTypes/Vars.agda" :sha256 "f188cbc8b630b036daac4720f3cfe492bf78671f87b82850919f09091ead5422")
+                 (file :path "src/SecretTypes/Witness.agda" :sha256 "bc2166b18e68051ccfdb034f55d26a2249f9b27c953f664cdbfeacb1e35879b8"))
                (axioms))
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -409,6 +555,8 @@
                :invocation "coqc -q SecretTypes.v (in verification/legs/rocq)"
                :inputs-sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/rocq/SecretTypes.v" :sha256 "acffaa9b4884b46c61fae6f2c91a34e7005b5d4b6158ebcc83bde25bc573b75e"))
                (axioms))
       ; the run reported: Rocq leg (Coq 8.18.0), 11 theorems closed under the global context
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"
@@ -432,6 +580,14 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :inputs-sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"
                :state current
+               (inputs-manifest
+                 (file :path "verification/legs/lean/Axioms.lean" :sha256 "078d9a566e80b9f9701ba1b3f12bd5897e372c41f7d2dcfdf13c2f6d07159ae7")
+                 (file :path "verification/legs/lean/SecretTypes.lean" :sha256 "48d02eea6800f9655c1a1d968cbeb9b8d8aa2594f6ad47915cbc8247e4157b8d")
+                 (file :path "verification/legs/lean/SecretTypes/Countermodels.lean" :sha256 "ef2dc1f54aa0ac76acea9c020c9fa0adecfb864e27caa184339090d233bd6ed5")
+                 (file :path "verification/legs/lean/SecretTypes/Generic.lean" :sha256 "13b10fd744828bc5ea3551346aeaa7795b51f24e8585e26c9dc737805c054cfa")
+                 (file :path "verification/legs/lean/SecretTypes/Two.lean" :sha256 "74387c6eec74dbbfada1c08d5ef96451740c37e439db8aa5a17ece44e4cf318a")
+                 (file :path "verification/legs/lean/lakefile.toml" :sha256 "75b8b79a27ec284d2c383302c88c90248ab56ee9902664068140d014b45bcf34")
+                 (file :path "verification/legs/lean/lean-toolchain" :sha256 "387019dd5f6d8213249f99bfe1bd9f346678bf0d4612938c1e7feae386665335"))
                (axioms))
       ; the run reported: Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1"

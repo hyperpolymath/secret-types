@@ -161,19 +161,30 @@ the script computes it, and the reference script of the standard
 cone, and `scripts/check-trusted-base.sh` checks it against
 `agda --dependency-graph` on every gate run.
 
-`--check` does the git checks of §8.5.3:
+Each current receipt also lists its inputs: an `(inputs-manifest ...)` with
+one `(file :path ... :sha256 ...)` per input file, written from the reference
+script's `--manifest` output at the receipt's commit. The reader recomputes
+`:inputs-sha256` from that list, so a consumer can check the digest with git
+alone.
 
+`--check` runs the standard's shared git checker,
+`scripts/check-proof-receipt.sh --branch origin/main`, on the committed
+receipt. It checks that:
+
+. the reader accepts the receipt;
 . the `:source-commit` is on main;
-. the `:inputs-sha256` of each current receipt is the reference digest at its
-  commit;
-. the witness digests of each echo are equal at its source and at its image.
-  The source of an echo is fetched by its pull-request reference if no branch
-  holds it.
+. every manifest entry is the git blob at its receipt's commit;
+. every echo's manifests hold at its source and at its image. The source of
+  an echo is fetched by its pull-request reference if no branch holds it.
+
+Mathesis runs the same checker, so the home gate and the consumer check in
+the same way.
 
 The `receipt` job writes the receipt for its own run and prints the rows to
 record, then checks the committed receipt. The pinned reader
-(`readProofReceipt`, standards `d9b03a30e9570e1ffc05f16a580ab0f7a7e6fec6`)
-derives each claim's grade. A negative control runs with every check: the
+(`readProofReceipt`), the reference digest script and the checker are all
+at standards `e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d`, each pinned by
+sha256. The reader derives each claim's grade. A negative control runs with every check: the
 same receipt with a wrong `:pwg` must be refused.
 
 Proof debt, in the four dispositions the trusted-base policy requires, is

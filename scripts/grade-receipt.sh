@@ -43,16 +43,23 @@ out=verification/receipts/agda_praxis.deed
 repo="hyperpolymath/secret-types"
 default_branch=main
 
-# The pinned standard: readProofReceipt in 1-formats/deed/tools/deed_lint.js
-# (PROOF-POLICY §8.5.1 to §8.5.3) and the reference digest
-# scripts/proof-inputs-sha256.sh, both at one standards commit, each with its
-# sha256.  Mathesis pins the same reader.
-STANDARDS_COMMIT=d9b03a30e9570e1ffc05f16a580ab0f7a7e6fec6
-READER_SHA256=c06de71c26dca57e81c17dbe4998ec99dd73035e773f7b6f92b819e96559853a
+# The pinned standard, all at one standards commit, each file with its
+# sha256: the reader readProofReceipt (1-formats/deed/tools/deed_lint.js,
+# PROOF-POLICY §8.5.1 to §8.5.3), the reference digest
+# (scripts/proof-inputs-sha256.sh) and the shared git checker of §8.5.3
+# (scripts/check-proof-receipt.sh).  They keep the standards layout under
+# _build/standards, because the checker finds the reader and the digest
+# script by their paths.  Mathesis pins the same reader and runs the same
+# checker.
+STANDARDS_COMMIT=e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d
+READER_SHA256=37ff85be499b35dd9d74399e05d9ae1e57ccf095362c355f93e04b3bbf4c9491
 DIGEST_SHA256=dfc6dde01a3a79df638eebe4cad0eae584d8f17280077e149174c0667e9508f4
+CHECKER_SHA256=831f5a43c906c3edc8cfa68ab5fe13c37e7a41b35e40068481d988d887f4bd3f
 STANDARDS_RAW="https://raw.githubusercontent.com/metadatastician/standards/$STANDARDS_COMMIT"
-reader="${DEED_LINT:-_build/deed_lint.js}"
-digest_script="${PROOF_INPUTS_SHA256:-_build/proof-inputs-sha256.sh}"
+std_dir=_build/standards
+reader="$std_dir/1-formats/deed/tools/deed_lint.js"
+digest_script="$std_dir/scripts/proof-inputs-sha256.sh"
+checker="$std_dir/scripts/check-proof-receipt.sh"
 
 # ── The claim list ────────────────────────────────────────────────────────────
 # id | §5 token of the Agda proof | kind | Rocq route | Rocq §2.2 state |
@@ -309,6 +316,17 @@ emit_axioms() {
   for x in "${a[@]}"; do printf '\n                 (axiom :name "%s" :disposition %s)' "${x%:*}" "${x##*:}"; done
   printf '))\n'
 }
+# §8.5.1: the inputs manifest of a leg's current receipt, one (file ...) per
+# line of the reference script's --manifest output at the receipt's commit.
+# The reader recomputes :inputs-sha256 from it.
+emit_manifest() {
+  local prover="$1" sha path
+  printf '               (inputs-manifest'
+  while read -r sha path; do
+    printf '\n                 (file :path "%s" :sha256 "%s")' "$path" "$sha"
+  done < "$manifest_dir/$prover"
+  printf ')\n'
+}
 emit_receipts() {
   local prover="$1" row p run commit checker inv dig said state reason axioms
   # Current first, then the lineage in ledger order.
@@ -325,6 +343,7 @@ emit_receipts() {
       if [[ $state == current ]]; then
         printf '               :inputs-sha256 "%s"\n' "$dig"
         printf '               :state current\n'
+        emit_manifest "$prover"
         emit_axioms "$axioms"
       else
         printf '               :state %s\n               :reason "%s")\n' "$state" "$reason"
@@ -452,6 +471,21 @@ prepare() {
       printf '%s|%s|%s\n' "$src" "$p" "$a" >> "$echo_digest_file"
     done
   done < "$echo_file"
+  # The inputs manifest of each current receipt, at its commit (§8.5.1).  Its
+  # SHA-256 is the digest the ledger records, or the row is wrong.
+  manifest_dir="$(mktemp -d)"; tmpfiles+=("$manifest_dir")
+  local c paths
+  for p in agda rocq lean; do
+    has_current "$p" || continue
+    c="$(current_field "$p" 3)"
+    ensure_commit "$c" "$(echo_ref "$c")"
+    check_pinned "$digest_script" "$DIGEST_SHA256" 'reference digest script'
+    mapfile -t paths < <(inputs "$p")
+    bash "$digest_script" --manifest "$c" "${paths[@]}" > "$manifest_dir/$p" || die "cannot list the $p inputs at $c"
+    a="$(sha256sum < "$manifest_dir/$p" | cut -d' ' -f1)"
+    [[ "$a" == "$(current_field "$p" 6)" ]] \
+      || die "the $p receipt records inputs $(current_field "$p" 6), but the manifest at $c gives $a"
+  done
   source_commit="${commits:-$fallback_commit}"
   local steps=0 next
   while next="$(awk -F'|' -v c="$source_commit" '$1==c{print $2}' "$echo_file")" && [[ -n "$next" ]]; do
@@ -461,22 +495,19 @@ prepare() {
   [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || die "no 40-hex source commit (got '${source_commit}')"
 }
 
-# §8.5.3, checks 1 and 2: the :source-commit is on the default branch, and
-# each current receipt's :inputs-sha256 is the reference digest at its commit.
+# §8.5.3: the git checks, by the shared checker of the standard
+# (scripts/check-proof-receipt.sh), so this gate and every consumer check in
+# the same way: the reader accepts the receipt, the :source-commit is on the
+# default branch, every manifest entry is the git blob at its receipt's
+# commit, and every echo's manifests hold at its source and its image.
 check_git_facts() {
-  local p c want got base
+  local file="$1" base
   base="refs/remotes/origin/$default_branch"
   git rev-parse -q --verify "$base" >/dev/null || base="refs/heads/$default_branch"
-  git merge-base --is-ancestor "$source_commit" "$base" \
-    || die "the :source-commit $source_commit is not on $default_branch ($base)"
-  for p in agda rocq lean; do
-    has_current "$p" || continue
-    c="$(current_field "$p" 3)"; want="$(current_field "$p" 6)"
-    ensure_commit "$c" "$(echo_ref "$c")"
-    got="$(ref_digest "$c" "$p")" || die "cannot compute the $p digest at $c"
-    [[ "$want" == "$got" ]] || die "the $p receipt records inputs $want, but the reference digest at $c is $got"
-  done
-  printf 'PASS: git facts (source-commit %s on %s; each current inputs digest matches the reference script at its commit; each echo witness equal at source and image)\n' "${source_commit:0:12}" "$default_branch"
+  check_pinned "$checker" "$CHECKER_SHA256" 'git checker'
+  check_pinned "$reader" "$READER_SHA256" 'reader'
+  bash "$checker" --branch "$base" "$file" . || die "the git checks of PROOF-POLICY §8.5.3 failed for $file"
+  printf 'PASS: git checks of §8.5.3 (shared checker, standards %s, --branch %s)\n' "${STANDARDS_COMMIT:0:12}" "$base"
 }
 
 # Each current receipt must still describe the tree: its inputs digest is the
@@ -556,7 +587,8 @@ case "$mode" in
     check_row "$row"; printf '%s\n' "$row" ;;
   --fetch-reader)
     fetch_pinned 1-formats/deed/tools/deed_lint.js "$READER_SHA256" "$reader"
-    fetch_pinned scripts/proof-inputs-sha256.sh "$DIGEST_SHA256" "$digest_script" ;;
+    fetch_pinned scripts/proof-inputs-sha256.sh "$DIGEST_SHA256" "$digest_script"
+    fetch_pinned scripts/check-proof-receipt.sh "$CHECKER_SHA256" "$checker" ;;
   --write|--emit-run)
     check_claim_ids; check_leg_records
     [[ -n "$fallback_commit" ]] || fallback_commit="$(git rev-parse HEAD)"
@@ -577,7 +609,6 @@ case "$mode" in
     [[ -f "$out" ]] || die "$out is missing"
     fallback_commit="$(sed -n 's/^  :source-commit "\([0-9a-f]*\)"$/\1/p' "$out")"
     prepare
-    check_git_facts
     check_currency
     tmp="$(mktemp)"; tmpfiles+=("$tmp")
     emit > "$tmp"
@@ -585,6 +616,7 @@ case "$mode" in
       die 'the receipt does not match the tree and the ledgers: regenerate with bash scripts/grade-receipt.sh --write'
     fi
     printf 'PASS: %s matches the tree and the ledgers (source-commit %s)\n' "$out" "$source_commit"
+    check_git_facts "$out"
     read_with_reader "$out" ;;
   *) die "unknown mode: $mode" ;;
 esac

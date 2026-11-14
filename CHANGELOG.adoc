@@ -10,6 +10,17 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The receipt lists its inputs, and the gate runs the shared git checker
+  (standards `e5a39d7`, #1545).**
+** Each current receipt carries `(inputs-manifest (file :path :sha256) ...)`,
+   written from the reference script's `--manifest` output at its commit. The
+   reader recomputes `:inputs-sha256` from it.
+** `--check` runs the standard's `scripts/check-proof-receipt.sh --branch
+   origin/main` in place of this repository's own git checks. Mathesis runs
+   the same checker.
+** The reader, the reference digest script and the checker are pinned at
+   `e5a39d7`, each by sha256.
+
 * **The receipt carries inputs digests, axioms and an echo (PROOF-POLICY
   §8.5.1 to §8.5.3, standards `d9b03a3`).**
 ** Each current receipt carries `:inputs-sha256` and `(axioms ...)`. The
