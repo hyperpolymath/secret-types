@@ -6,6 +6,47 @@
 
 Initial development phase.
 
+=== Bounded CI maintenance, 2026-11-16
+
+The RSR canary now accepts CONTRIBUTING.adoc as well as CONTRIBUTING.md,
+at the root or in .github/, using the rsr-template-repo fix at e67ee001.
+Exactly one guide is required across all four supported paths; duplicate
+warnings name the offending paths. Controls cover all six guide pairs.
+Scorecard now grants
+actions: read on its calling job, as its pinned reusable workflow requires;
+the reusable path and commit, including native-lock reconciliation, are unchanged.
+Both regression controls run in the existing Estate Rules job after its verified
+yq installation. Local checks are recorded separately from hosted execution.
+
+* Must: Acceptance: repaired jobs must start and pass on GitHub before CI recovery is claimed.
+* Intend: resolve the separate Pages action-policy migration in
+  https://github.com/hyperpolymath/secret-types/issues/49[issue #49].
+
+The PR's RSR oracle subsequently segfaulted twice under OTP 28.3 while
+the unchanged main tree passed a current rerun. The owning template documents
+this content-dependent VM crash in
+https://github.com/hyperpolymath/rsr-template-repo/pull/335[PR #335]: changing
+workflow content can trigger it without changing the scorer. This repair adopts
+the template's OTP 27.3.4.19 oracle runtime and fixed Hypatia source, following
+https://github.com/hyperpolymath/rsr-template-repo/pull/369[PR #369]. The pin
+contains https://github.com/hyperpolymath/hypatia/pull/1062[the PinSites compiler
+guard]; the runtime and guard are both retained because the template later
+observed crashes with OTP 27.3 and the old Hypatia pin. The distinct cache key
+includes both the runtime and source pin, preventing reuse of the old build.
+The oracle command and gating behavior are preserved. Resolution requires a
+passing hosted oracle run on the exact new head; local structural checks alone
+do not establish that the crash is resolved.
+
+The oracle, SARIF scanner and both verdict reporters now share the canonical
+Hypatia pin `6693f9aed8e4383f78a3d01b600b32663bf7a45c`, satisfying the existing
+one-pin-per-tool contract (C2). The workflow-edge checker now reads real Hypatia
+checkout refs as well as declared scanner pins; wrong literal refs cannot hide
+behind a correct environment variable. Its controls cover missing and duplicate
+inputs, exact environment bindings and shell examples that resemble YAML.
+The scanner runtime and gate remain as configured. The suppression-layer source
+audit and its limited changes are recorded in `docs/HYPATIA-RULE-ORDER.adoc`;
+no repository exemption was added.
+
 == Milestones
 
 === v0.1.0 - Foundation
