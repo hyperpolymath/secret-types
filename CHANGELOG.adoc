@@ -10,6 +10,21 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The receipt is written by the shared generator (standards `f6ebc5e`,
+  metadatastician/standards#1620).**
+** `scripts/grade-receipt.sh` keeps this repository's ledgers and hooks and
+   sources the standard's `scripts/proof-receipt.sh`, which writes and checks
+   the receipt. The generator, the reader, the reference digest and the git
+   checker are pinned at `f6ebc5e`, each by sha256.
+** The receipt is unchanged but for the line naming the reader's commit;
+   every claim stays `PWG-1`.
+** The shared generator binds each Agda run to the trusted base it checked
+   (PROOF-POLICY §8.4). The current Agda row predates that field; its value
+   is the sha256 of `proof_trusted_base` at the run's own commit `7dfeab2`,
+   unchanged since.
+* `verification/legs/README.adoc` no longer says the grade is `PWG-2ii`; the
+  receipt derives `PWG-1`.
+
 * **The receipt lists its inputs, and the gate runs the shared git checker
   (standards `e5a39d7`, #1545).**
 ** Each current receipt carries `(inputs-manifest (file :path :sha256) ...)`,
