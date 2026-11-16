@@ -87,16 +87,17 @@ jobs:
             printf '::error title=Agda gate failed (rc=%s)::%s\n' "$rc" "$out"
           fi
           exit 0
+      # The receipt script sources the shared generator (standards
+      # scripts/proof-receipt.sh), fetched at its pin and sha256-checked.
+      # check-trusted-base.sh below already calls it (--inputs agda).
+      - name: Fetch the pinned receipt tools (sha256-checked)
+        run: bash scripts/grade-receipt.sh --fetch-reader
       # PROOF-POLICY §8.4: the prover-supplied postulates of the import cone
       # are exactly the trusted base the receipt lists (scripts/proof-flags.sh).
       - name: Trusted base of the import cone
         run: bash scripts/check-trusted-base.sh 2>&1 | tee /tmp/trusted-base.log
       - name: Which laws generic TINI uses
         run: bash scripts/minimal-laws.sh
-      # The receipt script sources the shared generator (standards
-      # scripts/proof-receipt.sh), fetched at its pin and sha256-checked.
-      - name: Fetch the pinned receipt tools (sha256-checked)
-        run: bash scripts/grade-receipt.sh --fetch-reader
       # The ledger row of this run's Agda leg: what the receipt job records.
       # Every field is read from this run: the checker's own version line, the
       # commit checked out, and the trusted-base lines the gates printed.
