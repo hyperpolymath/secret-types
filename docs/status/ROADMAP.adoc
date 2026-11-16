@@ -20,6 +20,21 @@ yq installation. Local checks are recorded separately from hosted execution.
 * Intend: resolve the separate Pages action-policy migration in
   https://github.com/hyperpolymath/secret-types/issues/49[issue #49].
 
+The PR's RSR oracle subsequently segfaulted twice under OTP 28.3 while
+the unchanged main tree passed a current rerun. The owning template documents
+this content-dependent VM crash in
+https://github.com/hyperpolymath/rsr-template-repo/pull/335[PR #335]: changing
+workflow content can trigger it without changing the scorer. This repair adopts
+the template's OTP 27.3.4.19 runtime and fixed Hypatia pin 51539abf, following
+https://github.com/hyperpolymath/rsr-template-repo/pull/369[PR #369]. The pin
+contains https://github.com/hyperpolymath/hypatia/pull/1062[the PinSites compiler
+guard]; the runtime and guard are both retained because the template later
+observed crashes with OTP 27.3 and the old Hypatia pin. The distinct cache key
+includes both the runtime and source pin, preventing reuse of the old build.
+The oracle command and gating behavior are preserved. Resolution requires a
+passing hosted oracle run on the exact new head; local structural checks alone
+do not establish that the crash is resolved.
+
 == Milestones
 
 === v0.1.0 - Foundation
