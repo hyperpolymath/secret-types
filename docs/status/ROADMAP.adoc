@@ -49,6 +49,28 @@ no repository exemption was added.
 
 == Milestones
 
+=== 2026-11-16 — structured checkout parsing follow-up
+
+PR #50 merged as `cd233bc17c35388daac41bdd692f664fa1cf0473`; its tree matches
+the reviewed signed head. Default-branch Scorecard run `43848766259` completed
+analysis, native-lock reconciliation and SARIF/artifact uploads; contribution
+canary run `43848771916` passed. Pages remains tracked separately in #49.
+
+Further review exposed YAML reader gaps in the Hypatia checkout census. The
+follow-up uses verified yq 4.53.3, checks raw mapping-key uniqueness before JSON
+conversion, and resolves checkout inputs from structured job and step data.
+The same pinned prerequisite is supplied in Estate Rules, Squabble and the
+Proven test workflow. Parser regressions and current-head CI remain the
+acceptance evidence; neither successful parsing nor a green oracle run is a
+compliance certificate.
+
+Authenticated Sonar inspection of PR #50 returned seven open maintainability
+findings. The follow-up names helper parameters, uses Bash double-bracket
+conditions at the flagged sites, and shares the repeated fixture expression
+through a readonly constant. Shared corrections are also made at the template
+source. Fresh hosted validation must cover these edits; the earlier local
+118-control passes apply to the pre-Sonar snapshot only. No finding is waived.
+
 === v0.1.0 - Foundation
 * [ ] Core functionality
 * [ ] Basic documentation

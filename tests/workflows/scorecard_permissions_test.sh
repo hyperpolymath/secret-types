@@ -11,6 +11,7 @@ trap 'rm -rf "$work"' EXIT
 wf="$repo/.github/workflows/scorecard.yml"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 check() {
+    local workflow="$1"
     yq -e '
       .jobs.scorecard.uses == "metadatastician/standards/.github/workflows/scorecard-reusable.yml@46ee18323305d5b36e2eef936e47dd54c39ea736" and
       (.jobs.scorecard.permissions | length) == 4 and
@@ -18,7 +19,7 @@ check() {
       .jobs.scorecard.permissions.contents == "read" and
       .jobs.scorecard.permissions."security-events" == "write" and
       .jobs.scorecard.permissions."id-token" == "write"
-    ' "$1" >/dev/null 2>&1
+    ' "$workflow" >/dev/null 2>&1
 }
 check "$wf" || fail 'calling job does not satisfy its pinned reusable contract'
 echo 'PASS: Scorecard keeps the pinned reconciliation workflow and exact job grants'
