@@ -6,6 +6,20 @@
 
 Initial development phase.
 
+=== Bounded CI maintenance, 2026-11-16
+
+The RSR canary now accepts CONTRIBUTING.adoc as well as CONTRIBUTING.md,
+at the root or in .github/, using the rsr-template-repo fix at e67ee001.
+The existing duplicate-guide detection remains in place. Scorecard now grants
+actions: read on its calling job, as its pinned reusable workflow requires;
+the reusable path and commit, including native-lock reconciliation, are unchanged.
+Both regression controls run in the existing Estate Rules job after its verified
+yq installation. Local checks are recorded separately from hosted execution.
+
+* Must: Acceptance: repaired jobs must start and pass on GitHub before CI recovery is claimed.
+* Intend: resolve the separate Pages action-policy migration in
+  https://github.com/hyperpolymath/secret-types/issues/49[issue #49].
+
 == Milestones
 
 === v0.1.0 - Foundation
