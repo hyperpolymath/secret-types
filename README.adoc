@@ -82,9 +82,12 @@ Secret → Echo for `nextgen-typing/docs/TYPE-CONNECTIONS.adoc`.
 `PROOF-POLICY.adoc` §8.5.1 and §8.5.2) describes commit `292d566` on main. It
 holds the receipts of CI run 43455458225 on commit `7dfeab2`, and an echo
 records that the squash merge into `292d566` left every leg's inputs equal.
-From them the pinned reader derives Proof Witness Grade **`PWG-1`** for each
-proved claim. The grade is what the reader derives, never a value
-typed here. The proved claims type-check in Agda under the
+From them the pinned reader derives Proof Witness Grade **`PWG-2ii`** for each
+proved claim. It is not `PWG-1` because the Rocq and Lean legs of that run ran
+on a bare runner with no image digest, and PROOF-POLICY §8.2 counts a witness
+toward `PWG-1` only with one; the legs job now runs in a digest-pinned image,
+so the next recorded run restores `PWG-1`. The grade is what the reader
+derives, never a value typed here. The proved claims type-check in Agda under the
 canonical §2.1 invocation, `--cubical-compatible` included, with stronger flags
 besides (`scripts/proof-flags.sh`). Each is also re-proved by hand in Rocq
 (Coq 8.18.0, prelude only) and in Lean (4.24.0, core only, no Mathlib), with no

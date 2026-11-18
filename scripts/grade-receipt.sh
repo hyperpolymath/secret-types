@@ -46,9 +46,9 @@ RECEIPT_SCRIPT=scripts/grade-receipt.sh
 # _build/standards, because the checker finds the reader and the digest
 # script by their paths.  Mathesis pins the same reader and runs the same
 # checker.
-RECEIPT_STANDARDS_COMMIT="${RECEIPT_STANDARDS_COMMIT_OVERRIDE:-f6ebc5ec6ba5d7f79ce996bf74c5237481a2a2fb}"
-GENERATOR_SHA256=bfe35c08397ab85d7d33998ae126e189988994598320ffd2b139f2038e8eec4c
-READER_SHA256=8978546740ca2d6a1d90b769fe02159883cb18f1eb2c44b2eeb737bab341dcd2
+RECEIPT_STANDARDS_COMMIT="${RECEIPT_STANDARDS_COMMIT_OVERRIDE:-940a27af1e25a73a2d55daa78d0763e6749fd935}"
+GENERATOR_SHA256=47e9e5596e69574440260e4372c4b400f6c5f97192ff04292a59bffc4c215fe8
+READER_SHA256=29278b46654bdee70e8e1ff4a7ff8cb810e04b618c9ca1520a6979d6c4c91f18
 DIGEST_SHA256=dfc6dde01a3a79df638eebe4cad0eae584d8f17280077e149174c0667e9508f4
 CHECKER_SHA256=f2375747238464535d1b4a61f658f07cb2f8504c69bfb1812311c79429a4e23e
 RECEIPT_STD="${RECEIPT_STD_OVERRIDE:-_build/standards}"
@@ -114,14 +114,21 @@ ROWS
 # empty when the checker reported none, and the gates fail on any axiom.
 # An Agda row then carries an imports field (empty here: this repository
 # imports no other) and the sha256 of the trusted base the run checked
-# (PROOF-POLICY 8.4), which --run-row writes.  The current Agda row was
-# recorded before the shared generator wrote that field.  Its value is the
-# sha256 of proof_trusted_base in scripts/proof-flags.sh at the run's own
-# commit 7dfeab2, the list the run's trusted-base gate checked the cone
-# against (its reported column); that list is unchanged since.
+# (PROOF-POLICY 8.4); any row may carry last the digest-pinned image its
+# checker ran in (PROOF-POLICY 8.2: PWG-1 needs one on every counted leg).
+# --run-row writes both.  The current rows were recorded before the shared
+# generator wrote them, so their values come from the run's own commit
+# 7dfeab2:
+# - the trusted base is the sha256 of proof_trusted_base in
+#   scripts/proof-flags.sh there, the list the run's trusted-base gate
+#   checked the cone against (its reported column); unchanged since;
+# - the Agda image is the container proofs.yml pinned there for the Agda job;
+# - the Rocq and Lean legs ran on the bare ubuntu-24.04 runner, which has no
+#   digest, so their rows carry none and the grade is PWG-2ii until a run in
+#   the legs job's pinned image is recorded.
 receipt_runs() {
   cat <<'ROWS'
-agda|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|current||||0c1f64c3c7f0a26cbc92595168858485a9883f6196d287497dcc805faf5c58eb
+agda|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|current||||0c1f64c3c7f0a26cbc92595168858485a9883f6196d287497dcc805faf5c58eb|debian:13-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
 rocq|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|The Coq Proof Assistant, version 8.18.0 (Ubuntu 24.04 coq=8.18.0+dfsg-1build2)|coqc -q SecretTypes.v (in verification/legs/rocq)|4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60|Rocq leg (Coq 8.18.0), 11 theorems closed under the global context|current||
 lean|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Lean (version 4.24.0, x86_64-unknown-linux-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release) (release tarball, sha256 b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec)|lake build; lake env lean Axioms.lean (in verification/legs/lean)|7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6|Lean leg (Lean 4.24.0, core only), 11 theorems depend on no axioms|current||
 agda|https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1|88a763ac6101b8d9e59c71caa6959abb4bffe4bd|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|a0a8d66d74bf9deb5beeba6739c377290ce7399cf8ef60dc6214da211d086cb4|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|superseded|the inputs of the Agda leg changed after this run (scanner hardening from review); the CI run of the hardened commit replaces it|

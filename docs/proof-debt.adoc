@@ -81,9 +81,11 @@ that they are not mistaken for either:
   and the receipt records them. The statement comparison was written by Claude
   Code, and the owner reviewed it on 2026-11-13, so no obligation remains here.
   The grade is what the pinned reader derives from the proof receipt
-  (`PROOF-POLICY` §8.5.1, §8.5.2): `PWG-1` at commit `292d566` on main, from
+  (`PROOF-POLICY` §8.5.1, §8.5.2): `PWG-2ii` at commit `292d566` on main, from
   the receipts of CI run 43455458225 on commit `7dfeab2` and the echo that
-  joins the two commits.
+  joins the two commits. `PWG-1` also needs a digest-pinned image on every
+  counted leg (§8.2); the Rocq and Lean legs of that run had none, so it
+  returns with the first recorded run of the legs job in its pinned image.
 * *Termination-sensitive noninterference.*
   `Noninterference.OutcomeVisibility.termination-sensitive-fails` refutes TSNI
   for the current typing rules when finishing versus non-finishing is public.

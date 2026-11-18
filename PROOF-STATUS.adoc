@@ -26,8 +26,15 @@ invocation, which this repository has met since waiver W-1 closed.
 |===
 | Claim | PWG | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
-| PWG-1 is the top grade. The pinned reader derives it from
+| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-2ii`*
+| Not `PWG-1`: PROOF-POLICY §8.2 (owner ruling 2026-11-16, standards #1625)
+  counts a witness toward PWG-1 only when its current receipt records the
+  digest-pinned image its checker ran in. The Agda leg of that run ran in
+  `debian:13-slim@sha256:a29215f6…`, and its receipt says so; the Rocq and
+  Lean legs ran on the bare `ubuntu-24.04` runner, which has no digest. The
+  legs job now runs in `ubuntu:24.04@sha256:73b99939…`, so the first run on
+  main that is recorded will carry an image for all three legs, and the reader
+  will derive `PWG-1` again. The pinned reader derives the grade from
   link:verification/receipts/agda_praxis.deed[the receipt], whose
   `:source-commit` is `292d566` on main. CI run
   https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
