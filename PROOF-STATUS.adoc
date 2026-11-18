@@ -26,8 +26,17 @@ invocation, which this repository has met since waiver W-1 closed.
 |===
 | Claim | PWG | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
-| PWG-1 is the top grade. The pinned reader derives it from
+| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-2ii`* (was `PWG-1`)
+| Downgraded from `PWG-1` on 2026-11-18. standards#1625 (owner ruling
+  2026-11-16) makes `PWG-1` require that every counted witness's current
+  receipt names the container image its checker ran in, pinned by digest
+  (`:image "NAME@sha256:<64 hex>"`). None of the receipts here carries an
+  `:image`, so the reader at standards `940a27af` derives `PWG-2ii` for all
+  six claims, and the recorded grade follows it. The Agda job of
+  `.github/workflows/proofs.yml` does run in a digest-pinned container, but
+  the Rocq and Lean legs run on the bare runner, with no container image to
+  name, so `PWG-1` is not reachable by naming an image alone. The receipt is
+  otherwise unchanged. The pinned reader derives the grade from
   link:verification/receipts/agda_praxis.deed[the receipt], whose
   `:source-commit` is `292d566` on main. CI run
   https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
