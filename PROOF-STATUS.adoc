@@ -192,7 +192,7 @@ the same way.
 The `receipt` job writes the receipt for its own run and prints the rows to
 record, then checks the committed receipt. The pinned reader
 (`readProofReceipt`), the reference digest script and the checker are all
-at standards `e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d`, each pinned by
+at standards `940a27af1e25a73a2d55daa78d0763e6749fd935`, each pinned by
 sha256. The reader derives each claim's grade. A negative control runs with every check: the
 same receipt with a wrong `:pwg` must be refused.
 
