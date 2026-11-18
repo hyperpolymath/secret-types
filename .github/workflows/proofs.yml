@@ -106,7 +106,11 @@ jobs:
         run: |
           checker="$(agda --version | head -1) ($(bash scripts/proof-flags.sh provenance), container debian:13-slim)"
           axioms="--safe; $(grep -h '^PASS: trusted base' /tmp/check.log /tmp/trusted-base.log | sed 's/^PASS: //' | awk 'NR>1{printf "; "} {printf "%s", $0}')"
-          row="$(bash scripts/grade-receipt.sh --run-row agda --run "$RUN_URL" --commit "$(git rev-parse HEAD)" --checker "$checker" --reported "$axioms")"
+          # The image is this job's container line, read from the workflow at
+          # the commit under test (PROOF-POLICY §8.2).  The gates refuse any
+          # axiom, so a run that reaches this step reported none.
+          image="$(sed -n '/^  proofs:$/,/^  [a-z][a-z-]*:$/{s/^    container: *//p}' .github/workflows/proofs.yml)"
+          row="$(bash scripts/grade-receipt.sh --run-row agda --run "$RUN_URL" --commit "$(git rev-parse HEAD)" --checker "$checker" --reported "$axioms" --axioms none --image "$image")"
           printf '%s\n' "$row"
           printf 'row=%s\n' "$row" >> "$GITHUB_OUTPUT"
 
@@ -114,11 +118,15 @@ jobs:
   # the Agda statements (verification/legs/README.adoc gives the route and the
   # statement correspondence). Both provers are pinned: Coq by its Ubuntu
   # package version, Lean by its release tarball's sha256. Neither leg may use
-  # an axiom or a library; scripts/check-legs.sh refuses either.
+  # an axiom or a library; scripts/check-legs.sh refuses either.  The job runs
+  # in an image pinned by its digest (PROOF-POLICY §8.2, owner ruling
+  # 2026-11-16): a bare runner's image can change underneath a version-pinned
+  # prover, and a witness counts toward PWG-1 only with its image recorded.
   legs:
     name: Rocq and Lean recheck legs (no axioms, no libraries)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    container: ubuntu:24.04@sha256:73b999393d07f2bf65a40373778a44dc9a6d54ad7718d29247d8ff9413c4d6a8
     env:
       COQ_PACKAGE: coq=8.18.0+dfsg-1build2
       LEAN_URL: https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
@@ -127,10 +135,12 @@ jobs:
       rocq: ${{ steps.row.outputs.rocq }}
       lean: ${{ steps.row.outputs.lean }}
     steps:
+      # git is installed so that the checkout is a real clone; curl fetches
+      # Lean and the pinned receipt tools.
       - name: Install the pinned Coq
         run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y "$COQ_PACKAGE" zstd
+          apt-get update
+          apt-get install --no-install-recommends -y ca-certificates curl git zstd "$COQ_PACKAGE"
       - name: Install the pinned Lean (release tarball, sha256-checked)
         run: |
           set -euo pipefail
@@ -157,12 +167,15 @@ jobs:
         id: row
         run: |
           commit="$(git rev-parse HEAD)"
+          # This job's container line, read from the workflow at the commit
+          # under test; check-legs.sh refuses any axiom, so the legs reported none.
+          image="$(sed -n '/^  legs:$/,/^  [a-z][a-z-]*:$/{s/^    container: *//p}' .github/workflows/proofs.yml)"
           rocq="$(bash scripts/grade-receipt.sh --run-row rocq --run "$RUN_URL" --commit "$commit" \
             --checker "$(coqc --version | head -1) (Ubuntu 24.04 $COQ_PACKAGE)" \
-            --reported "$(grep '^PASS: Rocq leg' /tmp/legs.log | sed 's/^PASS: //')")"
+            --reported "$(grep '^PASS: Rocq leg' /tmp/legs.log | sed 's/^PASS: //')" --axioms none --image "$image")"
           lean="$(bash scripts/grade-receipt.sh --run-row lean --run "$RUN_URL" --commit "$commit" \
             --checker "$(lean --version | head -1) (release tarball, sha256 $LEAN_SHA256)" \
-            --reported "$(grep '^PASS: Lean leg' /tmp/legs.log | sed 's/^PASS: //')")"
+            --reported "$(grep '^PASS: Lean leg' /tmp/legs.log | sed 's/^PASS: //')" --axioms none --image "$image")"
           printf '%s\n%s\n' "$rocq" "$lean"
           { printf 'rocq=%s\n' "$rocq"; printf 'lean=%s\n' "$lean"; } >> "$GITHUB_OUTPUT"
 

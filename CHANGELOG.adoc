@@ -10,6 +10,21 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The grade follows the image rule of PROOF-POLICY §8.2 (owner ruling
+  2026-11-16, standards #1625): `PWG-2ii` until the next recorded run.**
+** The receipt tools are pinned at standards `940a27a`, whose reader counts a
+   witness toward `PWG-1` only when its current receipt records the
+   digest-pinned image its checker ran in.
+** The current Agda row records `debian:13-slim@sha256:a29215f6…`, the
+   container `proofs.yml` pinned for the Agda job at the run's commit
+   `7dfeab2`. The Rocq and Lean legs of that run ran on the bare
+   `ubuntu-24.04` runner, which has no digest, so every claim reads
+   `PWG-2ii`; README, PROOF-STATUS, the legs README and the proof-debt
+   ledger say so and why.
+** The legs job now runs in `ubuntu:24.04@sha256:73b99939…`. Both jobs pass
+   `--image` (read from their own `container:` line) and `--axioms none` to
+   `--run-row`, so the first run recorded on main restores `PWG-1`.
+
 * **The receipt is written by the shared generator (standards `f6ebc5e`,
   metadatastician/standards#1620).**
 ** `scripts/grade-receipt.sh` keeps this repository's ledgers and hooks and
