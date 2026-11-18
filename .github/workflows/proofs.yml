@@ -154,8 +154,13 @@ jobs:
         with:
           ref: ${{ env.SOURCE_COMMIT }}
           persist-credentials: false
+      # As in the Agda job: in a container, actions/checkout marks the
+      # workspace safe only under a temporary HOME, so git refuses it later
+      # ("dubious ownership"; run 44214405363).  Mark it for this job.
       - name: Verify the commit under test
-        run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
       - name: Both legs check, with no axioms
         run: bash scripts/check-legs.sh 2>&1 | tee /tmp/legs.log
       # The receipt script sources the shared generator (standards
