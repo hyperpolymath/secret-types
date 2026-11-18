@@ -51,10 +51,10 @@ default_branch=main
 # _build/standards, because the checker finds the reader and the digest
 # script by their paths.  Mathesis pins the same reader and runs the same
 # checker.
-STANDARDS_COMMIT=e5a39d7e5c66f9d24d7e0ffa3f8dbd01f2d42d9d
-READER_SHA256=37ff85be499b35dd9d74399e05d9ae1e57ccf095362c355f93e04b3bbf4c9491
+STANDARDS_COMMIT=940a27af1e25a73a2d55daa78d0763e6749fd935
+READER_SHA256=29278b46654bdee70e8e1ff4a7ff8cb810e04b618c9ca1520a6979d6c4c91f18
 DIGEST_SHA256=dfc6dde01a3a79df638eebe4cad0eae584d8f17280077e149174c0667e9508f4
-CHECKER_SHA256=831f5a43c906c3edc8cfa68ab5fe13c37e7a41b35e40068481d988d887f4bd3f
+CHECKER_SHA256=f2375747238464535d1b4a61f658f07cb2f8504c69bfb1812311c79429a4e23e
 STANDARDS_RAW="https://raw.githubusercontent.com/metadatastician/standards/$STANDARDS_COMMIT"
 std_dir=_build/standards
 reader="$std_dir/1-formats/deed/tools/deed_lint.js"
@@ -90,13 +90,17 @@ ROWS
 # that leg for every claim.
 # prover | run | commit (40 hex) | checker | invocation | inputs sha256 |
 # what the run reported | state (current|superseded|regressed) | reason |
-# axioms
+# axioms | image (optional, the 11th field)
 # The inputs sha256 of a current row is the §8.5.1 digest at the row's
 # commit; --check computes it again with the reference script (§8.5.3).  A
 # row that is not current keeps the digest its run printed, which may predate
 # §8.5.1, and the receipt does not state it.  The axioms column lists each
 # axiom the checker reported as name:disposition, comma-separated; it is
 # empty when the checker reported none, and the gates fail on any axiom.
+# The image column is empty unless the CI log of that run printed the container
+# image its checker ran in, pinned by digest (NAME@sha256:<64 hex>); only a
+# current row may carry one, and it is never typed from memory (§8.2,
+# standards#1625: PWG-1 needs it on every counted witness).
 runs() {
   cat <<'ROWS'
 agda|https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1|7dfeab2dc13142fac476ee9c698cf009deb709c9|Agda version 2.6.4.3 (Debian 13 agda-bin=2.6.4.3-1+b2, container debian:13-slim)|agda --safe --without-K --cubical-compatible --no-libraries --ignore-interfaces --double-check -W error -i src src/SecretTypes/All.agda|96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e|--safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate|current||
@@ -214,9 +218,14 @@ echo_ref() { local c="$1"; echoes | awk -F'|' -v c="$c" '$1==c{print $4}'; }
 # Validate one row; print nothing.  A field may not hold " or \ (deed strings)
 # and may not be empty, except the reason of a current receipt and the axioms.
 check_row() {
-  local row="$1" prover run commit checker inv dig said state reason axioms a
-  IFS='|' read -r prover run commit checker inv dig said state reason axioms <<< "$row"
-  [[ "$(tr -cd '|' <<< "$row" | wc -c)" == 9 ]] || die "a ledger row needs 10 fields: $row"
+  local row="$1" prover run commit checker inv dig said state reason axioms image a
+  IFS='|' read -r prover run commit checker inv dig said state reason axioms image <<< "$row"
+  [[ "$(tr -cd '|' <<< "$row" | wc -c)" == 9 || "$(tr -cd '|' <<< "$row" | wc -c)" == 10 ]] || die "a ledger row needs 10 fields, or 11 with an image: $row"
+  if [[ -n "$image" ]]; then
+    [[ "$state" == current ]] || die "only a current row may name an image: $row"
+    local img_re='^[^[:space:]|@]+@sha256:[0-9a-f]{64}$'
+    [[ "$image" =~ $img_re ]] || die "an image must be pinned by digest, NAME@sha256:<64 hex>: $row"
+  fi
   [[ "$row" != *'"'* && "$row" != *'\'* ]] || die "a ledger row holds a quote or backslash: $row"
   [[ "$prover" =~ ^(agda|rocq|lean)$ ]] || die "unknown prover in row: $row"
   [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || die "a row's commit must be 40 lowercase hex: $row"
@@ -290,6 +299,10 @@ describes_source() {
     c="$img"
   done
 }
+# standards#1625 (owner ruling 2026-11-16), as the reader derives it: PWG-1 needs
+# every counted witness's current receipt to name the image its checker ran in,
+# pinned by digest.  The ledger's image column holds it; the reader checks its form.
+names_image() { [[ -n "$(current_field "$1" 11)" ]]; }
 pwg_of() {
   local token="$1" coq_route="$2" coq_state="$3" lean_route="$4" lean_state="$5" n=0 p
   [[ "$token" == proven || "$token" == proven-with-postulates ]] || { printf 'ungraded'; return; }
@@ -302,7 +315,7 @@ pwg_of() {
   case "$n" in
     0) printf 'PWG-3' ;;
     1) printf 'PWG-2i' ;;
-    2) if describes_source agda && describes_source rocq && describes_source lean; then printf 'PWG-1'; else printf 'PWG-2ii'; fi ;;
+    2) if describes_source agda && describes_source rocq && describes_source lean && names_image agda && names_image rocq && names_image lean; then printf 'PWG-1'; else printf 'PWG-2ii'; fi ;;
     *) die "unexpected recheck count: $n" ;;
   esac
 }
@@ -328,11 +341,11 @@ emit_manifest() {
   printf ')\n'
 }
 emit_receipts() {
-  local prover="$1" row p run commit checker inv dig said state reason axioms
+  local prover="$1" row p run commit checker inv dig said state reason axioms image
   # Current first, then the lineage in ledger order.
   for want in current other; do
     while IFS= read -r row; do
-      IFS='|' read -r p run commit checker inv dig said state reason axioms <<< "$row"
+      IFS='|' read -r p run commit checker inv dig said state reason axioms image <<< "$row"
       [[ "$p" == "$prover" ]] || continue
       if [[ $want == current ]]; then [[ $state == current ]] || continue; else [[ $state != current ]] || continue; fi
       printf '      ; the run reported: %s\n' "$said"
@@ -341,6 +354,7 @@ emit_receipts() {
       printf '               :checker "%s"\n' "$checker"
       printf '               :invocation "%s"\n' "$inv"
       if [[ $state == current ]]; then
+        [[ -z "$image" ]] || printf '               :image "%s"\n' "$image"
         printf '               :inputs-sha256 "%s"\n' "$dig"
         printf '               :state current\n'
         emit_manifest "$prover"

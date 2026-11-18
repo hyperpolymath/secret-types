@@ -10,6 +10,20 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **The receipt records `PWG-2ii`, and the generator derives it (standards
+  `940a27a`, #1625).**
+** Under standards#1625 (owner ruling 2026-11-16), `PWG-1` needs every counted
+   witness's current receipt to name the container image its checker ran in,
+   pinned by digest (`:image "NAME@sha256:<64 hex>"`). None of these receipts
+   does, so the reader derives `PWG-2ii` for N-1, N-2, N-3, N-7, N-8 and N-9,
+   and the receipt and `PROOF-STATUS.adoc` record it.
+** `scripts/grade-receipt.sh` follows the reader: `pwg_of` yields `PWG-1` only
+   when every counted witness names an image, through a new optional 11th
+   ledger column that is emitted as `:image`. No row carries one, because no CI
+   log printed a digest for these runs.
+** The reader, the reference digest script and the checker are now pinned at
+   `940a27a`, each by sha256.
+
 * **The receipt lists its inputs, and the gate runs the shared git checker
   (standards `e5a39d7`, #1545).**
 ** Each current receipt carries `(inputs-manifest (file :path :sha256) ...)`,

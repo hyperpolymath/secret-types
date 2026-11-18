@@ -53,7 +53,11 @@ It applies to theory theorems:
 * `PWG-2ii` means both legs count, which discharges the policy's recheck
   obligation.
 * `PWG-1` adds a current receipt, per commit, from a pinned headless
-  checker for every witness.
+  checker for every witness. Since standards#1625 (owner ruling 2026-11-16)
+  each counted witness's receipt must also name the container image its
+  checker ran in, pinned by digest (`:image "NAME@sha256:<64 hex>"`). Without
+  it the grade is `PWG-2ii`; this repository's receipts name no image, so it
+  records `PWG-2ii`.
 
 A leg counts only when it is kernel-checked and its statement
 correspondence is `RECONCILED`. Grades are derived from receipts and the
