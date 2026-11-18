@@ -45,7 +45,7 @@ jobs:
       - name: Install the pinned prover
         run: |
           apt-get update
-          apt-get install --no-install-recommends -y ca-certificates git agda-bin=2.6.4.3-1+b2
+          apt-get install --no-install-recommends -y ca-certificates curl git agda-bin=2.6.4.3-1+b2
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -87,6 +87,11 @@ jobs:
             printf '::error title=Agda gate failed (rc=%s)::%s\n' "$rc" "$out"
           fi
           exit 0
+      # The receipt script sources the shared generator (standards
+      # scripts/proof-receipt.sh), fetched at its pin and sha256-checked.
+      # check-trusted-base.sh below already calls it (--inputs agda).
+      - name: Fetch the pinned receipt tools (sha256-checked)
+        run: bash scripts/grade-receipt.sh --fetch-reader
       # PROOF-POLICY §8.4: the prover-supplied postulates of the import cone
       # are exactly the trusted base the receipt lists (scripts/proof-flags.sh).
       - name: Trusted base of the import cone
@@ -143,6 +148,10 @@ jobs:
         run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
       - name: Both legs check, with no axioms
         run: bash scripts/check-legs.sh 2>&1 | tee /tmp/legs.log
+      # The receipt script sources the shared generator (standards
+      # scripts/proof-receipt.sh), fetched at its pin and sha256-checked.
+      - name: Fetch the pinned receipt tools (sha256-checked)
+        run: bash scripts/grade-receipt.sh --fetch-reader
       # The ledger rows of this run's Rocq and Lean legs, read from this run.
       - name: Ledger rows of the Rocq and Lean legs
         id: row

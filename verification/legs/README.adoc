@@ -177,8 +177,8 @@ N-4, N-5 and N-6 have no leg. They are checked demonstrations, not theorems
   independent of Agda's, but all three are dependent type theories. The tag
   needs a witness in a different foundation, such as Isabelle/HOL, and none
   exists.
-* The grade is `PWG-2ii`, not `PWG-1`. `PWG-1` needs a receipt per witness,
-  per commit, recording the observed result of a pinned checker run on that
-  commit (§8.2). The receipt here records the legs' versions, invocations and
-  input digests; the CI log of the `legs` job is the observed result, and it
-  is not yet captured as a receipt.
+* The grade, `PWG-1`, rests on the receipts of one CI run
+  (https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
+  on commit `7dfeab2`), carried to `292d566` on main by an echo (§8.5.2).
+  A change to any leg's inputs drops it until a new run is recorded (§8.4);
+  link:../../PROOF-STATUS.adoc[`PROOF-STATUS.adoc`] gives the derivation.
