@@ -7,7 +7,7 @@
 ;; checked with the reference script of the standard.  The grade is derived,
 ;; never typed:
 ;;   bun deed_lint.js --proof-receipt-json verification/receipts/agda_praxis.deed
-;; with the reader at standards f6ebc5ec6ba5d7f79ce996bf74c5237481a2a2fb.
+;; with the reader at standards 4813fa1092a38a6782e722ede5b09ce79e92fba3.
 ;; Demonstrations N-4, N-5 and N-6 are not theorems (§8.1) and have no claim here.
 ;; The trusted base is what scripts/check-trusted-base.sh finds in the
 ;; prover-supplied modules of the import cone of src/SecretTypes/All.agda.
@@ -27,7 +27,7 @@
     (inputs :prover agda :sha256 "96b2f0237fcc31a0ab60cc6952edbe4e9c1b3ca5f267d79bf6491f81432b0c9e")
     (inputs :prover rocq :sha256 "4c96fb9c7d22685ae08d71fc2f200e394e93f07711b2b0619d2a154dbd19bc60")
     (inputs :prover lean :sha256 "7ed75659e1520a28b949c7b004609485605f1b9e017b810352be4285390a13d6"))
-  (claim :id "N-1" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-1" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
@@ -123,7 +123,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-2" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-2" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
@@ -219,7 +219,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-3" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-3" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
@@ -315,7 +315,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-7" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-7" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
@@ -411,7 +411,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-8" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-8" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"
@@ -507,7 +507,7 @@
                :invocation "lake build; lake env lean Axioms.lean (in verification/legs/lean)"
                :state superseded
                :reason "local run outside CI, kept as lineage only; replaced by the CI run https://github.com/hyperpolymath/secret-types/actions/runs/43448301280/attempts/1")))
-  (claim :id "N-9" :pwg PWG-1 :foundation-diverse #f
+  (claim :id "N-9" :pwg PWG-2ii :foundation-diverse #f
     (leg :prover agda :route source :token proven :state AGDA-VERIFIED
       ; the run reported: --safe; trusted base (no postulates under src/SecretTypes or tests); trusted base: 4 prover postulates in 6 prover-supplied modules of the cone, each BUILTIN-bound and listed; no other postulate
       (receipt :run "https://github.com/hyperpolymath/secret-types/actions/runs/43455458225/attempts/1"

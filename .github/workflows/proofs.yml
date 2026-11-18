@@ -37,6 +37,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     container: debian:13-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+    # The image the checker runs in, recorded in the run row (--image) so the
+    # receipt can name it (PROOF-POLICY §8.2, owner ruling 2026-11-16).  It must
+    # equal the container line above; a step below fails the job if it does not.
+    env:
+      IMAGE: debian:13-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
     outputs:
       row: ${{ steps.row.outputs.row }}
     steps:
@@ -59,6 +64,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           test "$(agda --version)" = 'Agda version 2.6.4.3'
           test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          grep -qxF "    container: $IMAGE" .github/workflows/proofs.yml
       # The gate surfaces its own failure twice: once in the log, and once as a
       # check annotation. The annotation matters because the job log is not
       # always reachable (GitHub serves it from a blob host that some agent
@@ -106,7 +112,7 @@ jobs:
         run: |
           checker="$(agda --version | head -1) ($(bash scripts/proof-flags.sh provenance), container debian:13-slim)"
           axioms="--safe; $(grep -h '^PASS: trusted base' /tmp/check.log /tmp/trusted-base.log | sed 's/^PASS: //' | awk 'NR>1{printf "; "} {printf "%s", $0}')"
-          row="$(bash scripts/grade-receipt.sh --run-row agda --run "$RUN_URL" --commit "$(git rev-parse HEAD)" --checker "$checker" --reported "$axioms")"
+          row="$(bash scripts/grade-receipt.sh --run-row agda --run "$RUN_URL" --commit "$(git rev-parse HEAD)" --checker "$checker" --reported "$axioms" --axioms none --image "$IMAGE")"
           printf '%s\n' "$row"
           printf 'row=%s\n' "$row" >> "$GITHUB_OUTPUT"
 
@@ -114,12 +120,17 @@ jobs:
   # the Agda statements (verification/legs/README.adoc gives the route and the
   # statement correspondence). Both provers are pinned: Coq by its Ubuntu
   # package version, Lean by its release tarball's sha256. Neither leg may use
-  # an axiom or a library; scripts/check-legs.sh refuses either.
+  # an axiom or a library; scripts/check-legs.sh refuses either.  The job runs
+  # in an image pinned by its digest, so the checker is isolated in the sense
+  # of PROOF-POLICY §8.2 (owner ruling 2026-11-16; #53): a bare runner's image
+  # can change underneath a version-pinned prover.
   legs:
     name: Rocq and Lean recheck legs (no axioms, no libraries)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    container: ubuntu:24.04@sha256:73b999393d07f2bf65a40373778a44dc9a6d54ad7718d29247d8ff9413c4d6a8
     env:
+      IMAGE: ubuntu:24.04@sha256:73b999393d07f2bf65a40373778a44dc9a6d54ad7718d29247d8ff9413c4d6a8
       COQ_PACKAGE: coq=8.18.0+dfsg-1build2
       LEAN_URL: https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
       LEAN_SHA256: b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec
@@ -129,8 +140,8 @@ jobs:
     steps:
       - name: Install the pinned Coq
         run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y "$COQ_PACKAGE" zstd
+          apt-get update
+          apt-get install --no-install-recommends -y ca-certificates curl git zstd "$COQ_PACKAGE"
       - name: Install the pinned Lean (release tarball, sha256-checked)
         run: |
           set -euo pipefail
@@ -144,8 +155,12 @@ jobs:
         with:
           ref: ${{ env.SOURCE_COMMIT }}
           persist-credentials: false
-      - name: Verify the commit under test
-        run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+      # As in the Agda job: mark the workspace safe for git in this container.
+      - name: Verify the commit under test and the image
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          grep -qxF "    container: $IMAGE" .github/workflows/proofs.yml
       - name: Both legs check, with no axioms
         run: bash scripts/check-legs.sh 2>&1 | tee /tmp/legs.log
       # The receipt script sources the shared generator (standards
@@ -159,10 +174,10 @@ jobs:
           commit="$(git rev-parse HEAD)"
           rocq="$(bash scripts/grade-receipt.sh --run-row rocq --run "$RUN_URL" --commit "$commit" \
             --checker "$(coqc --version | head -1) (Ubuntu 24.04 $COQ_PACKAGE)" \
-            --reported "$(grep '^PASS: Rocq leg' /tmp/legs.log | sed 's/^PASS: //')")"
+            --reported "$(grep '^PASS: Rocq leg' /tmp/legs.log | sed 's/^PASS: //')" --axioms none --image "$IMAGE")"
           lean="$(bash scripts/grade-receipt.sh --run-row lean --run "$RUN_URL" --commit "$commit" \
             --checker "$(lean --version | head -1) (release tarball, sha256 $LEAN_SHA256)" \
-            --reported "$(grep '^PASS: Lean leg' /tmp/legs.log | sed 's/^PASS: //')")"
+            --reported "$(grep '^PASS: Lean leg' /tmp/legs.log | sed 's/^PASS: //')" --axioms none --image "$IMAGE")"
           printf '%s\n%s\n' "$rocq" "$lean"
           { printf 'rocq=%s\n' "$rocq"; printf 'lean=%s\n' "$lean"; } >> "$GITHUB_OUTPUT"
 

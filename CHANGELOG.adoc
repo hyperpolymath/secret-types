@@ -10,6 +10,21 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **Every proof job runs in a digest-pinned image, and the grade follows the
+  image rule (standards `4813fa1`, #53).**
+** The receipt tools are pinned at standards `4813fa1`, which carries the
+   image rule of PROOF-POLICY §8.2 (metadatastician/standards#1625) and the
+   generator's review fixes (metadatastician/standards#1656).
+** Under that reader the recorded runs derive `PWG-2ii`, not `PWG-1`: their
+   Rocq and Lean checkers ran on a bare runner. The receipt is unchanged but
+   for the six `:pwg` fields and the line naming the reader's commit.
+** The Rocq and Lean job now runs in
+   `ubuntu:24.04@sha256:73b999393d07f2bf65a40373778a44dc9a6d54ad7718d29247d8ff9413c4d6a8`,
+   as the Agda job already ran in a digest-pinned Debian 13 image. Each run
+   row records its image (`--image`) and the axioms its run reported
+   (`--axioms none`), so the first run on main that is recorded can derive
+   `PWG-1`.
+
 * **The receipt is written by the shared generator (standards `f6ebc5e`,
   metadatastician/standards#1620).**
 ** `scripts/grade-receipt.sh` keeps this repository's ledgers and hooks and

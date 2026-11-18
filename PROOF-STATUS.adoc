@@ -26,8 +26,13 @@ invocation, which this repository has met since waiver W-1 closed.
 |===
 | Claim | PWG | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
-| PWG-1 is the top grade. The pinned reader derives it from
+| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-2ii`*
+| PWG-1 also needs every counted witness to have run in a container image
+  pinned by its digest, named in its receipt (`:image`, §8.2, owner ruling
+  2026-11-16). The recorded Rocq and Lean runs were on a bare runner, so the
+  pinned reader derives `PWG-2ii`. Every proof job now runs in a
+  digest-pinned image and records it, so the first run on main that is
+  recorded will let the reader derive `PWG-1`. The grade comes from
   link:verification/receipts/agda_praxis.deed[the receipt], whose
   `:source-commit` is `292d566` on main. CI run
   https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
