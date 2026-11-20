@@ -26,21 +26,15 @@ invocation, which this repository has met since waiver W-1 closed.
 |===
 | Claim | PWG | Why not higher
 
-| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-2ii`*
-| Not `PWG-1`: PROOF-POLICY §8.2 (owner ruling 2026-11-16, standards #1625)
-  counts a witness toward PWG-1 only when its current receipt records the
-  digest-pinned image its checker ran in. The Agda leg of that run ran in
-  `debian:13-slim@sha256:a29215f6…`, and its receipt says so; the Rocq and
-  Lean legs ran on the bare `ubuntu-24.04` runner, which has no digest. The
-  legs job now runs in `ubuntu:24.04@sha256:73b99939…`, so the first run on
-  main that is recorded will carry an image for all three legs, and the reader
-  will derive `PWG-1` again. The pinned reader derives the grade from
+| N-1, N-2, N-3, N-7, N-8, N-9 | *`PWG-1`*
+| PWG-1 is the top grade. The pinned reader derives it from
   link:verification/receipts/agda_praxis.deed[the receipt], whose
-  `:source-commit` is `292d566` on main. CI run
-  https://github.com/hyperpolymath/secret-types/actions/runs/43455458225[43455458225]
-  checked all three witnesses on commit `7dfeab2`. The squash merge of #40
-  replaced that commit by `292d566`, and an echo (§8.5.2) records that the
-  inputs of every leg are equal at both commits. The Agda proof is PROVEN
+  `:source-commit` is `89302d2` on main. CI run
+  https://github.com/hyperpolymath/secret-types/actions/runs/44224818557[44224818557]
+  checked all three witnesses on that commit, each in an image pinned by its
+  digest, as PROOF-POLICY §8.2 requires for PWG-1 (owner ruling 2026-11-16,
+  standards #1625): the Agda leg in `debian:13-slim@sha256:a29215f6…`, the
+  Rocq and Lean legs in `ubuntu:24.04@sha256:73b99939…`. The Agda proof is PROVEN
   under the canonical invocation
   `agda --safe --without-K --cubical-compatible`, with stronger flags besides
   (`scripts/proof-flags.sh`). Both §2 legs are re-proved in Rocq and in Lean,

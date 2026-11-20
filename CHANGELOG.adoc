@@ -10,6 +10,14 @@ https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 ==== Fixed
 
+* **`PWG-1` again: the first run on main with every leg in a pinned image is
+  recorded.** CI run 44224818557 checked all three witnesses on `89302d2`, the
+  Agda leg in `debian:13-slim@sha256:a29215f6…` and the Rocq and Lean legs in
+  `ubuntu:24.04@sha256:73b99939…`. Its three rows, copied from the run's
+  receipt job, are now current; the `7dfeab2` rows are superseded by it. The
+  receipt's `:source-commit` is `89302d2` on main, so no echo is needed, and
+  the reader derives `PWG-1` for N-1..N-3 and N-7..N-9.
+
 * **The grade follows the image rule of PROOF-POLICY §8.2 (owner ruling
   2026-11-16, standards #1625): `PWG-2ii` until the next recorded run.**
 ** The receipt tools are pinned at standards `940a27a`, whose reader counts a
